@@ -1,0 +1,20 @@
+# Gitleaks : règles par défaut, plus les faux positifs connus d'Argos (listes de mots BIP39, constantes de la courbe
+# secp256k1 dans nostr.js, clés de test des tests).
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Faux positifs connus"
+paths = [
+  '''rust/crates/argos-core/src/account/(bip39-en|mots-fr)\.txt''',
+  '''vendor/.*\.js''',
+  '''rust/crates/argos-render/assets/.*''',
+]
+regexTarget = "match"
+regexes = [
+  '''sk-ant-test-[0-9A-Za-z-]*''',
+  # comparaison de clés d'indicateurs dans le code (key.0 == self.ind_key.0), pas un secret
+  '''key\.[0-9] == ''',
+  # variable du script Pine AI Trend (« confluence » ressemble à un jeton Atlassian), pas un secret
+  '''confluenceLookback''',
+]

@@ -1,0 +1,342 @@
+//@version=6
+indicator("🚀CCQc🚀 TBO Pr Divergence", overlay=false, max_lines_count=500, max_labels_count=200, precision=4)
+GREEN    = #089981
+RED      = #F23645
+GREEN_80 = color.new(GREEN, 80)
+RED_80   = color.new(RED, 80)
+CYAN     = #00E5FF
+NONE = "None", RMA = "RMA", SMA = "SMA", TMA = "TMA", EMA = "EMA"
+DEMA = "DEMA", TEMA = "TEMA", HMA = "HMA", WMA = "WMA", SWMA = "SWMA", VWMA = "VWMA"
+G_PRE  = "Preset"
+G_DATA = "Trendlines"
+G_OSC  = "Oscillator"
+G_FILT = "Filtres de précision"
+G_DIV  = "Divergences"
+G_STY  = "Style"
+preset = input.string("Day Trade", "Preset", options=["Auto", "Scalping", "Day Trade", "Swing", "Custom"], group=G_PRE,
+     tooltip="Auto : 15m ou moins = Scalping, 4H ou moins = Day Trade, plus de 4H = Swing. Custom = valeurs manuelles ci-dessous.")
+tfMinP       = timeframe.in_seconds() / 60
+presetActive = preset == "Auto" ? (tfMinP <= 15 ? "Scalping" : tfMinP <= 240 ? "Day Trade" : "Swing") : preset
+useScalp = presetActive == "Scalping"
+useDay   = presetActive == "Day Trade"
+useSwing = presetActive == "Swing"
+isCustom = presetActive == "Custom"
+lengthIn     = input.int(2, "Swing Detection Lookback (Custom)", group=G_DATA, minval=2)
+multiplierIn = input.float(1.0, "Slope (Custom)", group=G_DATA, minval=0, step=0.1)
+calcMethodIn = input.string("Atr", "Slope Calculation Method", group=G_DATA, options=["Atr", "Stdev", "Linreg"])
+shortLenIn = input.int(9,  "Short Alpha Length (Custom)", group=G_OSC, minval=2)
+longLenIn  = input.int(21, "Long Alpha Length (Custom)",  group=G_OSC, minval=2)
+smoothIn   = input.string(EMA, "Smoothing Signal (Custom)", group=G_OSC, options=[NONE, RMA, SMA, TMA, EMA, DEMA, TEMA, HMA, WMA, SWMA, VWMA])
+smoothLenIn= input.int(9, "Smoothing Length (Custom)", group=G_OSC, minval=2)
+length     = useScalp ? 21 : useDay ? 12 : useSwing ? 8 : lengthIn
+multiplier = useScalp ? 1.25 : useDay ? 1.05 : useSwing ? 1.0 : multiplierIn
+calcMethod = calcMethodIn
+shortLen   = useScalp ? 8 : useDay ? 9 : useSwing ? 8 : shortLenIn
+longLen    = useScalp ? 28 : useDay ? 21 : useSwing ? 18 : longLenIn
+smoothType = isCustom ? smoothIn : EMA
+smoothLen  = useScalp ? 14 : useDay ? 9 : useSwing ? 8 : smoothLenIn
+useAtrGate   = input.bool(true,  "Filtrer les breaks trop petits (ATR)", group=G_FILT)
+atrGateMultIn= input.float(0.15, "Break min × ATR (Custom)", group=G_FILT, minval=0.05, step=0.05,
+     tooltip="Ignore un break si la distance prix/trendline < X × ATR. Monte si trop de signaux.")
+useAdxFilter = input.bool(true,  "Filtrer le range (ADX)", group=G_FILT)
+adxLen       = input.int(10, "ADX Length", group=G_FILT)
+adxMinIn     = input.float(12.0, "ADX minimum (Custom)", group=G_FILT, step=0.5,
+     tooltip="En dessous = marché trop choppy, signaux masqués.")
+atrGateMult  = isCustom ? atrGateMultIn : useScalp ? 0.35 : useDay ? 0.25 : 0.22
+adxMin       = isCustom ? adxMinIn : useScalp ? 18.0 : useDay ? 16.0 : 15.0
+useHtf       = input.bool(true,  "Filtre multi-timeframe", group=G_FILT)
+htfManual    = input.timeframe("", "HTF (vide = auto)", group=G_FILT,
+     tooltip="Auto selon le chart : 5m ou moins -> 1H, 30m ou moins -> 4H, 4H ou moins -> Daily, 2D ou moins -> Weekly, plus -> Monthly. Laisse vide.")
+useVolFilter = input.bool(true, "Filtre volume simple (break seulement)", group=G_FILT)
+volLen       = input.int(20, "Volume MA", group=G_FILT)
+volMult      = input.float(1.0, "Volume min × moyenne", group=G_FILT, step=0.05)
+G_VEC = "Vector Candle 200+"
+vecConfluenceMode = input.string("200+", "Volume de chandelle requis pour breakout", options=["Désactivé", "150+", "200+"], group=G_VEC,
+     tooltip="Désactivé = aucune exigence de volume sur la bougie du break. 150+ ou 200+ = exige une bougie Vector de ce niveau (ou plus) dans le même sens que le break.")
+useVecConfluence = vecConfluenceMode != "Désactivé"
+vecLookback = input.int(1, "Lookback Vector (barres)", group=G_VEC, minval=1, maxval=8,
+     tooltip="1 = la bougie du break doit être Vector 200+. 2 = break ou barre précédente.")
+vecAvgLen   = input.int(10, "Moyenne volume Vector", group=G_VEC, minval=5)
+vec200Mult  = input.float(2.0, "Seuil Vector 200+ (× moyenne)", group=G_VEC, minval=1.2, step=0.1)
+vec150Mult  = input.float(1.5, "Seuil Vector 150+", group=G_VEC, minval=1.1, step=0.1)
+useClimax   = input.bool(true, "Inclure climax (spread × volume)", group=G_VEC,
+     tooltip="PVSRA : aussi Vector si (high-low)*volume est le plus haut des N barres précédentes.")
+paintVectors= input.bool(true, "Colorer les bougies Vector", group=G_VEC)
+vecLime     = input.color(#FFEB3B, "Vector 200+ haussier", group=G_VEC)
+vecRed      = input.color(#9C27B0, "Vector 200+ baissier", group=G_VEC)
+vecBlue     = input.color(#4CAF50, "Vector 150+ haussier", group=G_VEC)
+vecFuchsia  = input.color(#E91E63, "Vector 150+ baissier", group=G_VEC)
+showDiv      = input.bool(true, "Afficher les divergences", group=G_DIV)
+showHidDiv   = input.bool(true, "Divergences cachées", group=G_DIV)
+divLenIn     = input.int(2, "Pivot divergences (Custom)", group=G_DIV, minval=2)
+minDivBarsIn = input.int(4, "Bars min entre pivots (Custom)", group=G_DIV)
+maxDivBarsIn = input.int(100, "Bars max entre pivots (Custom)", group=G_DIV)
+divLen       = isCustom ? divLenIn : useScalp ? 6 : useDay ? 5 : 4
+minDivBars   = isCustom ? minDivBarsIn : useScalp ? 8 : useDay ? 6 : 5
+maxDivBars   = isCustom ? maxDivBarsIn : useScalp ? 80 : useDay ? 60 : 40
+minOscAtr    = input.float(0.30, "Amplitude min osc (× ATR)", group=G_DIV, step=0.05, minval=0.0,
+     tooltip="Écarte les micro-divergences. Normalisé par l'ATR : 0.5 = le swing de l'oscillateur entre les 2 pivots doit valoir au moins 0.5×ATR. Plus haut = plus sélectif.")
+divBullCol   = input.color(#00FF00, "Couleur divergence bullish (reg. + cachée)", group=G_DIV)
+divBearCol   = input.color(#FF0000, "Couleur divergence bearish (reg. + cachée)", group=G_DIV)
+bullCol = input.color(#FF0000, "Bullish (histogramme/breaks)", group=G_STY)
+bearCol = input.color(#00FF00, "Bearish (histogramme/breaks)", group=G_STY)
+showSignal = input.bool(true, "Afficher la ligne Signal", group=G_STY)
+showDash= input.bool(false, "Tableau de statut", group=G_STY)
+showBullBreakDots = input.bool(true, "Afficher breakouts haussiers ▲", group=G_STY)
+showBearBreakDots = input.bool(true, "Afficher breakouts baissiers ▼", group=G_STY)
+breakDotSize  = input.int(8, "Grosseur des points de break", group=G_STY, minval=2, maxval=20)
+breakBullCol  = input.color(#FFC107, "Break bullish (dédié, or)", group=G_STY)
+breakBearCol  = input.color(CYAN, "Break bearish (dédié, cyan)", group=G_STY)
+signals() =>
+    var float upper = 0.0
+    var float lower = 0.0
+    var float slope_ph = 0.0
+    var float slope_pl = 0.0
+    var int   upos = 0
+    var int   dnos = 0
+    var float bullish = 0.0
+    var float bearish = 0.0
+    bool bullishBreak = false
+    bool bearishBreak = false
+    int n     = bar_index
+    float src = close
+    float ph  = ta.pivothigh(length, length)
+    float pl  = ta.pivotlow(length, length)
+    bool newPH = not na(ph)
+    bool newPL = not na(pl)
+    slope = switch calcMethod
+        "Atr"    => ta.atr(length) / length * multiplier
+        "Stdev"  => ta.stdev(src, length) / length * multiplier
+        "Linreg" => math.abs(ta.sma(src * n, length) - ta.sma(src, length) * ta.sma(n, length)) / ta.variance(n, length) / 2.0 * multiplier
+    slope_ph := newPH ? slope : slope_ph
+    slope_pl := newPL ? slope : slope_pl
+    upper    := newPH ? ph - slope_ph * length : upper - slope_ph
+    lower    := newPL ? pl + slope_pl * length : lower + slope_pl
+    upos     := newPH ? 0 : close > upper ? 1 : upos
+    dnos     := newPL ? 0 : close < lower ? 1 : dnos
+    float shortA = 2.0 / (shortLen + 1.0)
+    float longA  = 2.0 / (longLen + 1.0)
+    if upos > upos[1]
+        bullishBreak := true
+        bullish += (close - upper - bullish) * shortA
+    else if upos == 1
+        bullish += (math.max(close - upper, 0.0) - bullish) * longA
+    else
+        bullish -= bullish * longA
+    if dnos > dnos[1]
+        bearishBreak := true
+        bearish += (lower - close - bearish) * shortA
+    else if dnos == 1
+        bearish += (math.max(lower - close, 0.0) - bearish) * longA
+    else
+        bearish -= bearish * longA
+    float breakSizeBull = close - upper
+    float breakSizeBear = lower - close
+    [bullish, bearish, bullishBreak, bearishBreak, upper, lower, breakSizeBull, breakSizeBear]
+smooth(float data, string smoothing, int len) =>
+    rmaV  = ta.rma(data, len)
+    smaV  = ta.sma(data, len)
+    tmaV  = ta.sma(smaV, len)
+    emaV  = ta.ema(data, len)
+    ema2  = ta.ema(emaV, len)
+    ema3  = ta.ema(ema2, len)
+    demaV = 2.0 * emaV - ema2
+    temaV = 3.0 * emaV - 3.0 * ema2 + ema3
+    hmaV  = ta.hma(data, len)
+    wmaV  = ta.wma(data, len)
+    swmaV = ta.swma(data)
+    vwmaV = ta.vwma(data, len)
+    switch smoothing
+        RMA  => rmaV
+        SMA  => smaV
+        TMA  => tmaV
+        EMA  => emaV
+        DEMA => demaV
+        TEMA => temaV
+        HMA  => hmaV
+        WMA  => wmaV
+        SWMA => swmaV
+        VWMA => vwmaV
+        => data
+[bullish, bearish, rawBullBrk, rawBearBrk, upper, lower, brkBullSz, brkBearSz] = signals()
+float signalDelta = bullish - bearish
+float smoothDelta = smooth(signalDelta, smoothType, smoothLen)
+atrNow = ta.atr(14)
+[_, _, adxVal] = ta.dmi(adxLen, adxLen)
+volAvg = ta.sma(volume, volLen)
+float vecAvg   = ta.sma(volume, vecAvgLen)[1]
+float volSpread= (high - low) * volume
+float maxSpread= ta.highest(volSpread, vecAvgLen)[1]
+bool  isBullBar= close >= open
+bool  isBearBar= close < open
+bool  isVec200 = not na(vecAvg) and vecAvg > 0 and (volume >= vecAvg * vec200Mult or (useClimax and volSpread >= maxSpread and maxSpread > 0))
+bool  isVec150 = not na(vecAvg) and vecAvg > 0 and volume >= vecAvg * vec150Mult and not isVec200
+bool  vec200Bull = isVec200 and isBullBar
+bool  vec200Bear = isVec200 and isBearBar
+bool  vec150Bull = isVec150 and isBullBar
+bool  vec150Bear = isVec150 and isBearBar
+bool wantTier150 = vecConfluenceMode == "150+"
+vecBullRecent = false
+vecBearRecent = false
+for i = 0 to vecLookback - 1
+    bool bullHit = wantTier150 ? (vec200Bull[i] or vec150Bull[i]) : vec200Bull[i]
+    bool bearHit = wantTier150 ? (vec200Bear[i] or vec150Bear[i]) : vec200Bear[i]
+    vecBullRecent := vecBullRecent or bullHit
+    vecBearRecent := vecBearRecent or bearHit
+bool trendOk = not useAdxFilter or adxVal >= adxMin
+bool volOk   = not useVolFilter or volume >= volAvg * volMult
+bool sizeBullOk = not useAtrGate or brkBullSz >= atrNow * atrGateMult
+bool sizeBearOk = not useAtrGate or brkBearSz >= atrNow * atrGateMult
+bool bullBrk = rawBullBrk and trendOk and volOk and sizeBullOk
+bool bearBrk = rawBearBrk and trendOk and volOk and sizeBearOk
+f_htfAuto() =>
+    _tfMin = timeframe.in_seconds() / 60
+    _tfMin <= 5 ? "60" : _tfMin <= 30 ? "240" : _tfMin <= 240 ? "D" : _tfMin <= 2880 ? "W" : "M"
+htfAuto = f_htfAuto()
+string htfTf = htfManual != "" ? htfManual : htfAuto
+htfDelta = request.security(syminfo.tickerid, htfTf, signalDelta, barmerge.gaps_off, barmerge.lookahead_off)
+bool htfBull = htfDelta > 0
+bool htfBear = htfDelta < 0
+bool htfOkBull = not useHtf or htfBull
+bool htfOkBear = not useHtf or htfBear
+bool vecOkBull = not useVecConfluence or vecBullRecent
+bool vecOkBear = not useVecConfluence or vecBearRecent
+bool bullBrkFinal = bullBrk and htfOkBull and vecOkBull
+bool bearBrkFinal = bearBrk and htfOkBear and vecOkBear
+bool bullConfluence = bullBrk and htfOkBull and vecBullRecent
+bool bearConfluence = bearBrk and htfOkBear and vecBearRecent
+histCol = signalDelta > 0 ? color.new(bullCol, 0) : color.new(bearCol, 0)
+histogramPlot = plot(signalDelta, "Histogram", histCol)
+signalPlot    = plot(showSignal ? smoothDelta : na, "Signal", chart.fg_color, linewidth=2)
+basePlot      = plot(0, "base line", display=display.none, color=color(na))
+fill(histogramPlot, basePlot,
+     math.max(signalDelta, 0), math.min(signalDelta, 0),
+     signalDelta > 0 ? color.new(bullCol, 50) : color.new(bearCol, 100),
+     signalDelta > 0 ? color.new(bullCol, 100) : color.new(bearCol, 50))
+plot(showBullBreakDots and bullConfluence ? signalDelta : na, "Break+Vector 200+ UP",
+     color=color.new(vecLime, 0), style=plot.style_circles, linewidth=breakDotSize)
+plot(showBearBreakDots and bearConfluence ? signalDelta : na, "Break+Vector 200+ DOWN",
+     color=color.new(vecRed, 0), style=plot.style_circles, linewidth=breakDotSize)
+plot(showBullBreakDots and bullBrkFinal and not bullConfluence ? signalDelta : na, "Break UP validé",
+     color=color.new(breakBullCol, 0), style=plot.style_circles, linewidth=breakDotSize)
+plot(showBearBreakDots and bearBrkFinal and not bearConfluence ? signalDelta : na, "Break DOWN validé",
+     color=color.new(breakBearCol, 0), style=plot.style_circles, linewidth=breakDotSize)
+barcolor(paintVectors ? (vec200Bull ? vecLime : vec200Bear ? vecRed : vec150Bull ? vecBlue : vec150Bear ? vecFuchsia : na) : na)
+plot(showBullBreakDots and rawBullBrk and not bullBrkFinal ? signalDelta : na, "Break UP filtré",
+     color=color.new(breakBullCol, 70), style=plot.style_circles, linewidth=2)
+plot(showBearBreakDots and rawBearBrk and not bearBrkFinal ? signalDelta : na, "Break DOWN filtré",
+     color=color.new(breakBearCol, 70), style=plot.style_circles, linewidth=2)
+hline(0, "Zero", color=color.new(chart.fg_color, 70))
+f_div() =>
+    var int   hiBar0 = na
+    var int   hiBar1 = na
+    var float hiOsc0 = na
+    var float hiOsc1 = na
+    var float hiPr0  = na
+    var float hiPr1  = na
+    var int   loBar0 = na
+    var int   loBar1 = na
+    var float loOsc0 = na
+    var float loOsc1 = na
+    var float loPr0  = na
+    var float loPr1  = na
+    bool regBear = false
+    bool hidBear = false
+    bool regBull = false
+    bool hidBull = false
+    phO = ta.pivothigh(signalDelta, divLen, divLen)
+    plO = ta.pivotlow(signalDelta,  divLen, divLen)
+    if not na(phO)
+        hiBar1 := hiBar0
+        hiOsc1 := hiOsc0
+        hiPr1  := hiPr0
+        hiBar0 := bar_index - divLen
+        hiOsc0 := signalDelta[divLen]
+        hiPr0  := high[divLen]
+        if not na(hiBar1)
+            bars = hiBar0 - hiBar1
+            oscMove = math.abs(hiOsc0 - hiOsc1)
+            oscMoveNorm = atrNow > 0 ? oscMove / atrNow : 0.0
+            if bars >= minDivBars and bars <= maxDivBars and oscMoveNorm >= minOscAtr
+                priceHH = hiPr0 > hiPr1
+                priceLH = hiPr0 < hiPr1
+                oscLH   = hiOsc0 < hiOsc1
+                oscHH   = hiOsc0 > hiOsc1
+                regBear := priceHH and oscLH
+                hidBear := showHidDiv and priceLH and oscHH
+    if not na(plO)
+        loBar1 := loBar0
+        loOsc1 := loOsc0
+        loPr1  := loPr0
+        loBar0 := bar_index - divLen
+        loOsc0 := signalDelta[divLen]
+        loPr0  := low[divLen]
+        if not na(loBar1)
+            bars = loBar0 - loBar1
+            oscMove = math.abs(loOsc0 - loOsc1)
+            oscMoveNorm = atrNow > 0 ? oscMove / atrNow : 0.0
+            if bars >= minDivBars and bars <= maxDivBars and oscMoveNorm >= minOscAtr
+                priceLL = loPr0 < loPr1
+                priceHL = loPr0 > loPr1
+                oscHL   = loOsc0 > loOsc1
+                oscLL   = loOsc0 < loOsc1
+                regBull := priceLL and oscHL
+                hidBull := showHidDiv and priceHL and oscLL
+    [regBull, regBear, hidBull, hidBear, hiBar0, hiBar1, hiOsc0, hiOsc1, hiPr0, hiPr1, loBar0, loBar1, loOsc0, loOsc1, loPr0, loPr1]
+[regBull, regBear, hidBull, hidBear, hiBar0, hiBar1, hiOsc0, hiOsc1, hiPr0, hiPr1, loBar0, loBar1, loOsc0, loOsc1, loPr0, loPr1] = f_div()
+drawDiv(int x1, float y1o, float y1p, int x2, float y2o, float y2p, color c, bool dash) =>
+    line.new(x1, y1o, x2, y2o, xloc=xloc.bar_index, color=c, width=1, style=dash ? line.style_dashed : line.style_solid)
+    line.new(x1, y1p, x2, y2p, xloc=xloc.bar_index, color=c, width=1, style=dash ? line.style_dashed : line.style_solid, force_overlay=true)
+if showDiv
+    if regBull
+        drawDiv(loBar1, loOsc1, loPr1, loBar0, loOsc0, loPr0, color.new(divBullCol, 0), false)
+    if hidBull
+        drawDiv(loBar1, loOsc1, loPr1, loBar0, loOsc0, loPr0, color.new(divBullCol, 0), true)
+    if regBear
+        drawDiv(hiBar1, hiOsc1, hiPr1, hiBar0, hiOsc0, hiPr0, color.new(divBearCol, 0), false)
+    if hidBear
+        drawDiv(hiBar1, hiOsc1, hiPr1, hiBar0, hiOsc0, hiPr0, color.new(divBearCol, 0), true)
+modeTxt = isCustom ? "CUSTOM" : str.upper(presetActive) + (preset == "Auto" ? " (AUTO)" : "")
+var table dash = table.new(position.top_right, 2, 8, bgcolor=color.new(#0B1220, 12), border_width=1, border_color=color.new(#78909C, 60), frame_color=color.new(#78909C, 50), frame_width=1)
+var string lastEvt = "-"
+if bullBrkFinal
+    lastEvt := bullConfluence ? "BO + VEC200 ▲" : "BREAK ▲"
+if bearBrkFinal
+    lastEvt := bearConfluence ? "BO + VEC200 ▼" : "BREAK ▼"
+if regBull
+    lastEvt := "REG ▲"
+if regBear
+    lastEvt := "REG ▼"
+if hidBull
+    lastEvt := "HID ▲"
+if hidBear
+    lastEvt := "HID ▼"
+if showDash and barstate.islast
+    table.cell(dash, 0, 0, "TBO PRECISION", text_color=CYAN, text_size=size.small)
+    table.cell(dash, 1, 0, modeTxt, text_color=color.white, text_size=size.tiny)
+    table.cell(dash, 0, 1, "SWING", text_color=#90A4AE, text_size=size.tiny)
+    table.cell(dash, 1, 1, str.tostring(length), text_color=color.white, text_size=size.small)
+    table.cell(dash, 0, 2, "ADX", text_color=#90A4AE, text_size=size.tiny)
+    table.cell(dash, 1, 2, str.tostring(adxVal, "#.#"), text_color=trendOk ? GREEN: #B0BEC5, text_size=size.small)
+    table.cell(dash, 0, 3, "HTF", text_color=#90A4AE, text_size=size.tiny)
+    table.cell(dash, 1, 3, htfTf, text_color=color.white, text_size=size.small)
+    table.cell(dash, 0, 4, "DELTA", text_color=#90A4AE, text_size=size.tiny)
+    table.cell(dash, 1, 4, str.tostring(signalDelta, "#.####"), text_color=signalDelta > 0 ? RED : GREEN, text_size=size.small)
+    table.cell(dash, 0, 5, "FILTRES", text_color=#90A4AE, text_size=size.tiny)
+    table.cell(dash, 1, 5, trendOk ? "TREND OK" : "RANGE", text_color=trendOk ? GREEN : #FFAB00, text_size=size.small)
+    string vecTxt = vec200Bull ? "200+ BULL" : vec200Bear ? "200+ BEAR" : vec150Bull ? "150+ BULL" : vec150Bear ? "150+ BEAR" : "-"
+    color  vecCol = vec200Bull ? vecLime : vec200Bear ? vecRed : vec150Bull ? vecBlue : vec150Bear ? vecFuchsia : #90A4AE
+    table.cell(dash, 0, 6, "VECTOR", text_color=#90A4AE, text_size=size.tiny)
+    table.cell(dash, 1, 6, vecTxt, text_color=vecCol, text_size=size.small)
+    table.cell(dash, 0, 7, "LAST", text_color=#90A4AE, text_size=size.tiny)
+    table.cell(dash, 1, 7, lastEvt, text_color=color.white, text_size=size.small)
+alertcondition(bullBrkFinal, "Break haussier validé", "TBO Precision : break HAUSSIER filtré")
+alertcondition(bearBrkFinal, "Break baissier validé", "TBO Precision : break BAISSIER filtré")
+alertcondition(bullConfluence, "Breakout + Vector 200+ haussier", "TBO Precision : BREAKOUT + VECTOR 200+ BULL")
+alertcondition(bearConfluence, "Breakout + Vector 200+ baissier", "TBO Precision : BREAKOUT + VECTOR 200+ BEAR")
+alertcondition(vec200Bull, "Vector Candle 200+ haussière", "TBO Precision : VECTOR 200+ BULL")
+alertcondition(vec200Bear, "Vector Candle 200+ baissière", "TBO Precision : VECTOR 200+ BEAR")
+alertcondition(regBull, "Divergence régulière haussière", "TBO Precision : REG BULL")
+alertcondition(regBear, "Divergence régulière baissière", "TBO Precision : REG BEAR")
+alertcondition(hidBull, "Divergence cachée haussière", "TBO Precision : HID BULL")
+alertcondition(hidBear, "Divergence cachée baissière", "TBO Precision : HID BEAR")

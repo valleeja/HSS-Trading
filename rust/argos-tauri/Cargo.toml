@@ -1,0 +1,40 @@
+# 📱 Coque Tauri 2 d'Argos HSS Trading (étape T0 du plan docs/plan-modules-wasm-tauri2.md) : une fenêtre web minimale
+# qui affiche le module EMA. Le module tourne dans la bulle du kit, dans le cœur Rust de la coque (jamais en JS),
+# avec les mêmes vérifications que l'app native (manifeste, SHA-384 accepté, droits refusés par défaut).
+#
+# Son propre espace de travail (exclu de rust/Cargo.toml) : make vert et make web ne la compilent pas ; `make tauri`
+# la vérifie et la lance. Compilée dans rust/target/tauri.
+[package]
+name = "argos-tauri"
+version = "0.1.0"
+edition = "2021"
+license = "PolyForm-Noncommercial-1.0.0"
+publish = false
+description = "Coque Tauri 2 d'Argos HSS Trading (T0 : module EMA ; T1 : chart complète)"
+
+[lib]
+name = "argos_tauri_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# options par défaut coupées (dynamic-acl, dbus) : seulement la fenêtre web (wry), la compression des pages, les
+# contrôles Windows et X11. Tauri n'a aucun client réseau : tout le réseau passe par la couche de données d'Argos
+# (argos-data, cœur Rust) ; la page n'a ni plugin http, ni accès direct au réseau (CSP, test tests/securite.rs).
+tauri = { version = "2", default-features = false, features = ["wry", "compression", "common-controls-v6", "x11"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["rt"] }
+argos-core = { path = "../crates/argos-core" }
+argos-data = { path = "../crates/argos-data", features = ["native"] }
+argos-module-host = { path = "../crates/argos-module-host" }
+
+[workspace]
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3

@@ -1,0 +1,5 @@
+# Seuils un peu plus larges que ceux par défaut de Clippy :
+# - les fonctions de dessin reçoivent naturellement 8 paramètres (pixmap, texte, géométrie, souris, thème…) ;
+# - quelques tuples d'état locaux (pivots, divergences) sont plus lisibles sur place qu'en alias de type.
+too-many-arguments-threshold = 8
+type-complexity-threshold = 400

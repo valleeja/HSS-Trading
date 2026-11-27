@@ -1,0 +1,7 @@
+# Pinned Rust toolchain for Argos: make check, the core and module builds
+# all use this exact version (reproducible WASM needs one fixed compiler).
+[toolchain]
+channel = "1.99.1"
+components = ["rustfmt", "clippy"]
+targets = ["wasm32-unknown-unknown"]
+profile = "minimal"

@@ -1,0 +1,238 @@
+[
+  {
+    "AiTrend": {
+      "essai-45": "essai-46",
+      "essai-47": "essai-48"
+    },
+    "AnchoredVwap": {
+      "essai-101": "essai-102",
+      "essai-103": "essai-104"
+    },
+    "ArgosMurs": {
+      "essai-213": "essai-214",
+      "essai-215": "essai-216"
+    },
+    "ArgosVague": {
+      "essai-217": "essai-218",
+      "essai-219": "essai-220"
+    },
+    "Aroon": {
+      "essai-165": "essai-166",
+      "essai-167": "essai-168"
+    },
+    "Atr": {
+      "essai-21": "essai-22",
+      "essai-23": "essai-24"
+    },
+    "Bands": {
+      "essai-65": "essai-66",
+      "essai-67": "essai-68"
+    },
+    "BandsOsc": {
+      "essai-69": "essai-70",
+      "essai-71": "essai-72"
+    },
+    "Bollinger": {
+      "essai-11": "essai-12",
+      "essai-9": "essai-10"
+    },
+    "BollingerRsi": {
+      "essai-209": "essai-210",
+      "essai-211": "essai-212"
+    },
+    "BookHeat": {
+      "essai-109": "essai-110",
+      "essai-111": "essai-112"
+    },
+    "Bubbles": {
+      "essai-89": "essai-90",
+      "essai-91": "essai-92"
+    },
+    "Cci": {
+      "essai-149": "essai-150",
+      "essai-151": "essai-152"
+    },
+    "Cipher": {
+      "essai-41": "essai-42",
+      "essai-43": "essai-44"
+    },
+    "Cvd": {
+      "essai-173": "essai-174",
+      "essai-175": "essai-176"
+    },
+    "Dmi": {
+      "essai-145": "essai-146",
+      "essai-147": "essai-148"
+    },
+    "Donchian": {
+      "essai-137": "essai-138",
+      "essai-139": "essai-140"
+    },
+    "EmaCross": {
+      "essai-13": "essai-14",
+      "essai-15": "essai-16"
+    },
+    "EmaMulti": {
+      "essai-37": "essai-38",
+      "essai-39": "essai-40"
+    },
+    "Footprint": {
+      "essai-85": "essai-86",
+      "essai-87": "essai-88"
+    },
+    "Heatmap": {
+      "essai-57": "essai-58",
+      "essai-59": "essai-60"
+    },
+    "Hma": {
+      "essai-193": "essai-194",
+      "essai-195": "essai-196"
+    },
+    "Ichimoku": {
+      "essai-129": "essai-130",
+      "essai-131": "essai-132"
+    },
+    "Keltner": {
+      "essai-133": "essai-134",
+      "essai-135": "essai-136"
+    },
+    "Lens": {
+      "essai-177": "essai-178",
+      "essai-179": "essai-180"
+    },
+    "LiqMap": {
+      "essai-113": "essai-114",
+      "essai-115": "essai-116"
+    },
+    "LuxAlgoSmc": {
+      "essai-221": "essai-222",
+      "essai-223": "essai-224"
+    },
+    "MaRibbon": {
+      "essai-205": "essai-206",
+      "essai-207": "essai-208"
+    },
+    "Macd": {
+      "essai-5": "essai-6",
+      "essai-7": "essai-8"
+    },
+    "Mfi": {
+      "essai-169": "essai-170",
+      "essai-171": "essai-172"
+    },
+    "MtfTable": {
+      "essai-121": "essai-122",
+      "essai-123": "essai-124"
+    },
+    "Obv": {
+      "essai-157": "essai-158",
+      "essai-159": "essai-160"
+    },
+    "Patterns": {
+      "essai-105": "essai-106",
+      "essai-107": "essai-108"
+    },
+    "PriceAction": {
+      "essai-97": "essai-98",
+      "essai-99": "essai-100"
+    },
+    "Profile": {
+      "essai-61": "essai-62",
+      "essai-63": "essai-64"
+    },
+    "Psar": {
+      "essai-141": "essai-142",
+      "essai-143": "essai-144"
+    },
+    "RelVolume": {
+      "essai-29": "essai-30",
+      "essai-31": "essai-32"
+    },
+    "Rsi": {
+      "essai-225": "essai-226",
+      "essai-227": "essai-228"
+    },
+    "Sma": {
+      "essai-185": "essai-186",
+      "essai-187": "essai-188"
+    },
+    "SmartSwingVwap": {
+      "essai-81": "essai-82",
+      "essai-83": "essai-84"
+    },
+    "Smc": {
+      "essai-53": "essai-54",
+      "essai-55": "essai-56"
+    },
+    "SmcPro": {
+      "essai-73": "essai-74",
+      "essai-75": "essai-76"
+    },
+    "Smma": {
+      "essai-201": "essai-202",
+      "essai-203": "essai-204"
+    },
+    "SpringTension": {
+      "essai-181": "essai-182",
+      "essai-183": "essai-184"
+    },
+    "StochRsi": {
+      "essai-125": "essai-126",
+      "essai-127": "essai-128"
+    },
+    "Stochastic": {
+      "essai-17": "essai-18",
+      "essai-19": "essai-20"
+    },
+    "Supertrend": {
+      "essai-161": "essai-162",
+      "essai-163": "essai-164"
+    },
+    "SwingVwap": {
+      "essai-77": "essai-78",
+      "essai-79": "essai-80"
+    },
+    "Tape": {
+      "essai-93": "essai-94",
+      "essai-95": "essai-96"
+    },
+    "Tbo": {
+      "essai-49": "essai-50",
+      "essai-51": "essai-52"
+    },
+    "Tvd": {
+      "essai-33": "essai-34",
+      "essai-35": "essai-36"
+    },
+    "VectorZone": {
+      "essai-117": "essai-118",
+      "essai-119": "essai-120"
+    },
+    "Vwap": {
+      "essai-25": "essai-26",
+      "essai-27": "essai-28"
+    },
+    "Vwma": {
+      "essai-197": "essai-198",
+      "essai-199": "essai-200"
+    },
+    "WilliamsR": {
+      "essai-153": "essai-154",
+      "essai-155": "essai-156"
+    },
+    "Wma": {
+      "essai-189": "essai-190",
+      "essai-191": "essai-192"
+    }
+  },
+  {
+    "Bollinger": {
+      "essai-233": "essai-234",
+      "essai-235": "essai-236"
+    },
+    "Macd": {
+      "essai-229": "essai-230",
+      "essai-231": "essai-232"
+    }
+  }
+]

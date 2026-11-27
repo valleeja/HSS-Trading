@@ -1,0 +1,82 @@
+// This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © cgagnonswtor
+//@version=6
+indicator("Spring Tension Ribbon + Volume Exhaustion", "Spring Tension", precision = 2)
+
+// ───── Inputs ─────────────────────────────────────────────────────────────
+const string G_ST  = "🌱 Spring Tension"
+const string G_VX  = "📉 Volume Exhaustion"
+const string G_VIS = "🎨 Visuels"
+
+rsiLen      = input.int(14, "RSI Length", minval = 1, group = G_ST)
+mfiLen      = input.int(14, "MFI Length", minval = 1, group = G_ST)
+lookback    = input.int(5, "Lookback prix", minval = 1, group = G_ST, tooltip = "Fenêtre du plus bas / plus haut récent.")
+springMax   = input.float(35, "RSI max Spring", group = G_ST, inline = "lvl")
+upthrustMin = input.float(65, "RSI min Upthrust", group = G_ST, inline = "lvl")
+noVolMode   = input.string("RSI sur hlc3", "Si pas de volume", options = ["RSI sur hlc3", "Désactiver"], group = G_ST, tooltip = "Or, forex, indices : souvent pas de volume. Le MFI est alors remplacé par un RSI sur hlc3, ou désactivé.")
+
+volLen      = input.int(20, "Volume MA Length", minval = 1, group = G_VX)
+rsiMove     = input.float(5.0, "Variation RSI depuis le pic/creux", minval = 0, group = G_VX)
+volDryPct   = input.float(20.0, "Volume % sous la moyenne", minval = 0, maxval = 100, group = G_VX) / 100
+clusterLen  = input.int(10, "Fenêtre du cluster", minval = 1, group = G_VX)
+nukeMin     = input.int(4, "Signaux min. pour NUKE", minval = 1, group = G_VX)
+
+showShort = input.bool(true, "Short", group = G_VIS, inline = "s")
+showLong  = input.bool(true, "Long", group = G_VIS, inline = "s")
+showBg    = input.bool(true, "Fond", group = G_VIS, inline = "s")
+colSpring = input.color(#FFD700, "Spring", group = G_VIS, inline = "c1")
+colUp     = input.color(#FF00FF, "Upthrust", group = G_VIS, inline = "c1")
+colBull   = input.color(#00FF00, "Haussier", group = G_VIS, inline = "c2")
+colOs     = input.color(#FF0000, "Survendu", group = G_VIS, inline = "c2")
+colNeut   = input.color(#808080, "Neutre", group = G_VIS, inline = "c2")
+
+// ───── Money Flow (fonctionne aussi sans volume) ───────────────────────────
+bool hasVolume = ta.cum(nz(volume)) > 0
+
+moneyFlow(float src, int len) =>
+    float chg = ta.change(src)
+    float up  = math.sum(nz(volume) * (chg > 0 ? src : 0.0), len)
+    float dn  = math.sum(nz(volume) * (chg < 0 ? src : 0.0), len)
+    dn == 0 ? (up == 0 ? 50.0 : 100.0) : 100.0 - 100.0 / (1.0 + up / dn)
+
+float rsiVal = ta.rsi(close, rsiLen)
+float mfiVol = moneyFlow(hlc3, mfiLen)
+float mfiAlt = ta.rsi(hlc3, mfiLen)
+float mfiVal = hasVolume ? mfiVol : noVolMode == "RSI sur hlc3" ? mfiAlt : na
+
+// ───── Spring / Upthrust ──────────────────────────────────────────────────
+bool isSpring   = low  <= ta.lowest(low, lookback)   and mfiVal > mfiVal[1] and rsiVal < springMax
+bool isUpthrust = high >= ta.highest(high, lookback) and mfiVal < mfiVal[1] and rsiVal > upthrustMin
+
+color ribbonCol = isSpring ? colSpring :
+                  isUpthrust ? colUp :
+                  mfiVal > 50 and close > close[1] ? color.new(colBull, 20) :
+                  rsiVal < 30 ? color.new(colOs, 40) :
+                  color.new(colNeut, 80)
+
+// ───── Volume Exhaustion (seulement avec du volume) ────────────────────────
+bool volDry = hasVolume and volume < ta.sma(nz(volume), volLen) * (1 - volDryPct)
+
+bool shortSig  = volDry and rsiVal > 60 and rsiVal <= ta.highest(rsiVal, 10) - rsiMove
+bool longSig   = volDry and rsiVal < 40 and rsiVal >= ta.lowest(rsiVal, 10) + rsiMove
+bool shortNuke = math.sum(shortSig ? 1 : 0, clusterLen) >= nukeMin
+bool longNuke  = math.sum(longSig ? 1 : 0, clusterLen) >= nukeMin
+
+// ───── Visuels ────────────────────────────────────────────────────────────
+plot(5, "Ruban", color = ribbonCol, style = plot.style_columns, histbase = 0)
+bgcolor(showBg and isSpring ? color.new(colSpring, 90) : showBg and isUpthrust ? color.new(colUp, 90) : na)
+
+plotshape(showShort and shortSig and not shortNuke ? 6.5 : na, "Short", shape.circle, location.absolute, color.new(color.red, 30), size = size.tiny)
+plotshape(showShort and shortNuke ? 8.0 : na, "SHORT NUKE", shape.xcross, location.absolute, color.red, size = size.tiny)
+plotshape(showLong and longSig and not longNuke ? -1.5 : na, "Long", shape.circle, location.absolute, color.new(color.green, 30), size = size.tiny)
+plotshape(showLong and longNuke ? -3.0 : na, "LONG NUKE", shape.xcross, location.absolute, color.green, size = size.tiny)
+
+var table warn = table.new(position.top_right, 1, 1)
+if barstate.islast and not hasVolume
+    table.cell(warn, 0, 0, "⚠️ Pas de volume : MFI = " + (noVolMode == "RSI sur hlc3" ? "RSI hlc3" : "off") + ", Exhaustion off", text_color = color.orange, text_size = size.small)
+
+// ───── Alertes ────────────────────────────────────────────────────────────
+alertcondition(isSpring, "🌱 Bullish Spring", "🌱 Bullish Spring sur {{ticker}} ({{interval}})")
+alertcondition(isUpthrust, "🥀 Bearish Upthrust", "🥀 Upthrust sur {{ticker}} ({{interval}})")
+alertcondition(longNuke and not longNuke[1], "LONG NUKE", "💥 LONG NUKE sur {{ticker}} ({{interval}})")
+alertcondition(shortNuke and not shortNuke[1], "SHORT NUKE", "💥 SHORT NUKE sur {{ticker}} ({{interval}})")

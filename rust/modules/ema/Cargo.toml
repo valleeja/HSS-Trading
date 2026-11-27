@@ -1,0 +1,17 @@
+[package]
+name = "argos-module-ema"
+version = "0.1.0"
+edition = "2021"
+publish = false
+license = "PolyForm-Noncommercial-1.0.0"
+description = "Module Argos HSS Trading (kit module Argos, interface v2) : moyenne mobile exponentielle (EMA)"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# le kit (copie figée) : la seule dépendance permise d'un module
+argos-module-sdk = { path = "../../vendor/kit-module-argos-1.0.2/argos-module-sdk" }
+
+# son propre espace de travail : un module se construit seul (règle du kit)
+[workspace]

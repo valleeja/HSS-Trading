@@ -1,0 +1,10 @@
+{
+  "path": "trading/academie",
+  "version": 1,
+  "capabilities": [],
+  "author": "ARG-JEE-TRADING",
+  "abi": 2,
+  "settings": [
+    { "id": "fenetre", "name": "Fenêtre (heure de New York)", "type": "choice", "choices": ["asie", "londres", "orb", "silver-bullet"], "default": "asie" }
+  ]
+}

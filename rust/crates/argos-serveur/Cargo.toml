@@ -1,0 +1,19 @@
+[package]
+name = "argos-serveur"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "Argos HSS Trading — le serveur local (port 8000) : celui, générique, d'argos-outils, plus le journal chiffré du PC servi au cell (/api/journal)"
+
+# Seulement des crates déjà là : argos-outils (le serveur générique, bibliothèque), argos-store (journal chiffré,
+# trousseau), argos-data (CoinMarketCap et logos, pour la page)
+[dependencies]
+argos-core = { path = "../argos-core" }
+argos-outils = { path = "../../tools/argos-outils" }
+argos-store = { path = "../argos-store" }
+argos-data = { path = "../argos-data", features = ["native"] }
+serde_json = "1"
+
+[lints]
+workspace = true

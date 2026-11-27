@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maquette Argos Lens</title>
+<!-- Maquette Lens refaite d'après sa description (page du coordinateur, 15 nov. 2026), pour les captures côte à côte
+     maquette | app. Aucun appel réseau : polices de l'app (Inter, DejaVu Sans Mono). Mêmes chiffres d'exemple. -->
+<style>
+@font-face { font-family: Inter; src: url("../../rust/crates/argos-render/assets/Inter-Regular.otf"); font-weight: 400; }
+@font-face { font-family: Inter; src: url("../../rust/crates/argos-render/assets/Inter-Medium.otf"); font-weight: 500 600; }
+@font-face { font-family: Inter; src: url("../../rust/crates/argos-render/assets/Inter-Bold.otf"); font-weight: 700; }
+@font-face { font-family: Mono; src: url("../../rust/crates/argos-render/assets/DejaVuSansMono.ttf"); }
+:root { --up: #16c784; --dn: #ea3943; --acc: #4c8dff; --jaune: #f7a531; --fg: #e8eaf0; --dim: #8d93a1; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #0a0d14; color: var(--fg); font: 13px Inter, system-ui, sans-serif; }
+.barre { display: flex; gap: 8px; padding: 10px 12px; overflow-x: auto; white-space: nowrap; }
+.pa { padding: 6px 12px; border-radius: 12px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); }
+.pa.on { border-color: var(--acc); background: rgba(76,141,255,.18); }
+.zone { position: relative; }
+.chart { position: relative; height: calc(100vh - 54px); background: linear-gradient(#0b0e14, #07090d); overflow: hidden; }
+.chart svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.carte { position: absolute; top: 52px; left: 12px; width: min(330px, calc(100% - 24px)); padding: 14px; border-radius: 22px;
+  background: rgba(26,30,42,.62); border: 1px solid rgba(255,255,255,.16); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); font-size: 13px; }
+.titre { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.titre b { font-weight: 600; }
+.regime { font: 12px Mono, monospace; padding: 2px 8px; border-radius: 10px; color: var(--up); border: 1px solid var(--up); background: rgba(22,199,132,.18); }
+.score { display: grid; grid-template-columns: 52px 1fr 54px; align-items: center; height: 18px; }
+.jauge { position: relative; height: 8px; border-radius: 4px; background: rgba(255,255,255,.10); }
+.jauge i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; }
+.jauge s { position: absolute; left: 70%; top: -3px; width: 2px; height: 14px; background: var(--jaune); }
+.score span:last-child { font: 12px Mono, monospace; text-align: right; }
+.setup { margin: 10px 0 6px; padding: 8px 10px; border-radius: 14px; background: rgba(22,199,132,.12); border: 1px solid rgba(22,199,132,.35); }
+.setup .t { color: var(--up); margin-bottom: 2px; }
+.setup div.l { display: flex; justify-content: space-between; font: 12px Mono, monospace; line-height: 16px; }
+.puces { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+.puces span { padding: 2px 8px; border-radius: 10px; background: rgba(255,255,255,.07); font-size: 12px; }
+.pied { color: var(--dim); font-size: 12px; }
+@media (max-width: 640px) {
+  .chart { height: 420px; }
+  .carte { position: static; width: auto; margin: 12px; }
+}
+</style>
+</head>
+<body>
+<div class="barre"><span class="pa">XAUUSD</span><span class="pa">1h</span><span class="pa on">ƒx Argos Lens</span><span class="pa">EMA 20 · 50 · 200</span><span class="pa">VWAP</span></div>
+<div class="zone">
+<div class="chart"><svg viewBox="0 0 1000 600" preserveAspectRatio="none" id="graphe"></svg></div>
+<div class="carte" id="carte">
+  <div class="titre"><b>Argos Lens</b><span class="regime">TENDANCE ↑</span></div>
+  <div class="score"><span style="color:var(--up)">Long</span><span class="jauge"><i style="width:80%;background:var(--up)"></i><s></s></span><span>80/100</span></div>
+  <div class="score"><span style="color:var(--dn)">Short</span><span class="jauge"><i style="width:20%;background:var(--dn)"></i><s></s></span><span>20/100</span></div>
+  <div class="setup">
+    <div class="t">Setup LONG · bougie clôturée 14:00</div>
+    <div class="l"><span>Entrée</span><span>2 418,40</span></div>
+    <div class="l" style="color:var(--dn)"><span>Stop</span><span>2 409,40</span></div>
+    <div class="l" style="color:var(--up)"><span>Cible 1 (1,5R)</span><span>2 431,90</span></div>
+    <div class="l" style="color:var(--up)"><span>Cible 2 (3R)</span><span>2 445,40</span></div>
+  </div>
+  <div class="puces"><span>ADX 31</span><span>RSI 61</span><span>ATR p62</span><span>Vol ×1,4</span><span>Biais 4h ↑</span></div>
+  <div class="pied">Analyse affichée, pas un ordre. Taille de position : Gardien PropFirm.</div>
+</div>
+</div>
+<script>
+// Bougies d'exemple déterministes (aucun hasard, aucun réseau) : hausse avec vagues, comme la maquette.
+const svg = document.getElementById("graphe"), N = 60, W = 1000, H = 600, lo = 2370, hi = 2455;
+const y = p => H - (p - lo) / (hi - lo) * H, x = i => 40 + i * 13;
+const c = i => 2380 + i * 0.62 + Math.sin(i / 3) * 3.2;
+let s = "", e20 = [], e50 = [], a = c(0), b = c(0);
+for (let i = 0; i < N; i++) {
+  const o = c(i - 1), cl = c(i), h = Math.max(o, cl) + 1.6, l = Math.min(o, cl) - 1.6, col = cl >= o ? "#16c784" : "#ea3943";
+  s += `<line x1="${x(i)}" x2="${x(i)}" y1="${y(h)}" y2="${y(l)}" stroke="${col}"/><rect x="${x(i) - 4}" y="${y(Math.max(o, cl))}" width="8" height="${Math.max(1, Math.abs(y(o) - y(cl)))}" fill="${col}"/>`;
+  a = a + (cl - a) * 2 / 21; b = b + (cl - b) * 2 / 51; e20.push(`${x(i)},${y(a)}`); e50.push(`${x(i)},${y(b)}`);
+}
+const vw = Array.from({ length: N }, (_, i) => `${x(i)},${y(2395 + i * 0.45)}`).join(" ");
+const z = x(N - 1) + 12, Z = W;
+s += `<polyline points="${e20.join(" ")}" fill="none" stroke="#4c8dff" stroke-width="1.5"/>`;
+s += `<polyline points="${e50.join(" ")}" fill="none" stroke="#a78bfa" stroke-width="1.5"/>`;
+s += `<polyline points="${vw}" fill="none" stroke="#f7a531" stroke-width="1.2" stroke-dasharray="4 4"/>`;
+s += `<line x1="${x(30)}" x2="${x(44)}" y1="${y(2404)}" y2="${y(2404)}" stroke="#16c784" stroke-dasharray="3 3"/><text x="${x(37)}" y="${y(2404) - 5}" fill="#16c784" font-size="12" text-anchor="middle">BOS ↑</text>`;
+s += `<rect x="${z}" y="${y(2445.4)}" width="${Z - z}" height="${y(2418.4) - y(2445.4)}" fill="rgba(22,199,132,.10)"/>`;
+s += `<rect x="${z}" y="${y(2418.4)}" width="${Z - z}" height="${y(2409.4) - y(2418.4)}" fill="rgba(234,57,67,.10)"/>`;
+for (const [p, t, col] of [[2445.4, "Cible 2 · 3R", "#16c784"], [2431.9, "Cible 1 · 1,5R", "#16c784"], [2418.4, "Entrée", "#e8eaf0"], [2409.4, "Stop · 1,5 ATR", "#ea3943"]])
+  s += `<line x1="${z}" x2="${Z}" y1="${y(p)}" y2="${y(p)}" stroke="${col}" stroke-dasharray="6 4"/><text x="${Z - 8}" y="${y(p) - 4}" fill="${col}" font-size="11" text-anchor="end">${t}</text>`;
+const tx = x(N - 1), ty = y(c(N - 1) - 1.6) + 6;
+s += `<path d="M${tx} ${ty} l-6 8 h12 z" fill="#16c784"/><text x="${tx}" y="${ty + 21}" fill="#16c784" font-size="11" text-anchor="middle">LONG 80</text>`;
+svg.innerHTML = s;
+</script>
+</body>
+</html>

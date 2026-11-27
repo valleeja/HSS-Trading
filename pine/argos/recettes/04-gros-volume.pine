@@ -1,0 +1,7 @@
+//@version=6
+indicator("Gros volume", overlay = true)
+mult = input.float(2.0, "Fois la moyenne", step = 0.5)
+moy = ta.sma(volume, 20)
+gros = volume > mult * moy
+barcolor(gros ? (close > open ? color.lime : color.fuchsia) : na)
+plotchar(gros, "Gros volume", "●", location.abovebar, color.yellow, size = size.tiny)

@@ -1,0 +1,15 @@
+[package]
+name = "argos-exemple-moyenne"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Example Argos interface v2 module: simple moving average of the bars"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+argos-module-sdk = { path = "../argos-module-sdk" }
+
+# Its own workspace: modules are built alone.
+[workspace]

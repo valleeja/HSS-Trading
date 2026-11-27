@@ -1,0 +1,97 @@
+[
+  {
+    "cfg": {
+      "account": 2.5,
+      "daily": 5.5,
+      "deverrouillage": {
+        "jour": "essai-15",
+        "ms": 17,
+        "raison": "essai-17"
+      },
+      "deverrouillages": [
+        {
+          "jour": "essai-18",
+          "ms": 20,
+          "raison": "essai-20"
+        },
+        {
+          "jour": "essai-21",
+          "ms": 23,
+          "raison": "essai-23"
+        }
+      ],
+      "firm": "essai-26",
+      "lock": "essai-14",
+      "max_pos": 14,
+      "max_trades": 9,
+      "maxloss": 6.5,
+      "min_days": 8,
+      "need_sl": true,
+      "news": true,
+      "pause_until": 30,
+      "phase": 4,
+      "reset_tz": "essai-25",
+      "risk": 1.5,
+      "risk_pct": 12.5,
+      "start": "essai-9",
+      "strats": [
+        "essai-10",
+        "essai-11"
+      ],
+      "target": 4.5,
+      "tilt_min": 29,
+      "tilt_n": 28,
+      "tilt_revenge": true,
+      "warn": 24.5
+    },
+    "trades": [
+      {
+        "conf": [
+          "essai-45",
+          "essai-46"
+        ],
+        "emo": "essai-47",
+        "entry": 35.5,
+        "entryTs": 44,
+        "exit": 38.5,
+        "exitTs": 44,
+        "fees": 40.5,
+        "id": "essai-30",
+        "notes": "essai-48",
+        "pnl": 41.5,
+        "rate": 42.5,
+        "risk": 39.5,
+        "side": "essai-32",
+        "sl": 36.5,
+        "strat": "essai-34",
+        "sym": "essai-31",
+        "tf": "essai-33",
+        "tp": 37.5
+      },
+      {
+        "conf": [
+          "essai-64",
+          "essai-65"
+        ],
+        "emo": "essai-66",
+        "entry": 54.5,
+        "entryTs": 63,
+        "exit": 57.5,
+        "exitTs": 63,
+        "fees": 59.5,
+        "id": "essai-49",
+        "notes": "essai-67",
+        "pnl": 60.5,
+        "rate": 61.5,
+        "risk": 58.5,
+        "side": "essai-51",
+        "sl": 55.5,
+        "strat": "essai-53",
+        "sym": "essai-50",
+        "tf": "essai-52",
+        "tp": 56.5
+      }
+    ],
+    "version": 69
+  }
+]

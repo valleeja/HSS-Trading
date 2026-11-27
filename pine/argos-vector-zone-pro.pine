@@ -1,0 +1,766 @@
+//@version=6
+indicator("Argos Vector Zone Pro", overlay=true, max_lines_count=200, max_labels_count=300, max_boxes_count=100, max_bars_back=500)
+grpM = "Modules"
+showEma = input.bool(true, "EMA", group=grpM)
+showVec = input.bool(true, "Vector Candles", group=grpM)
+showTL = input.bool(true, "Trendlines auto + Confirmation", group=grpM)
+showZones = input.bool(true, "Zones Offre/Demande (score)", group=grpM)
+showTab = input.bool(true, "Tableau Vector Watchlist", group=grpM)
+showPat = input.bool(true, "Patterns auto (triangle, wedge, flag)", group=grpM)
+showChart = input.bool(true, "Patterns chartistes (W, M, triple, ETE)", group=grpM)
+showFib = input.bool(true, "Canal Fibonacci auto", group=grpM)
+showLiq = input.bool(true, "Liquidité (BSL/SSL, EQH/EQL, sweeps)", group=grpM)
+grpE = "EMA"
+len1 = input.int(13, "EMA 1", group=grpE)
+len2 = input.int(50, "EMA 2", group=grpE)
+len3 = input.int(100, "EMA 3", group=grpE)
+len4 = input.int(200, "EMA 4", group=grpE)
+grpV = "Vector Candles (PVSRA)"
+vLen = input.int(10, "Moyenne volume (barres)", group=grpV)
+climaxMult = input.float(2.5, "Climax (x moyenne)", step=0.1, group=grpV)
+aboveMult = input.float(1.5, "Vector (x moyenne)", step=0.1, group=grpV)
+cBullC = input.color(color.lime, "Climax haussier", group=grpV)
+cBearC = input.color(color.red, "Climax baissier", group=grpV)
+cBullA = input.color(color.blue, "Vector haussier", group=grpV)
+cBearA = input.color(color.fuchsia, "Vector baissier", group=grpV)
+grpT = "Trendline auto & Confirmation"
+pivLen = input.int(5, "Pivot trendline", minval=2, group=grpT)
+useEmaF = input.bool(true, "Exiger un rebond sur l'EMA 2 (50)", group=grpT)
+emaLook = input.int(10, "Rebond EMA : barres max", group=grpT)
+grpZ = "Zones Offre/Demande"
+zPivL = input.int(10, "Pivot gauche", minval=2, group=grpZ)
+zPivR = input.int(5, "Pivot droite (barres de réaction)", minval=2, group=grpZ)
+minReact = input.float(1.0, "Réaction min. (x ATR)", step=0.1, group=grpZ)
+maxZones = input.int(8, "Zones max par côté", minval=1, group=grpZ)
+showWeak = input.bool(false, "Afficher les zones faibles", group=grpZ)
+strongLvl = input.int(70, "Seuil zone forte", group=grpZ)
+weakLvl = input.int(40, "Seuil zone faible", group=grpZ)
+grpP = "Patterns auto"
+pPiv = input.int(5, "Pivot pattern", minval=2, group=grpP)
+patWin = input.int(450, "Fenêtre max (barres)", minval=30, maxval=450, group=grpP)
+patRecent = input.int(150, "Dernière touche max (barres)", minval=5, group=grpP)
+patExc = input.int(3, "Ignorer les N dernières bougies (cassure)", minval=0, maxval=20, group=grpP)
+patSpan = input.float(0.12, "Priorité structure longue", step=0.01, group=grpP)
+tolMult = input.float(0.45, "Tolérance touche (x ATR)", step=0.05, group=grpP)
+wvMax = input.int(6, "Mèches hors tolérance max", minval=0, maxval=20, group=grpP)
+cRes = input.color(color.yellow, "Couleur résistance", group=grpP)
+cSup = input.color(color.orange, "Couleur support", group=grpP)
+grpC = "Patterns chartistes"
+zzPiv = input.int(5, "Pivot swing", minval=2, group=grpC)
+eqTol = input.float(0.6, "Sommets égaux : tolérance (x ATR)", step=0.1, group=grpC)
+minDepth = input.float(1.5, "Profondeur min. (x ATR)", step=0.1, group=grpC)
+cBullP = input.color(color.lime, "Couleur pattern haussier", group=grpC)
+cBearP = input.color(color.red, "Couleur pattern baissier", group=grpC)
+grpA = "Ancrage multi-UT (trendlines + Fib)"
+anchorTF = input.timeframe("60", "UT d'ancrage", group=grpA)
+domTF = input.timeframe("240", "UT supérieure", group=grpA)
+useDom = input.bool(true, "Prendre la UT sup. si une figure y domine", group=grpA)
+minT = input.int(3, "Touches min. par ligne (rés./sup./Fib 0%)", minval=2, group=grpA)
+domMinT = input.int(3, "Touches min. pour que la UT sup. domine", minval=2, group=grpA)
+grpF = "Canal Fibonacci"
+fibMode = input.string("Auto", "Direction", options=["Auto", "Baissier (sommets)", "Haussier (creux)"], group=grpF)
+fibPiv = input.int(5, "Pivot", minval=2, group=grpF)
+fibGap = input.int(10, "Écart min. entre les 2 pivots (barres)", minval=3, group=grpF)
+fibLevels = input.string("-1.618,-1.236,-0.618,-0.5,0,0.236,0.382,0.5,0.618,0.786,1,1.618,1.786", "Niveaux", group=grpF)
+fibExt = input.int(15, "Prolonger à droite (barres)", minval=0, maxval=200, group=grpF)
+cFib = input.color(color.lime, "Couleur", group=grpF)
+fibGP = input.bool(true, "Golden pocket 0.5–0.618 en surbrillance", group=grpF)
+fibWick = input.float(0.5, "Niveau des mèches opposées", step=0.05, group=grpF)
+fibBack = input.int(0, "Reculer le 1er top de N pivots", minval=0, maxval=15, group=grpF)
+grpL = "Liquidité"
+liqPiv = input.int(5, "Pivot swing", minval=2, group=grpL)
+eqTolL = input.float(0.15, "Equal highs/lows : tolérance (x ATR)", step=0.05, group=grpL)
+reBars = input.int(2, "Réintégration max (barres)", minval=1, maxval=10, group=grpL)
+maxLiq = input.int(6, "Niveaux max par côté", minval=1, maxval=20, group=grpL)
+cBSL = input.color(color.red, "Couleur BSL (au-dessus)", group=grpL)
+cSSL = input.color(color.lime, "Couleur SSL (en dessous)", group=grpL)
+grpW = "Vector Watchlist"
+tf1 = input.timeframe("15", "TF 1", group=grpW)
+tf2 = input.timeframe("60", "TF 2", group=grpW)
+tf3 = input.timeframe("240", "TF 3", group=grpW)
+tf4 = input.timeframe("D", "TF 4", group=grpW)
+tf5 = input.timeframe("W", "TF 5", group=grpW)
+e1 = ta.ema(close, len1)
+e2 = ta.ema(close, len2)
+e3 = ta.ema(close, len3)
+e4 = ta.ema(close, len4)
+plot(showEma ? e1 : na, "EMA 13", color.new(color.red, 0), 1)
+plot(showEma ? e2 : na, "EMA 50", color.new(color.lime, 0), 2)
+plot(showEma ? e3 : na, "EMA 100", color.new(color.green, 0), 2)
+plot(showEma ? e4 : na, "EMA 200", color.new(color.teal, 0), 3)
+f_vec(len, cm, am) =>
+    avg = ta.sma(volume, len)[1]
+    sv = volume * (high - low)
+    hs = ta.highest(sv, len)
+    climax = volume >= avg * cm or sv >= hs
+    above = not climax and volume >= avg * am
+    vp = avg > 0 ? volume / avg * 100 : 0.0
+    [climax, above, vp, close >= open, time_close]
+[isC, isA, vp, isBull, tcl] = f_vec(vLen, climaxMult, aboveMult)
+barcolor(showVec ? (isC ? (isBull ? cBullC : cBearC) : isA ? (isBull ? cBullA : cBearA) : na) : na, title="Vector Candles")
+isVec = isC or isA
+ph = ta.pivothigh(high, pivLen, pivLen)
+pl = ta.pivotlow(low, pivLen, pivLen)
+var float ph1 = na
+var int bh1 = na
+var float ph2 = na
+var int bh2 = na
+var float pl1 = na
+var int bl1 = na
+var float pl2 = na
+var int bl2 = na
+if not na(ph)
+    ph2 := ph1
+    bh2 := bh1
+    ph1 := ph
+    bh1 := bar_index - pivLen
+if not na(pl)
+    pl2 := pl1
+    bl2 := bl1
+    pl1 := pl
+    bl1 := bar_index - pivLen
+descTL = not na(ph2) and ph1 < ph2
+ascTL = not na(pl2) and pl1 > pl2
+tlDown = descTL ? ph1 + (ph1 - ph2) / (bh1 - bh2) * (bar_index - bh1) : na
+tlUp = ascTL ? pl1 + (pl1 - pl2) / (bl1 - bl2) * (bar_index - bl1) : na
+var line lnD = na
+var line lnU = na
+if showTL and descTL and not na(ph)
+    line.delete(lnD)
+    lnD := line.new(bh2, ph2, bh1, ph1, extend=extend.right, color=color.yellow, width=2, style=line.style_dashed)
+if showTL and ascTL and not na(pl)
+    line.delete(lnU)
+    lnU := line.new(bl2, pl2, bl1, pl1, extend=extend.right, color=color.orange, width=2, style=line.style_dashed)
+bsL = ta.barssince(low <= e2)
+bsS = ta.barssince(high >= e2)
+crossD = ta.crossover(close, tlDown)
+crossU = ta.crossunder(close, tlUp)
+bounceL = not useEmaF or (bsL <= emaLook and close > e2)
+bounceS = not useEmaF or (bsS <= emaLook and close < e2)
+confLong = showTL and crossD and isVec and isBull and bounceL
+confShort = showTL and crossU and isVec and not isBull and bounceS
+plotshape(confLong, "Confirmation Long", shape.labelup, location.belowbar, color.lime, text="CONF", textcolor=color.black, size=size.small)
+plotshape(confShort, "Confirmation Short", shape.labeldown, location.abovebar, color.red, text="CONF", textcolor=color.white, size=size.small)
+type Zone
+    box bx
+    float top
+    float bot
+    bool demand
+    int touches = 0
+    bool inside = false
+    float react
+    int volPts
+    int born
+atr = ta.atr(14)
+avgV = ta.sma(volume, vLen)[1]
+zpl = ta.pivotlow(low, zPivL, zPivR)
+zph = ta.pivothigh(high, zPivL, zPivR)
+hh = ta.highest(high, zPivR)
+ll = ta.lowest(low, zPivR)
+var array<Zone> zones = array.new<Zone>()
+f_volPts(n, cm, am) =>
+    best = 0.0
+    for j = 0 to n - 1
+        r = avgV[j] > 0 ? volume[j] / avgV[j] : 0.0
+        best := math.max(best, r)
+    best >= cm ? 30 : best >= am ? 20 : 0
+f_score(Zone z) =>
+    rp = math.min(z.react, 3.0) / 3.0 * 40
+    fp = z.touches == 0 ? 30 : z.touches == 1 ? 20 : z.touches == 2 ? 10 : 0
+    int(math.round(rp + z.volPts + fp))
+f_cap(bool isDem) =>
+    cnt = 0
+    for z in zones
+        if z.demand == isDem
+            cnt += 1
+    if cnt > maxZones
+        for i = 0 to zones.size() - 1
+            if zones.get(i).demand == isDem
+                box.delete(zones.get(i).bx)
+                zones.remove(i)
+                break
+vpNow = f_volPts(zPivR, climaxMult, aboveMult)
+if showZones and not na(zpl) and atr > 0
+    bot = zpl
+    top = math.max(open[zPivR], close[zPivR])
+    top := math.min(math.max(top, bot + 0.25 * atr), bot + atr)
+    react = (hh - zpl) / atr
+    if react >= minReact
+        bx = box.new(bar_index - zPivR, top, bar_index, bot, border_width=1, extend=extend.right, text_size=size.small, text_halign=text.align_right, text_valign=text.align_center)
+        zones.push(Zone.new(bx, top, bot, true, 0, false, react, vpNow, bar_index))
+        f_cap(true)
+if showZones and not na(zph) and atr > 0
+    top = zph
+    bot = math.min(open[zPivR], close[zPivR])
+    bot := math.max(math.min(bot, top - 0.25 * atr), top - atr)
+    react = (zph - ll) / atr
+    if react >= minReact
+        bx = box.new(bar_index - zPivR, top, bar_index, bot, border_width=1, extend=extend.right, text_size=size.small, text_halign=text.align_right, text_valign=text.align_center)
+        zones.push(Zone.new(bx, top, bot, false, 0, false, react, vpNow, bar_index))
+        f_cap(false)
+strongDemTouch = false
+strongSupTouch = false
+if zones.size() > 0
+    for i = zones.size() - 1 to 0
+        z = zones.get(i)
+        broken = z.demand ? close < z.bot : close > z.top
+        if broken
+            box.delete(z.bx)
+            zones.remove(i)
+        else
+            inNow = z.demand ? low <= z.top : high >= z.bot
+            if inNow and not z.inside and bar_index > z.born
+                if f_score(z) >= strongLvl
+                    if z.demand
+                        strongDemTouch := true
+                    else
+                        strongSupTouch := true
+                z.touches += 1
+            z.inside := inNow
+            sc = f_score(z)
+            base = z.demand ? (sc >= strongLvl ? color.lime : sc >= weakLvl ? color.teal : color.gray) : (sc >= strongLvl ? color.red : sc >= weakLvl ? color.orange : color.gray)
+            hide = not showWeak and sc < weakLvl
+            tr = sc >= strongLvl ? 70 : sc >= weakLvl ? 82 : 90
+            box.set_bgcolor(z.bx, color.new(base, hide ? 100 : tr))
+            box.set_border_color(z.bx, color.new(base, hide ? 100 : 40))
+            box.set_text(z.bx, hide ? "" : (z.demand ? "DEMANDE " : "OFFRE ") + str.tostring(sc) + "/100 · " + str.tostring(z.touches) + "T" + (z.volPts > 0 ? " · VECTOR" : ""))
+            box.set_text_color(z.bx, color.new(base, 0))
+plotshape(strongDemTouch, "Zone de demande forte touchée", shape.triangleup, location.belowbar, color.lime, size=size.tiny)
+plotshape(strongSupTouch, "Zone d'offre forte touchée", shape.triangledown, location.abovebar, color.red, size=size.tiny)
+f_bestArr(array<int> B, array<float> P, bool isRes, float tol) =>
+    n = B.size()
+    bestSc = -1.0
+    ra = -1
+    rb = -1
+    rt = 0
+    if n >= 2
+        for a = 0 to n - 2
+            for b = a + 1 to n - 1
+                i1 = B.get(a)
+                i2 = B.get(b)
+                if i2 - i1 >= 4 and bar_index - i1 <= patWin and i1 <= bar_index - patExc
+                    sl = (P.get(b) - P.get(a)) / (i2 - i1)
+                    ok = true
+                    wv = 0
+                    for k = i1 to bar_index - patExc
+                        off = bar_index - k
+                        lv = P.get(a) + sl * (k - i1)
+                        if isRes
+                            if math.max(open[off], close[off]) > lv + tol * 0.5
+                                ok := false
+                                break
+                            if high[off] > lv + tol
+                                wv += 1
+                        else
+                            if math.min(open[off], close[off]) < lv - tol * 0.5
+                                ok := false
+                                break
+                            if low[off] < lv - tol
+                                wv += 1
+                    if ok and wv <= wvMax
+                        t = 0
+                        lastT = -1
+                        for m = a to n - 1
+                            lm = P.get(a) + sl * (B.get(m) - i1)
+                            if math.abs(P.get(m) - lm) <= tol
+                                t += 1
+                                lastT := B.get(m)
+                        if bar_index - lastT <= patRecent and t >= minT
+                            sc = t * 10.0 + (bar_index - i1) * patSpan - wv * 3.0
+                            if sc > bestSc
+                                bestSc := sc
+                                ra := a
+                                rb := b
+                                rt := t
+    [ra, rb, rt]
+f_push(array<int> B, array<float> P, array<int> T, int b, float p, int t) =>
+    B.push(b)
+    P.push(p)
+    T.push(t)
+    if B.size() > 20
+        B.shift()
+        P.shift()
+        T.shift()
+    true
+f_struct() =>
+    var array<int> hB = array.new<int>()
+    var array<float> hP = array.new<float>()
+    var array<int> hT = array.new<int>()
+    var array<int> lB = array.new<int>()
+    var array<float> lP = array.new<float>()
+    var array<int> lT = array.new<int>()
+    var array<int> fhB = array.new<int>()
+    var array<float> fhP = array.new<float>()
+    var array<int> fhT = array.new<int>()
+    var array<int> flB = array.new<int>()
+    var array<float> flP = array.new<float>()
+    var array<int> flT = array.new<int>()
+    pvH = ta.pivothigh(high, pPiv, pPiv)
+    pvL = ta.pivotlow(low, pPiv, pPiv)
+    fpH = ta.pivothigh(high, fibPiv, fibPiv)
+    fpL = ta.pivotlow(low, fibPiv, fibPiv)
+    a14 = ta.atr(14)
+    em = ta.ema(close, 50)
+    if not na(pvH)
+        f_push(hB, hP, hT, bar_index - pPiv, pvH, time[pPiv])
+    if not na(pvL)
+        f_push(lB, lP, lT, bar_index - pPiv, pvL, time[pPiv])
+    if not na(fpH)
+        f_push(fhB, fhP, fhT, bar_index - fibPiv, fpH, time[fibPiv])
+    if not na(fpL)
+        f_push(flB, flP, flT, bar_index - fibPiv, fpL, time[fibPiv])
+    float rT1 = na
+    float rP1 = na
+    float rT2 = na
+    float rP2 = na
+    int rTc = 0
+    float sT1 = na
+    float sP1 = na
+    float sT2 = na
+    float sP2 = na
+    int sTc = 0
+    int pat = 0
+    int bias = 0
+    float fT1 = na
+    float fP1 = na
+    float fT2 = na
+    float fP2 = na
+    float fD = na
+    if bar_index >= last_bar_index - 1 and a14 > 0
+        tol = tolMult * a14
+        [ra, rb, rtc] = f_bestArr(hB, hP, true, tol)
+        [sa, sb, stc] = f_bestArr(lB, lP, false, tol)
+        if ra >= 0
+            rT1 := hT.get(ra)
+            rP1 := hP.get(ra)
+            rT2 := hT.get(rb)
+            rP2 := hP.get(rb)
+            rTc := rtc
+        if sa >= 0
+            sT1 := lT.get(sa)
+            sP1 := lP.get(sa)
+            sT2 := lT.get(sb)
+            sP2 := lP.get(sb)
+            sTc := stc
+        if ra >= 0 and sa >= 0
+            rsl = (hP.get(rb) - hP.get(ra)) / (hB.get(rb) - hB.get(ra))
+            ssl = (lP.get(sb) - lP.get(sa)) / (lB.get(sb) - lB.get(sa))
+            ri = hB.get(ra)
+            si = lB.get(sa)
+            flat = 0.04 * a14
+            st = math.max(ri, si)
+            w0 = (rP1 + rsl * (st - ri)) - (sP1 + ssl * (st - si))
+            w1 = (rP1 + rsl * (bar_index - ri)) - (sP1 + ssl * (bar_index - si))
+            comp = w0 > 0 ? w1 / w0 : 1.0
+            offS = bar_index - st
+            imp = (close[offS] - close[math.min(offS + 25, 499)]) / a14
+            if rsl < -flat and ssl > flat
+                pat := 1
+            else if rsl < -flat and math.abs(ssl) <= flat
+                pat := 2
+                bias := -1
+            else if math.abs(rsl) <= flat and ssl > flat
+                pat := 3
+                bias := 1
+            else if rsl < -flat and ssl < -flat
+                pat := comp < 0.75 ? 4 : imp > 4 ? 5 : 6
+                bias := comp < 0.75 or imp > 4 ? 1 : 0
+            else if rsl > flat and ssl > flat
+                pat := comp < 0.75 ? 7 : imp < -4 ? 8 : 9
+                bias := comp < 0.75 or imp < -4 ? -1 : 0
+            else
+                pat := 10
+        bear = fibMode == "Baissier (sommets)" or (fibMode == "Auto" and close < em)
+        B = bear ? fhB : flB
+        P = bear ? fhP : flP
+        T = bear ? fhT : flT
+        n = B.size()
+        ia = -1
+        ib = -1
+        skip = 0
+        la = -1
+        lb = -1
+        if n >= 3
+            for j = n - 1 to 2
+                if ia < 0
+                    for i = j - 2 to 0
+                        if ia < 0 and B.get(j) - B.get(i) >= fibGap and bar_index - B.get(i) <= 450
+                            sTry = (P.get(j) - P.get(i)) / (B.get(j) - B.get(i))
+                            if (bear and sTry < 0) or (not bear and sTry > 0)
+                                tc = 0
+                                bad = false
+                                for m = i to n - 1
+                                    dv = P.get(m) - (P.get(i) + sTry * (B.get(m) - B.get(i)))
+                                    if math.abs(dv) <= tol
+                                        tc += 1
+                                    else if m <= j and ((bear and dv > tol) or (not bear and dv < -tol))
+                                        bad := true
+                                if tc >= minT and not bad
+                                    la := i
+                                    lb := j
+                                    if skip < fibBack
+                                        skip += 1
+                                    else
+                                        ia := i
+                                        ib := j
+        if ia < 0 and la >= 0
+            ia := la
+            ib := lb
+        if ia >= 0
+            i1 = B.get(ia)
+            i2 = B.get(ib)
+            p1 = P.get(ia)
+            sl = (P.get(ib) - p1) / (i2 - i1)
+            d = 0.0
+            for k = i1 to i2
+                off = bar_index - k
+                base = p1 + sl * (k - i1)
+                if bear
+                    d := math.min(d, low[off] - base)
+                else
+                    d := math.max(d, high[off] - base)
+            if d != 0 and fibWick != 0
+                fT1 := T.get(ia)
+                fP1 := p1
+                fT2 := T.get(ib)
+                fP2 := P.get(ib)
+                fD := d / fibWick
+    [rT1, rP1, rT2, rP2, rTc, sT1, sP1, sT2, sP2, sTc, pat, bias, fT1, fP1, fT2, fP2, fD]
+[aRT1, aRP1, aRT2, aRP2, aRTc, aST1, aSP1, aST2, aSP2, aSTc, aPat, aBias, aFT1, aFP1, aFT2, aFP2, aFD] = request.security(syminfo.tickerid, anchorTF, f_struct())
+[dRT1, dRP1, dRT2, dRP2, dRTc, dST1, dSP1, dST2, dSP2, dSTc, dPat, dBias, dFT1, dFP1, dFT2, dFP2, dFD] = request.security(syminfo.tickerid, domTF, f_struct())
+useDomNow = useDom and dPat >= 1 and dPat <= 9 and dRTc >= domMinT and dSTc >= domMinT
+xRT1 = useDomNow ? dRT1 : aRT1
+xRP1 = useDomNow ? dRP1 : aRP1
+xRT2 = useDomNow ? dRT2 : aRT2
+xRP2 = useDomNow ? dRP2 : aRP2
+xRTc = useDomNow ? dRTc : aRTc
+xST1 = useDomNow ? dST1 : aST1
+xSP1 = useDomNow ? dSP1 : aSP1
+xST2 = useDomNow ? dST2 : aST2
+xSP2 = useDomNow ? dSP2 : aSP2
+xSTc = useDomNow ? dSTc : aSTc
+xPat = useDomNow ? dPat : aPat
+xBias = useDomNow ? dBias : aBias
+xFT1 = useDomNow ? dFT1 : aFT1
+xFP1 = useDomNow ? dFP1 : aFP1
+xFT2 = useDomNow ? dFT2 : aFT2
+xFP2 = useDomNow ? dFP2 : aFP2
+xFD = useDomNow ? dFD : aFD
+srcTF = useDomNow ? domTF : anchorTF
+f_at(float t1, float p1, float t2, float p2, float x) =>
+    t2 != t1 ? p1 + (p2 - p1) * (x - t1) / (t2 - t1) : p1
+patNames = array.from("", "Triangle symétrique (compression)", "Triangle descendant", "Triangle ascendant", "Falling wedge", "Bull flag", "Canal descendant", "Rising wedge", "Bear flag", "Canal ascendant", "Range")
+barMs = time - time[1]
+var line lnRes = na
+var line lnSup = na
+var label lbPat = na
+var float resNow = na
+var float supNow = na
+var float resPrev = na
+var float supPrev = na
+if showPat and barstate.islast
+    line.delete(lnRes)
+    line.delete(lnSup)
+    label.delete(lbPat)
+    resNow := na
+    supNow := na
+    if not na(xRT1)
+        resNow := f_at(xRT1, xRP1, xRT2, xRP2, time)
+        resPrev := f_at(xRT1, xRP1, xRT2, xRP2, time[1])
+        lnRes := line.new(int(xRT1), xRP1, int(xRT2), xRP2, xloc=xloc.bar_time, color=cRes, width=2, extend=extend.right)
+    if not na(xST1)
+        supNow := f_at(xST1, xSP1, xST2, xSP2, time)
+        supPrev := f_at(xST1, xSP1, xST2, xSP2, time[1])
+        lnSup := line.new(int(xST1), xSP1, int(xST2), xSP2, xloc=xloc.bar_time, color=cSup, width=2, extend=extend.right)
+    if xPat > 0 and not na(resNow) and not na(supNow)
+        txt = patNames.get(xPat) + (xBias > 0 ? " · biais haussier ▲" : xBias < 0 ? " · biais baissier ▼" : " · neutre") + "\nUT " + srcTF + (useDomNow ? " (domine)" : "") + " · Rés. " + str.tostring(xRTc) + " · Sup. " + str.tostring(xSTc) + " touches"
+        lbPat := label.new(time + 3 * barMs, (resNow + supNow) / 2, txt, xloc=xloc.bar_time, style=label.style_label_left, color=color.new(xBias > 0 ? color.green : xBias < 0 ? color.red : color.gray, 20), textcolor=color.white, size=size.small)
+patBreakUp = showPat and barstate.islast and not na(resNow) and close > resNow and close[1] <= resPrev
+patBreakDn = showPat and barstate.islast and not na(supNow) and close < supNow and close[1] >= supPrev
+plotshape(patBreakUp, "Cassure pattern haussière", shape.arrowup, location.belowbar, color.lime, size=size.normal)
+plotshape(patBreakDn, "Cassure pattern baissière", shape.arrowdown, location.abovebar, color.red, size=size.normal)
+var array<int> zB = array.new<int>()
+var array<float> zP = array.new<float>()
+var array<int> zT = array.new<int>()
+f_zz(int b, float p, int t) =>
+    if zT.size() > 0 and zT.last() == t
+        if (t == 1 and p > zP.last()) or (t == -1 and p < zP.last())
+            zB.set(zB.size() - 1, b)
+            zP.set(zP.size() - 1, p)
+    else
+        zB.push(b)
+        zP.push(p)
+        zT.push(t)
+        if zB.size() > 12
+            zB.shift()
+            zP.shift()
+            zT.shift()
+    true
+zzH = ta.pivothigh(high, zzPiv, zzPiv)
+zzL = ta.pivotlow(low, zzPiv, zzPiv)
+if not na(zzH)
+    f_zz(bar_index - zzPiv, zzH, 1)
+if not na(zzL)
+    f_zz(bar_index - zzPiv, zzL, -1)
+var array<line> chLines = array.new<line>()
+var label chLabel = na
+var float neckNow = na
+var float neckPrev = na
+var int chBias = 0
+var string chName = ""
+if showChart and barstate.islast and atr > 0
+    for ln in chLines
+        line.delete(ln)
+    chLines.clear()
+    label.delete(chLabel)
+    chName := ""
+    chBias := 0
+    neckNow := na
+    n = zB.size()
+    eqT = eqTol * atr
+    dep = minDepth * atr
+    found = false
+    fb = array.new<int>()
+    fp = array.new<float>()
+    nb1 = 0
+    np1 = 0.0
+    nb2 = 0
+    np2 = 0.0
+    for back = 0 to 1
+        e = n - 1 - back
+        if not found and e >= 4
+            t0 = zT.get(e - 4)
+            p0 = zP.get(e - 4)
+            p1 = zP.get(e - 3)
+            p2 = zP.get(e - 2)
+            p3 = zP.get(e - 1)
+            p4 = zP.get(e)
+            if t0 == 1
+                if p2 > p0 + 0.5 * atr and p2 > p4 + 0.5 * atr and math.abs(p0 - p4) <= 2 * eqT and p2 - math.max(p1, p3) >= dep
+                    chName := "Épaule-Tête-Épaule"
+                    chBias := -1
+                else if math.max(p0, p2, p4) - math.min(p0, p2, p4) <= eqT and math.min(p0, p2, p4) - math.max(p1, p3) >= dep
+                    chName := "Triple top"
+                    chBias := -1
+            else
+                if p2 < p0 - 0.5 * atr and p2 < p4 - 0.5 * atr and math.abs(p0 - p4) <= 2 * eqT and math.min(p1, p3) - p2 >= dep
+                    chName := "ETE inversé"
+                    chBias := 1
+                else if math.max(p0, p2, p4) - math.min(p0, p2, p4) <= eqT and math.min(p1, p3) - math.max(p0, p2, p4) >= dep
+                    chName := "Triple bottom"
+                    chBias := 1
+            if chName != ""
+                found := true
+                for k = e - 4 to e
+                    fb.push(zB.get(k))
+                    fp.push(zP.get(k))
+                nb1 := zB.get(e - 3)
+                np1 := p1
+                nb2 := zB.get(e - 1)
+                np2 := p3
+        if not found and e >= 2
+            t0 = zT.get(e - 2)
+            p0 = zP.get(e - 2)
+            p1 = zP.get(e - 1)
+            p2 = zP.get(e)
+            if t0 == 1 and math.abs(p0 - p2) <= eqT and math.min(p0, p2) - p1 >= dep
+                chName := "Double top (M)"
+                chBias := -1
+            else if t0 == -1 and math.abs(p0 - p2) <= eqT and p1 - math.max(p0, p2) >= dep
+                chName := "Double bottom (W)"
+                chBias := 1
+            if chName != ""
+                found := true
+                for k = e - 2 to e
+                    fb.push(zB.get(k))
+                    fp.push(zP.get(k))
+                nb1 := zB.get(e - 1)
+                np1 := p1
+                nb2 := zB.get(e) + 1
+                np2 := p1
+    if found
+        col = chBias > 0 ? cBullP : cBearP
+        for k = 0 to fb.size() - 2
+            chLines.push(line.new(fb.get(k), fp.get(k), fb.get(k + 1), fp.get(k + 1), color=col, width=2))
+        nsl = (np2 - np1) / math.max(1, nb2 - nb1)
+        neckNow := np1 + nsl * (bar_index - nb1)
+        neckPrev := np1 + nsl * (bar_index - 1 - nb1)
+        chLines.push(line.new(nb1, np1, bar_index, neckNow, color=col, width=1, style=line.style_dashed))
+        extreme = chBias < 0 ? array.max(fp) : array.min(fp)
+        height = math.abs(extreme - (np1 + nsl * (fb.get(fb.size() / 2) - nb1)))
+        target = chBias < 0 ? neckNow - height : neckNow + height
+        confirmed = chBias < 0 ? close < neckNow : close > neckNow
+        txt = chName + (chBias > 0 ? " ▲" : " ▼") + (confirmed ? " · CONFIRMÉ" : " · en formation") + "\nNeckline " + str.tostring(neckNow, format.mintick) + " · Cible " + str.tostring(target, format.mintick)
+        chLabel := label.new(fb.get(fb.size() - 1), fp.get(fp.size() - 1), txt, style=chBias < 0 ? label.style_label_down : label.style_label_up, color=color.new(col, 15), textcolor=chBias > 0 ? color.black : color.white, size=size.small)
+neckBreakDn = showChart and barstate.islast and chBias < 0 and not na(neckNow) and close < neckNow and close[1] >= neckPrev
+neckBreakUp = showChart and barstate.islast and chBias > 0 and not na(neckNow) and close > neckNow and close[1] <= neckPrev
+plotshape(neckBreakUp, "Neckline cassée (haussier)", shape.flag, location.belowbar, color.lime, size=size.small)
+plotshape(neckBreakDn, "Neckline cassée (baissier)", shape.flag, location.abovebar, color.red, size=size.small)
+var array<line> fibLines = array.new<line>()
+var array<label> fibLabels = array.new<label>()
+var array<linefill> fibFills = array.new<linefill>()
+if showFib and barstate.islast
+    for x in fibLines
+        line.delete(x)
+    for x in fibLabels
+        label.delete(x)
+    for x in fibFills
+        linefill.delete(x)
+    fibLines.clear()
+    fibLabels.clear()
+    fibFills.clear()
+    if not na(xFT1) and not na(xFD)
+        xEnd = time + fibExt * barMs
+        lv = str.split(fibLevels, ",")
+        line l50 = na
+        line l618 = na
+        for t in lv
+            L = str.tonumber(str.trim(t))
+            if not na(L)
+                y1 = xFP1 + L * xFD
+                y2 = f_at(xFT1, xFP1, xFT2, xFP2, xEnd) + L * xFD
+                isKey = L == 0 or L == 1
+                ln = line.new(int(xFT1), y1, int(xEnd), y2, xloc=xloc.bar_time, color=color.new(cFib, isKey ? 0 : 30), width=isKey ? 2 : 1, style=isKey ? line.style_solid : line.style_dashed)
+                fibLines.push(ln)
+                fibLabels.push(label.new(int(xEnd), y2, str.tostring(L * 100, "#.##") + "%", xloc=xloc.bar_time, style=label.style_label_left, color=color.new(color.black, 100), textcolor=cFib, size=size.small))
+                if L == 0.5
+                    l50 := ln
+                if L == 0.618
+                    l618 := ln
+        if fibGP and not na(l50) and not na(l618)
+            fibFills.push(linefill.new(l50, l618, color.new(color.yellow, 85)))
+type Liq
+    line ln
+    label lb
+    float price
+    bool isHigh
+    bool eq = false
+    int state = 0
+    int pendBar = 0
+var array<Liq> liqs = array.new<Liq>()
+lqH = ta.pivothigh(high, liqPiv, liqPiv)
+lqL = ta.pivotlow(low, liqPiv, liqPiv)
+f_liqCap(bool hi) =>
+    cnt = 0
+    for z in liqs
+        if z.isHigh == hi
+            cnt += 1
+    if cnt > maxLiq
+        for i = 0 to liqs.size() - 1
+            z = liqs.get(i)
+            if z.isHigh == hi
+                line.delete(z.ln)
+                label.delete(z.lb)
+                liqs.remove(i)
+                break
+    true
+f_liqAdd(bool hi, float p, int b) =>
+    found = false
+    for z in liqs
+        if not found and z.isHigh == hi and z.state == 0 and math.abs(z.price - p) <= eqTolL * atr
+            found := true
+            z.eq := true
+            line.set_width(z.ln, 2)
+            label.delete(z.lb)
+            z.lb := label.new(b, p, hi ? "EQH 💧" : "EQL 💧", style=hi ? label.style_label_down : label.style_label_up, color=color.new(color.black, 100), textcolor=hi ? cBSL : cSSL, size=size.small)
+    if not found
+        ln = line.new(b, p, bar_index, p, color=hi ? cBSL : cSSL, width=1, style=line.style_dashed, extend=extend.right)
+        liqs.push(Liq.new(ln, na, p, hi))
+        f_liqCap(hi)
+    true
+if showLiq and atr > 0 and not na(lqH)
+    f_liqAdd(true, lqH, bar_index - liqPiv)
+if showLiq and atr > 0 and not na(lqL)
+    f_liqAdd(false, lqL, bar_index - liqPiv)
+sweepBSL = false
+sweepSSL = false
+if showLiq and liqs.size() > 0
+    for i = liqs.size() - 1 to 0
+        z = liqs.get(i)
+        swept = false
+        broken = false
+        if z.isHigh
+            if z.state == 0
+                if high > z.price and close <= z.price
+                    swept := true
+                else if close > z.price
+                    z.state := 1
+                    z.pendBar := bar_index
+            else
+                if close <= z.price
+                    swept := true
+                else if bar_index - z.pendBar >= reBars
+                    broken := true
+        else
+            if z.state == 0
+                if low < z.price and close >= z.price
+                    swept := true
+                else if close < z.price
+                    z.state := 1
+                    z.pendBar := bar_index
+            else
+                if close >= z.price
+                    swept := true
+                else if bar_index - z.pendBar >= reBars
+                    broken := true
+        if swept or broken
+            line.set_extend(z.ln, extend.none)
+            line.set_x2(z.ln, bar_index)
+            line.set_style(z.ln, line.style_dotted)
+            if broken
+                line.set_color(z.ln, color.new(color.gray, 50))
+            else
+                if z.isHigh
+                    sweepBSL := true
+                else
+                    sweepSSL := true
+            liqs.remove(i)
+if sweepBSL
+    label.new(bar_index, high, (isVec and not isBull ? "🔥" : "") + "💧 Sweep " + "BSL", style=label.style_label_down, color=color.new(cBSL, 20), textcolor=color.white, size=size.small)
+if sweepSSL
+    label.new(bar_index, low, (isVec and isBull ? "🔥" : "") + "💧 Sweep " + "SSL", style=label.style_label_up, color=color.new(cSSL, 20), textcolor=color.black, size=size.small)
+[c1, a1, v1, d1, t1] = request.security(syminfo.tickerid, tf1, f_vec(vLen, climaxMult, aboveMult))
+[c2, a2, v2, d2, t2] = request.security(syminfo.tickerid, tf2, f_vec(vLen, climaxMult, aboveMult))
+[c3, a3, v3, d3, t3] = request.security(syminfo.tickerid, tf3, f_vec(vLen, climaxMult, aboveMult))
+[c4, a4, v4, d4, t4] = request.security(syminfo.tickerid, tf4, f_vec(vLen, climaxMult, aboveMult))
+[c5, a5, v5, d5, t5] = request.security(syminfo.tickerid, tf5, f_vec(vLen, climaxMult, aboveMult))
+f_fmt(ms) =>
+    s = math.max(0, ms) / 1000
+    d = math.floor(s / 86400)
+    h = math.floor((s % 86400) / 3600)
+    m = math.floor((s % 3600) / 60)
+    sec = math.floor(s % 60)
+    (d > 0 ? str.tostring(d) + "d " : "") + str.format("{0,number,00}:{1,number,00}:{2,number,00}", h, m, sec)
+var table tb = table.new(position.top_right, 5, 7, bgcolor=color.new(#131722, 5), border_color=color.new(color.gray, 50), border_width=1)
+f_row(tbl, r, tfName, c, a, v, d, t) =>
+    st = c ? "CLIMAX" : a ? "VECTOR" : "NONE"
+    stCol = c ? (d ? color.lime : color.red) : a ? (d ? color.blue : color.fuchsia) : color.gray
+    table.cell(tbl, 0, r, tfName, text_color=color.white, text_size=size.small)
+    table.cell(tbl, 1, r, d ? "▲" : "▼", text_color=d ? color.lime : color.red, text_size=size.small)
+    table.cell(tbl, 2, r, st, text_color=stCol, text_size=size.small)
+    table.cell(tbl, 3, r, str.tostring(math.round(v)) + "%", text_color=color.white, text_size=size.small)
+    table.cell(tbl, 4, r, f_fmt(t - timenow), text_color=color.silver, text_size=size.small)
+    c or a ? 1 : 0
+if showTab and barstate.islast
+    table.cell(tb, 0, 0, "VECTOR", text_color=color.white, text_size=size.small)
+    table.cell(tb, 1, 0, "DIR", text_color=color.white, text_size=size.small)
+    table.cell(tb, 2, 0, "STATUS", text_color=color.white, text_size=size.small)
+    table.cell(tb, 3, 0, "VOL %", text_color=color.white, text_size=size.small)
+    table.cell(tb, 4, 0, "CLOSE", text_color=color.white, text_size=size.small)
+    n = f_row(tb, 1, "15m", c1, a1, v1, d1, t1) + f_row(tb, 2, "1H", c2, a2, v2, d2, t2) + f_row(tb, 3, "4H", c3, a3, v3, d3, t3) + f_row(tb, 4, "D", c4, a4, v4, d4, t4) + f_row(tb, 5, "W", c5, a5, v5, d5, t5)
+    table.cell(tb, 0, 6, "TOTAL", text_color=color.white, text_size=size.small)
+    table.cell(tb, 2, 6, n > 0 ? str.tostring(n) + " VECTOR" : "NO VECTOR", text_color=n > 0 ? color.lime : color.gray, text_size=size.small)
+    table.cell(tb, 3, 6, str.tostring(n) + "/5", text_color=color.white, text_size=size.small)
+alertcondition(confLong, "Confirmation Long", "Vector candle haussière + cassure de trendline")
+alertcondition(confShort, "Confirmation Short", "Vector candle baissière + cassure de trendline")
+alertcondition(isVec, "Vector Candle", "Nouvelle vector candle")
+alertcondition(strongDemTouch, "Zone de demande forte touchée", "Le prix touche une zone de demande forte")
+alertcondition(strongSupTouch, "Zone d'offre forte touchée", "Le prix touche une zone d'offre forte")
+alertcondition(patBreakUp and isVec and isBull, "Cassure pattern + Vector haussière", "Cassure de la résistance du pattern avec une vector haussière")
+alertcondition(patBreakDn and isVec and not isBull, "Cassure pattern + Vector baissière", "Cassure du support du pattern avec une vector baissière")
+alertcondition(neckBreakUp, "Neckline cassée - W / Triple bottom / ETE inversé", "Neckline cassée à la hausse")
+alertcondition(neckBreakDn, "Neckline cassée - M / Triple top / ETE", "Neckline cassée à la baisse")
+alertcondition(sweepSSL, "Sweep SSL (liquidité basse prise)", "Prise de liquidité sous les lows + réintégration")
+alertcondition(sweepBSL, "Sweep BSL (liquidité haute prise)", "Prise de liquidité au-dessus des highs + réintégration")
+alertcondition(sweepSSL and isVec and isBull, "Sweep SSL + Vector haussière", "Sweep SSL confirmé par une vector haussière")
+alertcondition(sweepBSL and isVec and not isBull, "Sweep BSL + Vector baissière", "Sweep BSL confirmé par une vector baissière")

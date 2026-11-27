@@ -1,0 +1,33 @@
+[
+  {
+    "bubbles": true,
+    "exchanges": [
+      "essai-3",
+      "essai-4"
+    ],
+    "kind": 6,
+    "level": 2,
+    "list": [
+      [
+        "essai-6",
+        8,
+        8.5,
+        9.5,
+        true,
+        "essai-10",
+        "essai-11"
+      ],
+      [
+        "essai-12",
+        14,
+        14.5,
+        15.5,
+        true,
+        "essai-16",
+        "essai-17"
+      ]
+    ],
+    "only": true,
+    "period_min": 3
+  }
+]

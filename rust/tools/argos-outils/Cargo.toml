@@ -1,0 +1,20 @@
+[package]
+name = "argos-outils"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+publish = false
+description = "Outils en ligne de commande d'Argos (serveur local, tables générées, versions) : Rust pur, aucun Python"
+
+# Son propre espace de travail : aucune dépendance aux crates d'Argos HSS, compilé dans rust/target/outils.
+[workspace]
+
+# Seulement des crates déjà approuvées (même version que rust/Cargo.lock) : aucune nouvelle dépendance.
+[dependencies]
+flate2 = { version = "=1.1.10", default-features = false, features = ["rust_backend"] }
+serde_json = { version = "=1.0.154", features = ["float_roundtrip"] }
+sha1 = "=0.10.7"
+ureq = { version = "=3.5.0", default-features = false, features = ["rustls"] }
+
+[profile.release]
+opt-level = 3

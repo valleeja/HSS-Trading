@@ -1,0 +1,125 @@
+# 📦 Argos HSS Trading, version de test : construit l'app pour Windows et Mac et la met dans une Release GitHub.
+# Linux : construit sur le PC de Jee (make run-build), ajouté à la même Release.
+# Déclenché seulement à la main (bouton « Run workflow », avec le numéro de version) : jamais à chaque push ni à
+# chaque pull request.
+name: Version de test
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Numéro de la version de test (ex. test-v0.1.0)"
+        required: true
+
+concurrency:
+  group: version-test-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  bureau:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-2022
+            nom: windows-x64
+          - os: macos-14
+            nom: mac-arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable (rust-toolchain.toml fixe 1.99.1)
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
+        with:
+          workspaces: rust
+      - name: Construire argos-desktop
+        working-directory: rust
+        run: cargo build -p argos-desktop --release --locked
+      - name: Emballer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force out/Argos | Out-Null
+          Copy-Item rust/target/release/argos-desktop.exe out/Argos/Argos.exe
+          Copy-Item LICENSE, LICENCES-TIERS.md, README.md out/Argos/
+          Compress-Archive -Path out/Argos -DestinationPath "Argos-${{ matrix.nom }}.zip"
+      - name: Emballer (Mac)
+        if: runner.os == 'macOS'
+        run: |
+          app="out/Argos HSS Trading.app/Contents"
+          mkdir -p "$app/MacOS" "$app/Resources"
+          cp rust/target/release/argos-desktop "$app/MacOS/argos-desktop"
+          cat > "$app/Info.plist" <<'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>CFBundleName</key><string>Argos HSS Trading</string>
+            <key>CFBundleIdentifier</key><string>com.argos.hsstrading</string>
+            <key>CFBundleExecutable</key><string>argos-desktop</string>
+            <key>CFBundlePackageType</key><string>APPL</string>
+            <key>CFBundleShortVersionString</key><string>0.1.0</string>
+            <key>NSHighResolutionCapable</key><true/>
+          </dict></plist>
+          PLIST
+          cp LICENSE LICENCES-TIERS.md README.md out/
+          hdiutil create -volname "Argos HSS Trading" -srcfolder out -ov -format UDZO "Argos-${{ matrix.nom }}.dmg"
+      - name: Ajouter à la Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          V: ${{ inputs.version }}
+        run: |
+          gh release view "$V" >/dev/null 2>&1 || gh release create "$V" --target "$GITHUB_SHA" --prerelease --title "Argos HSS Trading $V (test)" --notes "Version de test. Démo seulement, aucun ordre réel." || gh release view "$V" >/dev/null
+          gh release upload "$V" Argos-${{ matrix.nom }}.* --clobber
+
+  # 🤖 APK Android (Jee, 26 nov. 2026 : « ok tauri-cli ») : la coque Tauri 2 (rust/argos-tauri) avec l'app complète
+  # en WebAssembly. Le kit Android et le NDK sont déjà sur le runner Ubuntu. APK de type « debug » : signé par une clé
+  # de test jetable, il s'installe à la main (la vraie signature viendra avec le garde-fou 11).
+  android:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable (rust-toolchain.toml fixe 1.99.1)
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
+        with:
+          workspaces: |
+            rust
+            rust/argos-tauri -> ../target/tauri
+      - name: Construire l'app web (WASM)
+        run: bash rust/tools/argos_web_build.sh
+      - name: Pages de la coque
+        working-directory: rust
+        run: rm -rf argos-tauri/web && mkdir -p argos-tauri/web && cp argos-tauri/ui/* argos-tauri/web/ && cp -r ../dist/app argos-tauri/web/app
+      - name: Outils Android et tauri-cli
+        working-directory: rust/argos-tauri
+        run: |
+          rustup target add aarch64-linux-android
+          cargo install tauri-cli --version "=2.12.4" --locked  # même branche 2.12 que tauri dans argos-tauri/Cargo.lock
+          echo "JAVA_HOME=$JAVA_HOME_17_X64" >> "$GITHUB_ENV"
+          echo "NDK_HOME=$ANDROID_NDK_LATEST_HOME" >> "$GITHUB_ENV"
+      - name: Construire l'APK
+        working-directory: rust/argos-tauri
+        env:
+          CARGO_TARGET_DIR: ../target/tauri
+        run: |
+          cargo tauri android init --ci
+          cargo tauri android build --apk --debug --target aarch64 --ci
+          apk=$(find gen/android -name '*.apk' | head -1)
+          [ -n "$apk" ] || { echo "⛔ aucun APK produit"; exit 1; }
+          cp "$apk" "$GITHUB_WORKSPACE/Argos-android-arm64.apk"
+      - name: Ajouter à la Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          V: ${{ inputs.version }}
+        run: |
+          gh release view "$V" >/dev/null 2>&1 || gh release create "$V" --target "$GITHUB_SHA" --prerelease --title "Argos HSS Trading $V (test)" --notes "Version de test. Démo seulement, aucun ordre réel." || gh release view "$V" >/dev/null
+          gh release upload "$V" Argos-android-arm64.apk --clobber
+          gh release upload "$V" LICENSE LICENCES-TIERS.md --clobber

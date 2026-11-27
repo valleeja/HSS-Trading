@@ -1,0 +1,7 @@
+# Written by tools/porte/travail.sh (ARGOS_VITESSE=maj or plus-lent, Jee's phrase), never by hand.
+# gesture, instructions run to draw its images (valgrind, cachegrind), on Jee's PC
+images 4
+work_cell_drag 394124839
+work_cell_pinch 389611736
+work_cell_market_list 5032248195
+work_pc_drag 9870651

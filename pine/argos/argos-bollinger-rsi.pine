@@ -1,0 +1,62 @@
+//@version=6
+// Argos Bollinger + RSI — written by Argos from the standard formulas (SMA, population standard deviation, RSI).
+// Idea: ChartArt (« RSI + Bollinger Bands Double Strategy »); none of its code. Analysis shown on the chart only:
+// the arrows follow a 1-contract position as a TradingView strategy would (stop order at the band, filled on the next
+// bar, cancelled when the condition is gone), but no order is ever sent.
+indicator("Argos Bollinger + RSI", shorttitle="BB + RSI", overlay=true)
+
+rsiLen = input.int(6, "Période RSI", minval=1)
+bbLen = input.int(200, "Période Bollinger", minval=1)
+mult = input.float(2.0, "Multiplicateur", minval=0.001, maxval=50, step=0.1)
+barColorOn = input.bool(true, "Activer la couleur des bougies")
+bgColorOn = input.bool(true, "Activer la couleur du fond")
+
+basis = ta.sma(close, bbLen)
+dev = mult * ta.stdev(close, bbLen)
+upper = basis + dev
+lower = basis - dev
+r = ta.rsi(close, rsiLen)
+
+pU = plot(upper, "Bande haute", color=#850707)
+plot(basis, "Base", color=#08A3A5)
+pL = plot(lower, "Bande basse", color=#09A00C)
+fill(pU, pL, color=color.new(#37AFE1, 90))
+
+// signal bar: the order (stop at the band) waits for the next bar. (The crosses are computed on every bar first:
+// « a and b » does not evaluate b when a is false, and a cross missed on a bar would see a stale previous value.)
+rsiUp = ta.crossover(r, 50)
+rsiDown = ta.crossunder(r, 50)
+closeUp = ta.crossover(close, lower)
+closeDown = ta.crossunder(close, upper)
+longSig = rsiUp and closeUp
+shortSig = rsiDown and closeDown
+
+var int pos = 0
+var float longStop = na
+var float shortStop = na
+longFill = false
+shortFill = false
+reverse = false
+// filled on this bar? a buy stop at or below the open fills at the open; a sell stop at or above the open too
+if not na(longStop) and high >= longStop
+    longFill := true
+    reverse := pos < 0
+    pos := 1
+if not na(shortStop) and low <= shortStop and not longFill
+    shortFill := true
+    reverse := pos > 0
+    pos := -1
+// a new order for the next bar, or none (cancelled when the condition is gone, like strategy.cancel)
+longStop := longSig ? lower : na
+shortStop := shortSig ? upper : na
+
+plotshape(longFill and not reverse, "Achat +1", style=shape.arrowup, location=location.belowbar, color=#2962FF, text="RSI_BB_L\n+1", textcolor=#2962FF)
+plotshape(longFill and reverse, "Achat +2", style=shape.arrowup, location=location.belowbar, color=#2962FF, text="RSI_BB_L\n+2", textcolor=#2962FF)
+plotshape(shortFill and not reverse, "Vente -1", style=shape.arrowdown, location=location.abovebar, color=#F23645, text="-1\nRSI_BB_S", textcolor=#F23645)
+plotshape(shortFill and reverse, "Vente -2", style=shape.arrowdown, location=location.abovebar, color=#F23645, text="-2\nRSI_BB_S", textcolor=#F23645)
+
+// candles and background: back inside the band
+redBack = close[1] > upper and close < upper and basis < basis[1]
+greenBack = close[1] < lower and close > lower and basis > basis[1]
+barcolor(barColorOn ? (redBack ? color.red : greenBack ? color.green : na) : na)
+bgcolor(bgColorOn ? (redBack ? color.new(color.red, 50) : greenBack ? color.new(color.green, 50) : na) : na)

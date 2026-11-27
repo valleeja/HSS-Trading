@@ -1,0 +1,23 @@
+[package]
+name = "argos-scanner"
+version = "0.1.0"
+edition = "2021"
+license.workspace = true
+publish.workspace = true
+description = "Scanner double structure (Daily + 4H) sur les perps Hyperliquid"
+
+# la bibliothèque (calcul pur, aussi dans l'app et le navigateur) n'a besoin de rien ; l'outil en ligne de commande
+# lit l'API Hyperliquid (fonction `cli`, allumée par défaut)
+[features]
+default = ["cli"]
+cli = ["dep:reqwest", "dep:serde", "dep:serde_json"]
+
+[[bin]]
+name = "argos-scanner"
+path = "src/main.rs"
+required-features = ["cli"]
+
+[dependencies]
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls"], optional = true }
+serde = { version = "1", features = ["derive"], optional = true }
+serde_json = { version = "1", optional = true }

@@ -1,0 +1,21 @@
+[
+  {
+    "alt_season": 12,
+    "btc_d": 3.5,
+    "caps": {
+      "essai-12": 13.5,
+      "essai-14": 15.5
+    },
+    "chg_24h": 8.5,
+    "eth_d": 4.5,
+    "fng": [
+      10,
+      "essai-10"
+    ],
+    "t": 2,
+    "total": 2.5,
+    "usdc_d": 6.5,
+    "usdt_d": 5.5,
+    "volume": 7.5
+  }
+]

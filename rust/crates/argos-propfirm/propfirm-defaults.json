@@ -1,0 +1,66 @@
+{
+  "version": "2026-10-25",
+  "note": "Vérif des règles standard de la semaine (compte 100K), approuvée par Jee le 25 oct. 2026. Changement : 1-Step passe à la règle de constance « Consistency » (50 % du profit total) pour les commandes à partir du lundi 12 oct. 2026, 9 h heure MetaTrader (GMT+3).",
+  "profiles": [
+    {
+      "id": "propfirm-2step",
+      "name": "2 étapes",
+      "size": 100000,
+      "phases": [10.0, 5.0],
+      "daily_loss": 5.0,
+      "max_loss": 10.0,
+      "max_loss_kind": "Fixed",
+      "consistency": { "kind": "None" },
+      "profit_split": 80.0,
+      "profit_split_max": 90.0,
+      "fee_refunded": true,
+      "fee": null,
+      "min_days": 4,
+      "payout_days": null,
+      "notes": ["Partage : 80 % au départ, « jusqu'à 90 % » selon la firme (plan d'évolution) — à vérifier."]
+    },
+    {
+      "id": "propfirm-1step",
+      "name": "1 étape",
+      "size": 100000,
+      "phases": [10.0],
+      "daily_loss": 3.0,
+      "max_loss": 10.0,
+      "max_loss_kind": "TrailingEndOfDay",
+      "consistency": { "kind": "TotalProfit", "pct": 50.0, "since": "2026-10-12T06:00:00Z", "legacy_best_day_pct": 50.0, "violation": false },
+      "profit_split": 90.0,
+      "profit_split_max": 90.0,
+      "fee_refunded": false,
+      "fee": null,
+      "min_days": 0,
+      "payout_days": null,
+      "notes": [
+        "Perte max : 10 % trailing, recalculée en fin de journée (00:00 CE(S)T).",
+        "Constance (nouvelle) : le meilleur jour ne dépasse pas 50 % du profit total (somme des gains et pertes fermés).",
+        "Commandes d'avant le 12 oct. 2026 9 h (GMT+3) : ancienne règle Best Day (50 % du profit des jours positifs).",
+        "Dépasser la limite de constance n'est pas une violation des règles."
+      ]
+    },
+    {
+      "id": "propfirm-instant",
+      "name": "Instantané",
+      "size": 100000,
+      "phases": [],
+      "daily_loss": 3.0,
+      "max_loss": 10.0,
+      "max_loss_kind": "TrailingIntraday",
+      "consistency": { "kind": "TotalProfit", "pct": 30.0, "since": null, "legacy_best_day_pct": null, "violation": false },
+      "profit_split": 90.0,
+      "profit_split_max": 90.0,
+      "fee_refunded": false,
+      "fee": null,
+      "min_days": 0,
+      "payout_days": 14,
+      "notes": [
+        "Perte max : 10 % trailing, mise à jour à chaque trade fermé.",
+        "Frais non remboursables ; prix du 100K pas affiché par la firme (Argos avait ~2 999 €) — à confirmer.",
+        "Paies aux 14 jours et 1 compte à la fois : pas trouvé sur le site de la firme — à confirmer."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+[package]
+name = "argos-data"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "Argos Layer 2A — API chart : bougies et marchés des exchanges (lecture seule)"
+
+[features]
+# client HTTP natif (desktop / serveur). Sans cette option, l'appelant fournit son propre client (navigateur via WASM).
+native = ["dep:reqwest", "dep:tokio", "dep:tokio-tungstenite", "dep:futures-util"]
+# client du navigateur (WASM) : fetch + WebSocket de la page
+web = ["dep:wasm-bindgen", "dep:wasm-bindgen-futures", "dep:js-sys", "dep:web-sys"]
+
+[dependencies]
+argos-core = { path = "../argos-core" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# 📅 dates du calendrier et des flux RSS (sans horloge : marche aussi dans le navigateur)
+chrono = { version = "0.4", default-features = false, features = ["alloc"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"], optional = true }
+tokio = { version = "1", features = ["time", "rt", "net", "macros"], optional = true }
+tokio-tungstenite = { version = "0.24", default-features = false, features = ["connect", "rustls-tls-webpki-roots"], optional = true }
+futures-util = { version = "0.3", default-features = false, features = ["sink", "std"], optional = true }
+# horloge qui marche aussi dans le navigateur (std::time::Instant n'existe pas en WASM)
+web-time = "1"
+# 🗜️ messages gzip du direct HTX (Rust pur : marche aussi dans le navigateur)
+flate2 = { version = "1", default-features = false, features = ["rust_backend"] }
+# navigateur (WASM) : fetch, WebSocket, minuterie de la page
+wasm-bindgen = { version = "0.2", optional = true }
+wasm-bindgen-futures = { version = "0.4", optional = true }
+js-sys = { version = "0.3", optional = true }
+web-sys = { version = "0.3", optional = true, features = ["Window", "Document", "Navigator", "Request", "RequestInit", "Response", "Headers", "WebSocket", "MessageEvent", "BinaryType"] }
+
+[[example]]
+# 🕯️ make essai-bougies : essai réel des bougies de chaque connecteur (tools/essai_bougies.rs)
+name = "essai_bougies"
+required-features = ["native"]
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+
+[lints]
+workspace = true

@@ -1,0 +1,42 @@
+[
+  [
+    {
+      "alt_season": 12,
+      "btc_d": 3.5,
+      "caps": {
+        "essai-12": 13.5,
+        "essai-14": 15.5
+      },
+      "chg_24h": 8.5,
+      "eth_d": 4.5,
+      "fng": [
+        10,
+        "essai-10"
+      ],
+      "t": 2,
+      "total": 2.5,
+      "usdc_d": 6.5,
+      "usdt_d": 5.5,
+      "volume": 7.5
+    },
+    {
+      "alt_season": 27,
+      "btc_d": 18.5,
+      "caps": {
+        "essai-27": 28.5,
+        "essai-29": 30.5
+      },
+      "chg_24h": 23.5,
+      "eth_d": 19.5,
+      "fng": [
+        25,
+        "essai-25"
+      ],
+      "t": 17,
+      "total": 17.5,
+      "usdc_d": 21.5,
+      "usdt_d": 20.5,
+      "volume": 22.5
+    }
+  ]
+]

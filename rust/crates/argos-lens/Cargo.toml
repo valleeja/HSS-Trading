@@ -1,0 +1,21 @@
+[package]
+name = "argos-lens"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "Argos Lens : lecture du marché (régime, scores, setup) en paquets argos-packet/v1 chaînés ; calcul pur, aucun droit"
+
+[dependencies]
+argos-core = { path = "../argos-core" }
+argos-script = { path = "../argos-script" }
+# Prix du paquet en décimal exact (jamais de f64 dans le paquet). Seule nouvelle dépendance, approuvée par Jee.
+rust_decimal = { version = "1.43", default-features = false }
+sha2 = "0.11.1"
+
+[dev-dependencies]
+# real examples on cached candles (the `real_examples_from_the_cache` test only)
+argos-data = { path = "../argos-data", features = ["native"] }
+
+[lints]
+workspace = true

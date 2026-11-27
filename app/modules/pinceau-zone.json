@@ -1,0 +1,15 @@
+{
+  "path": "trading/pinceau-zone",
+  "version": 1,
+  "capabilities": [],
+  "author": "ARG-JEE-TRADING",
+  "abi": 2,
+  "settings": [
+    { "id": "debut", "name": "Début (secondes UTC, 0 = tout)", "type": "number", "default": 0, "min": 0, "max": 4102444800, "scale": 0 },
+    { "id": "fin", "name": "Fin (secondes UTC, 0 = tout)", "type": "number", "default": 0, "min": 0, "max": 4102444800, "scale": 0 },
+    { "id": "haut", "name": "Haut de la zone (0 = haut des bougies)", "type": "number", "default": 0, "min": 0, "max": 1000000000000000, "scale": 6 },
+    { "id": "bas", "name": "Bas de la zone (0 = bas des bougies)", "type": "number", "default": 0, "min": 0, "max": 1000000000000000, "scale": 6 },
+    { "id": "rangees", "name": "Rangées de prix", "type": "number", "default": 24, "min": 2, "max": 200, "scale": 0 },
+    { "id": "va", "name": "Zone de valeur (% du volume)", "type": "number", "default": 70, "min": 10, "max": 100, "scale": 0 }
+  ]
+}

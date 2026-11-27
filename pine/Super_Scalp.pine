@@ -1,0 +1,144 @@
+// This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © cgagnonswtor (Super Scalp Master Confluence)
+//@version=6
+indicator("Spring Tension Ribbon + Super Scalp Confluence", "Super Scalp", precision = 2)
+
+// ───── Inputs ─────────────────────────────────────────────────────────────
+const string G_ST  = "🌱 Spring Tension"
+const string G_VX  = "📉 Volume Exhaustion"
+const string G_CH  = "🌀 Chaos RSI"
+const string G_WT  = "🌊 WaveTrend (VMC)"
+const string G_SS  = "🔥 Super Scalp"
+const string G_VIS = "🎨 Visuels"
+
+rsiLen      = input.int(14, "RSI Length", minval = 1, group = G_ST)
+mfiLen      = input.int(14, "MFI Length", minval = 1, group = G_ST)
+lookback    = input.int(5, "Lookback prix", minval = 1, group = G_ST, tooltip = "Fenêtre du plus bas / plus haut récent.")
+springMax   = input.float(35, "RSI max Spring", group = G_ST, inline = "lvl")
+upthrustMin = input.float(65, "RSI min Upthrust", group = G_ST, inline = "lvl")
+noVolMode   = input.string("RSI sur hlc3", "Si pas de volume", options = ["RSI sur hlc3", "Désactiver"], group = G_ST, tooltip = "Or, forex, indices : souvent pas de volume. Le MFI est alors remplacé par un RSI sur hlc3, ou désactivé.")
+
+volLen     = input.int(20, "Volume MA Length", minval = 1, group = G_VX)
+rsiMove    = input.float(5.0, "Variation RSI depuis le creux", minval = 0, group = G_VX)
+volDryPct  = input.float(20.0, "Volume % sous la moyenne", minval = 0, maxval = 100, group = G_VX) / 100
+clusterLen = input.int(10, "Fenêtre du cluster", minval = 1, group = G_VX)
+nukeMin    = input.int(4, "Signaux min. pour NUKE", minval = 1, group = G_VX)
+
+chaosLen    = input.int(20, "Disorder Lookback", minval = 2, group = G_CH)
+sensitivity = input.float(1.0, "Weight Sensitivity", minval = 0.1, maxval = 5.0, step = 0.1, group = G_CH)
+divLen      = input.int(5, "Pivot Lookback", minval = 1, group = G_CH)
+
+wtChLen  = input.int(9, "Channel Length", minval = 1, group = G_WT, inline = "wt")
+wtAvgLen = input.int(12, "Average Length", minval = 1, group = G_WT, inline = "wt")
+wtMaLen  = input.int(3, "MA Length", minval = 1, group = G_WT, inline = "wt")
+wtOs     = input.float(-53, "Survente", group = G_WT, inline = "os")
+wtOsGold = input.float(-75, "Survente Gold", group = G_WT, inline = "os")
+wtDivMin = input.float(-65, "Divergence haussière min.", group = G_WT)
+
+superWin = input.int(25, "Fenêtre de confluence (bougies)", minval = 5, maxval = 100, group = G_SS, tooltip = "Spring + Chaos BullDiv + signal VMC doivent tous arriver dans cette fenêtre.")
+
+showLong  = input.bool(true, "Long", group = G_VIS, inline = "s")
+showBg    = input.bool(true, "Fond", group = G_VIS, inline = "s")
+colSpring = input.color(#FFD700, "Spring", group = G_VIS, inline = "c1")
+colUp     = input.color(#FF00FF, "Upthrust", group = G_VIS, inline = "c1")
+colBull   = input.color(#00FF00, "Haussier", group = G_VIS, inline = "c2")
+colOs     = input.color(#FF0000, "Survendu", group = G_VIS, inline = "c2")
+colNeut   = input.color(#808080, "Neutre", group = G_VIS, inline = "c2")
+
+// ───── Fonctions ──────────────────────────────────────────────────────────
+moneyFlow(float src, int len) =>
+    float chg = ta.change(src)
+    float up  = math.sum(nz(volume) * (chg > 0 ? src : 0.0), len)
+    float dn  = math.sum(nz(volume) * (chg < 0 ? src : 0.0), len)
+    dn == 0 ? (up == 0 ? 50.0 : 100.0) : 100.0 - 100.0 / (1.0 + up / dn)
+
+chaosIndex(float src, int len) =>
+    float hi   = ta.highest(src, len)
+    float lo   = ta.lowest(src, len)
+    float span = hi - lo
+    float path = 0.0
+    for i = 0 to len - 2
+        float y1 = span > 0 ? (src[i + 1] - lo) / span : 0.5
+        float y2 = span > 0 ? (src[i] - lo) / span : 0.5
+        path += math.sqrt(math.pow(y1 - y2, 2) + math.pow(1.0 / (len - 1), 2))
+    float fdi = 1.0 + math.log(path) / math.log(2.0 * (len - 1))
+    math.max(0.0, math.min(1.0, (fdi - 1.0) / 0.5))
+
+adaptiveEma(float src, float alpha) =>
+    var float val = na
+    val := na(val) ? src : val + alpha * (src - val)
+    val
+
+// ───── 1. Spring Tension + Volume Exhaustion ──────────────────────────────
+bool  hasVolume = ta.cum(nz(volume)) > 0
+float rsiVal    = ta.rsi(close, rsiLen)
+float mfiVol    = moneyFlow(hlc3, mfiLen)
+float mfiAlt    = ta.rsi(hlc3, mfiLen)
+float mfiVal    = hasVolume ? mfiVol : noVolMode == "RSI sur hlc3" ? mfiAlt : na
+
+bool isSpring   = low  <= ta.lowest(low, lookback)   and mfiVal > mfiVal[1] and rsiVal < springMax
+bool isUpthrust = high >= ta.highest(high, lookback) and mfiVal < mfiVal[1] and rsiVal > upthrustMin
+
+bool volDry   = hasVolume and volume < ta.sma(nz(volume), volLen) * (1 - volDryPct)
+bool longSig  = volDry and rsiVal < 40 and rsiVal >= ta.lowest(rsiVal, 10) + rsiMove
+bool longNuke = math.sum(longSig ? 1 : 0, clusterLen) >= nukeMin
+
+// ───── 2. Chaos RSI : divergence haussière ────────────────────────────────
+float chaos   = chaosIndex(close, chaosLen)
+float alpha   = math.max(0.001, math.min(1.0, math.pow(1.0 - chaos, sensitivity) / rsiLen))
+float chg     = ta.change(close)
+float avgGain = adaptiveEma(math.max(chg, 0), alpha)
+float avgLoss = adaptiveEma(math.max(-chg, 0), alpha)
+float wrsi    = avgLoss == 0 ? 100 : 100 - 100 / (1 + avgGain / avgLoss)
+
+var float prevLoRsi = na
+var float prevLoPx  = na
+bool chaosBullDiv = false
+if not na(ta.pivotlow(wrsi, divLen, divLen))
+    chaosBullDiv := not na(prevLoRsi) and wrsi[divLen] > prevLoRsi and low[divLen] < prevLoPx
+    prevLoRsi := wrsi[divLen]
+    prevLoPx  := low[divLen]
+
+// ───── 3. WaveTrend (VMC Cipher B) : gros cercle ou Gold ──────────────────
+float esa = ta.ema(hlc3, wtChLen)
+float de  = ta.ema(math.abs(hlc3 - esa), wtChLen)
+float wt1 = ta.ema((hlc3 - esa) / (0.015 * de), wtAvgLen)
+float wt2 = ta.sma(wt1, wtMaLen)
+
+bool  wtBot     = wt2[4] > wt2[2] and wt2[3] > wt2[2] and wt2[2] < wt2[1] and wt2[2] < wt2 and wt2[2] <= wtDivMin
+float wtPrevLow = ta.valuewhen(wtBot, wt2[2], 0)[2]
+float pxPrevLow = ta.valuewhen(wtBot, low[2], 0)[2]
+float rsiAtLow  = ta.valuewhen(wtBot, rsiVal[2], 0)[2]
+bool  wtBullDiv = wtBot and low[2] < pxPrevLow and wt2[2] > wtPrevLow
+
+bool bigCircle = ta.crossover(wt1, wt2) and wt2 <= wtOs
+bool goldBuy   = wtBullDiv and wtPrevLow <= wtOsGold and wt2 > wtOsGold and wtPrevLow - wt2 <= -5 and rsiAtLow < 30
+bool vmcSig    = bigCircle or goldBuy
+
+// ───── 4. Confluence Super Scalp ──────────────────────────────────────────
+bool confluence = ta.barssince(isSpring) <= superWin and ta.barssince(chaosBullDiv) <= superWin and ta.barssince(vmcSig) <= superWin
+bool superScalp = confluence and not confluence[1]
+
+// ───── Visuels ────────────────────────────────────────────────────────────
+color ribbonCol = isSpring ? colSpring :
+                  isUpthrust ? colUp :
+                  mfiVal > 50 and close > close[1] ? color.new(colBull, 20) :
+                  rsiVal < 30 ? color.new(colOs, 40) :
+                  color.new(colNeut, 80)
+
+plot(5, "Ruban", color = ribbonCol, style = plot.style_columns, histbase = 0)
+bgcolor(showBg and isSpring ? color.new(colSpring, 90) : showBg and isUpthrust ? color.new(colUp, 90) : na)
+bgcolor(superScalp ? color.new(color.orange, 80) : na, title = "Fond Super Scalp")
+
+plotshape(showLong and longSig and not longNuke ? -1.5 : na, "Long", shape.circle, location.absolute, color.new(color.green, 30), size = size.tiny)
+plotshape(showLong and longNuke ? -3.0 : na, "LONG NUKE", shape.xcross, location.absolute, color.green, size = size.tiny)
+plotshape(superScalp, "🔥 Super Scalp", shape.triangleup, location.bottom, color.yellow, size = size.small)
+
+var table warn = table.new(position.top_right, 1, 1)
+if barstate.islast and not hasVolume
+    table.cell(warn, 0, 0, "⚠️ Pas de volume : MFI = " + (noVolMode == "RSI sur hlc3" ? "RSI hlc3" : "off") + ", Exhaustion off", text_color = color.orange, text_size = size.small)
+
+// ───── Alertes ────────────────────────────────────────────────────────────
+alertcondition(superScalp, "🔥 Super Scalp", "🔥 Super Scalp sur {{ticker}} ({{interval}}) : Spring + Chaos BullDiv + VMC alignés")
+alertcondition(isSpring, "🌱 Bullish Spring", "🌱 Bullish Spring sur {{ticker}} ({{interval}})")
+alertcondition(longNuke and not longNuke[1], "LONG NUKE", "💥 LONG NUKE sur {{ticker}} ({{interval}})")

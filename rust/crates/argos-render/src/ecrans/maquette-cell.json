@@ -1,0 +1,988 @@
+{
+ "vue": "390x844",
+ "ech": "46px",
+ "zones": [
+  {
+   "id": "thaut",
+   "boite": [
+    10,
+    10,
+    370,
+    40
+   ],
+   "rayon": 20,
+   "fond": "rgba(26, 30, 42, 0.6)",
+   "bord": "rgba(255, 255, 255, 0.16)",
+   "texte": "rgb(232, 234, 240)",
+   "taille": 12,
+   "graisse": "400",
+   "libelle": "",
+   "titre": null,
+   "enfants": [
+    {
+     "id": "thaut.0",
+     "boite": [
+      17,
+      15.9,
+      19.3,
+      28.2
+     ],
+     "rayon": 12,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 12,
+     "graisse": "400",
+     "libelle": "⌂",
+     "titre": "Accueil",
+     "balise": "button",
+     "classe": "btn"
+    },
+    {
+     "id": "thaut.1",
+     "boite": [
+      38.3,
+      15.9,
+      68.8,
+      28.2
+     ],
+     "rayon": 12,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 12,
+     "graisse": "400",
+     "libelle": "⌄",
+     "titre": null,
+     "balise": "button",
+     "classe": "btn"
+    },
+    {
+     "id": "thaut.2",
+     "boite": [
+      109,
+      17.3,
+      47.5,
+      25.5
+     ],
+     "rayon": 12,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 12,
+     "graisse": "400",
+     "libelle": "",
+     "titre": null,
+     "balise": "button",
+     "classe": "btn"
+    },
+    {
+     "id": "thaut.3",
+     "boite": [
+      232.3,
+      15.9,
+      27,
+      28.2
+     ],
+     "rayon": 12,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 12,
+     "graisse": "400",
+     "libelle": "🔔",
+     "titre": null,
+     "balise": "button",
+     "classe": "btn badge",
+     "pastille": "3"
+    },
+    {
+     "id": "thaut.4",
+     "boite": [
+      261.2,
+      15.9,
+      23.3,
+      28.2
+     ],
+     "rayon": 12,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 12,
+     "graisse": "400",
+     "libelle": "▦",
+     "titre": null,
+     "balise": "button",
+     "classe": "btn"
+    },
+    {
+     "id": "thaut.5",
+     "boite": [
+      286.6,
+      15.9,
+      27,
+      28.2
+     ],
+     "rayon": 12,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 12,
+     "graisse": "400",
+     "libelle": "📤",
+     "titre": "Partager",
+     "balise": "button",
+     "classe": "btn"
+    },
+    {
+     "id": "thaut.6",
+     "boite": [
+      315.6,
+      15.9,
+      27,
+      28.2
+     ],
+     "rayon": 12,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 12,
+     "graisse": "400",
+     "libelle": "🔎",
+     "titre": null,
+     "balise": "button",
+     "classe": "btn"
+    },
+    {
+     "id": "thaut.7",
+     "boite": [
+      344.5,
+      15.9,
+      28.5,
+      28.2
+     ],
+     "rayon": 12,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 12,
+     "graisse": "400",
+     "libelle": "🗺",
+     "titre": null,
+     "balise": "button",
+     "classe": "btn"
+    }
+   ]
+  },
+  {
+   "id": "demoband",
+   "boite": [
+    97.5,
+    58,
+    195,
+    32.8
+   ],
+   "rayon": 999,
+   "fond": "rgba(26, 30, 42, 0.6)",
+   "bord": "rgba(247, 165, 49, 0.45)",
+   "texte": "rgb(247, 195, 122)",
+   "taille": 11,
+   "graisse": "800",
+   "libelle": "DÉMO",
+   "titre": "Mode démo : ouvrir le Simulateur",
+   "enfants": []
+  },
+  {
+   "id": "flux",
+   "boite": [
+    266.6,
+    96,
+    113.4,
+    24.8
+   ],
+   "rayon": 12,
+   "fond": "rgba(26, 30, 42, 0.6)",
+   "bord": "rgba(255, 255, 255, 0.16)",
+   "texte": "rgb(232, 234, 240)",
+   "taille": 11,
+   "graisse": "400",
+   "libelle": "Flux 1 en retard",
+   "titre": "État des flux de marché",
+   "enfants": []
+  },
+  {
+   "id": "favbar",
+   "boite": [
+    290,
+    219.4,
+    48,
+    28
+   ],
+   "rayon": 22,
+   "fond": "rgba(26, 30, 42, 0.6)",
+   "bord": "rgba(255, 255, 255, 0.16)",
+   "texte": "rgb(232, 234, 240)",
+   "taille": 13,
+   "graisse": "400",
+   "libelle": "",
+   "titre": null,
+   "enfants": [
+    {
+     "id": "favbar.0",
+     "boite": [
+      296,
+      225.4,
+      36,
+      16
+     ],
+     "rayon": 12,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(141, 147, 161)",
+     "taille": 11,
+     "graisse": "400",
+     "libelle": "⋮⋮",
+     "titre": null,
+     "balise": "button",
+     "classe": "fp"
+    }
+   ]
+  },
+  {
+   "id": "pg",
+   "boite": [
+    12,
+    728,
+    138.4,
+    50
+   ],
+   "rayon": 25,
+   "fond": "rgba(26, 30, 42, 0.6)",
+   "bord": "rgba(255, 255, 255, 0.16)",
+   "texte": "rgb(232, 234, 240)",
+   "taille": 13,
+   "graisse": "400",
+   "libelle": "",
+   "titre": null,
+   "enfants": [
+    {
+     "id": "pg.0",
+     "boite": [
+      13,
+      728,
+      92.6,
+      50
+     ],
+     "rayon": 0,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 13,
+     "graisse": "700",
+     "libelle": "BTC-USDC",
+     "titre": null,
+     "balise": "button",
+     "classe": "s"
+    },
+    {
+     "id": "pg.1",
+     "boite": [
+      13,
+      732,
+      92.6,
+      8.5
+     ],
+     "rayon": 0,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgba(255, 255, 255, 0.32)",
+     "taille": 8.5,
+     "graisse": "700",
+     "libelle": "ETH",
+     "titre": null,
+     "balise": "span",
+     "classe": "roue h"
+    },
+    {
+     "id": "pg.2",
+     "boite": [
+      13,
+      765.5,
+      92.6,
+      8.5
+     ],
+     "rayon": 0,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgba(255, 255, 255, 0.32)",
+     "taille": 8.5,
+     "graisse": "700",
+     "libelle": "SOL",
+     "titre": null,
+     "balise": "span",
+     "classe": "roue b"
+    },
+    {
+     "id": "pg.3",
+     "boite": [
+      105.6,
+      728,
+      43.8,
+      50
+     ],
+     "rayon": 0,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 13,
+     "graisse": "400",
+     "libelle": "4h",
+     "titre": null,
+     "balise": "button",
+     "classe": "u"
+    },
+    {
+     "id": "pg.4",
+     "boite": [
+      106.6,
+      732,
+      42.8,
+      8.5
+     ],
+     "rayon": 0,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgba(255, 255, 255, 0.32)",
+     "taille": 8.5,
+     "graisse": "400",
+     "libelle": "1h",
+     "titre": null,
+     "balise": "span",
+     "classe": "roue h"
+    },
+    {
+     "id": "pg.5",
+     "boite": [
+      106.6,
+      765.5,
+      42.8,
+      8.5
+     ],
+     "rayon": 0,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgba(255, 255, 255, 0.32)",
+     "taille": 8.5,
+     "graisse": "400",
+     "libelle": "1D",
+     "titre": null,
+     "balise": "span",
+     "classe": "roue b"
+    }
+   ]
+  },
+  {
+   "id": "pd",
+   "boite": [
+    264,
+    728,
+    50,
+    50
+   ],
+   "rayon": 25,
+   "fond": "rgba(26, 30, 42, 0.6)",
+   "bord": "rgba(255, 255, 255, 0.16)",
+   "texte": "rgb(232, 234, 240)",
+   "taille": 13,
+   "graisse": "400",
+   "libelle": "",
+   "titre": null,
+   "enfants": [
+    {
+     "id": "pd.0",
+     "boite": [
+      265,
+      728,
+      48,
+      50
+     ],
+     "rayon": 0,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 13,
+     "graisse": "400",
+     "libelle": "ƒx",
+     "titre": null,
+     "balise": "button"
+    }
+   ]
+  },
+  {
+   "id": "aipill",
+   "boite": [
+    322,
+    776,
+    56,
+    56
+   ],
+   "rayon": 34,
+   "fond": "rgba(20, 26, 40, 0.45)",
+   "bord": "rgba(255, 255, 255, 0.16)",
+   "texte": "rgb(232, 234, 240)",
+   "taille": 13,
+   "graisse": "400",
+   "libelle": "",
+   "titre": "Argos AI : ouvre l'assistant dans le volet droit",
+   "enfants": []
+  },
+  {
+   "id": "icones",
+   "boite": [
+    0,
+    790,
+    390,
+    54
+   ],
+   "rayon": 20,
+   "fond": "rgba(26, 30, 42, 0.6)",
+   "bord": "rgba(255, 255, 255, 0.16)",
+   "texte": "rgb(232, 234, 240)",
+   "taille": 13,
+   "graisse": "400",
+   "libelle": "",
+   "titre": null,
+   "enfants": [
+    {
+     "id": "icones.0",
+     "boite": [
+      56,
+      795.5,
+      36,
+      44
+     ],
+     "rayon": 11,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 18,
+     "graisse": "400",
+     "libelle": "",
+     "titre": null,
+     "balise": "button"
+    },
+    {
+     "id": "icones.1",
+     "boite": [
+      94,
+      795.5,
+      36,
+      44
+     ],
+     "rayon": 11,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 18,
+     "graisse": "400",
+     "libelle": "🧪",
+     "titre": null,
+     "balise": "button"
+    },
+    {
+     "id": "icones.2",
+     "boite": [
+      132,
+      795.5,
+      36,
+      44
+     ],
+     "rayon": 11,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 18,
+     "graisse": "400",
+     "libelle": "🛡",
+     "titre": null,
+     "balise": "button"
+    },
+    {
+     "id": "icones.3",
+     "boite": [
+      170,
+      795.5,
+      36,
+      44
+     ],
+     "rayon": 11,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 18,
+     "graisse": "400",
+     "libelle": "🐋",
+     "titre": null,
+     "balise": "button"
+    },
+    {
+     "id": "icones.4",
+     "boite": [
+      208,
+      795.5,
+      36,
+      44
+     ],
+     "rayon": 11,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 18,
+     "graisse": "400",
+     "libelle": "🧩",
+     "titre": null,
+     "balise": "button"
+    },
+    {
+     "id": "icones.5",
+     "boite": [
+      246,
+      795.5,
+      36,
+      44
+     ],
+     "rayon": 11,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 18,
+     "graisse": "400",
+     "libelle": "",
+     "titre": null,
+     "balise": "button"
+    },
+    {
+     "id": "icones.6",
+     "boite": [
+      284,
+      795.5,
+      36,
+      44
+     ],
+     "rayon": 11,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 18,
+     "graisse": "400",
+     "libelle": "🎓",
+     "titre": null,
+     "balise": "button"
+    },
+    {
+     "id": "icones.10",
+     "boite": [
+      49,
+      805.5,
+      1,
+      24
+     ],
+     "rayon": 0,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(128, 128, 128)",
+     "taille": 13,
+     "graisse": "400",
+     "libelle": "",
+     "titre": null,
+     "balise": "hr"
+    },
+    {
+     "id": "icones.11",
+     "boite": [
+      9,
+      795.5,
+      36,
+      44
+     ],
+     "rayon": 11,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(141, 147, 161)",
+     "taille": 15,
+     "graisse": "400",
+     "libelle": "⚙",
+     "titre": null,
+     "balise": "button",
+     "classe": "reg"
+    }
+   ]
+  },
+  {
+   "id": "wl-entete",
+   "boite": [
+    0,
+    63,
+    390,
+    45
+   ],
+   "rayon": 0,
+   "fond": "rgba(0, 0, 0, 0)",
+   "bord": null,
+   "texte": "rgb(232, 234, 240)",
+   "taille": 13,
+   "graisse": "400",
+   "libelle": "",
+   "titre": null,
+   "enfants": [
+    {
+     "id": "wl-entete.0",
+     "boite": [
+      17,
+      63,
+      45,
+      45
+     ],
+     "rayon": 22.5,
+     "fond": "rgba(26, 30, 42, 0.6)",
+     "bord": "rgba(255, 255, 255, 0.16)",
+     "texte": "rgb(232, 234, 240)",
+     "taille": 17,
+     "graisse": "400",
+     "libelle": "⋯",
+     "titre": null,
+     "enfants": []
+    },
+    {
+     "id": "wl-entete.1",
+     "boite": [
+      62,
+      63,
+      266,
+      45
+     ],
+     "rayon": 0,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 17,
+     "graisse": "400",
+     "libelle": "titre",
+     "titre": null,
+     "enfants": []
+    },
+    {
+     "id": "wl-entete.2",
+     "boite": [
+      328,
+      63,
+      45,
+      45
+     ],
+     "rayon": 22.5,
+     "fond": "rgba(26, 30, 42, 0.6)",
+     "bord": "rgba(255, 255, 255, 0.16)",
+     "texte": "rgb(232, 234, 240)",
+     "taille": 17,
+     "graisse": "400",
+     "libelle": "🔎",
+     "titre": null,
+     "enfants": []
+    }
+   ]
+  },
+  {
+   "id": "wl-listes",
+   "boite": [
+    0,
+    128,
+    390,
+    32
+   ],
+   "rayon": 0,
+   "fond": "rgba(0, 0, 0, 0)",
+   "bord": null,
+   "texte": "rgb(232, 234, 240)",
+   "taille": 13,
+   "graisse": "400",
+   "libelle": "",
+   "titre": null,
+   "enfants": [
+    {
+     "id": "wl-listes.0",
+     "boite": [
+      17,
+      128,
+      90,
+      32
+     ],
+     "rayon": 16,
+     "fond": "rgba(26, 30, 42, 0.6)",
+     "bord": "rgba(255, 255, 255, 0.16)",
+     "texte": "rgb(232, 234, 240)",
+     "taille": 15,
+     "graisse": "400",
+     "libelle": "liste",
+     "titre": null,
+     "enfants": []
+    }
+   ]
+  },
+  {
+   "id": "wl-ligne",
+   "boite": [
+    0,
+    0,
+    390,
+    62
+   ],
+   "rayon": 0,
+   "fond": "rgba(0, 0, 0, 0)",
+   "bord": null,
+   "texte": "rgb(232, 234, 240)",
+   "taille": 13,
+   "graisse": "400",
+   "libelle": "",
+   "titre": null,
+   "enfants": [
+    {
+     "id": "wl-ligne.0",
+     "boite": [
+      17,
+      12.5,
+      37,
+      37
+     ],
+     "rayon": 18.5,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 13,
+     "graisse": "400",
+     "libelle": "logo",
+     "titre": null,
+     "enfants": []
+    },
+    {
+     "id": "wl-ligne.1",
+     "boite": [
+      67,
+      12,
+      200,
+      20
+     ],
+     "rayon": 0,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 17,
+     "graisse": "400",
+     "libelle": "symbole",
+     "titre": null,
+     "enfants": []
+    },
+    {
+     "id": "wl-ligne.2",
+     "boite": [
+      67,
+      36,
+      200,
+      16
+     ],
+     "rayon": 0,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(141, 147, 161)",
+     "taille": 13,
+     "graisse": "400",
+     "libelle": "nom",
+     "titre": null,
+     "enfants": []
+    },
+    {
+     "id": "wl-ligne.3",
+     "boite": [
+      272,
+      12,
+      100,
+      20
+     ],
+     "rayon": 0,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 17,
+     "graisse": "400",
+     "libelle": "prix",
+     "titre": null,
+     "enfants": []
+    },
+    {
+     "id": "wl-ligne.4",
+     "boite": [
+      232,
+      36,
+      140,
+      16
+     ],
+     "rayon": 0,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 13,
+     "graisse": "400",
+     "libelle": "variation",
+     "titre": null,
+     "enfants": []
+    },
+    {
+     "id": "wl-ligne.5",
+     "boite": [
+      17,
+      61,
+      356,
+      1
+     ],
+     "rayon": 0,
+     "fond": "rgba(255, 255, 255, 0.08)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 13,
+     "graisse": "400",
+     "libelle": "séparateur",
+     "titre": null,
+     "enfants": []
+    }
+   ]
+  },
+  {
+   "id": "wl-section",
+   "boite": [
+    17,
+    0,
+    356,
+    40
+   ],
+   "rayon": 0,
+   "fond": "rgba(0, 0, 0, 0)",
+   "bord": null,
+   "texte": "rgb(141, 147, 161)",
+   "taille": 13,
+   "graisse": "400",
+   "libelle": "section",
+   "titre": null,
+   "enfants": []
+  },
+  {
+   "id": "wl-mini",
+   "boite": [
+    22,
+    705,
+    346,
+    55
+   ],
+   "rayon": 27.5,
+   "fond": "rgba(26, 30, 42, 0.6)",
+   "bord": "rgba(255, 255, 255, 0.16)",
+   "texte": "rgb(232, 234, 240)",
+   "taille": 13,
+   "graisse": "400",
+   "libelle": "",
+   "titre": null,
+   "enfants": [
+    {
+     "id": "wl-mini.0",
+     "boite": [
+      30,
+      714,
+      37,
+      37
+     ],
+     "rayon": 18.5,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 13,
+     "graisse": "400",
+     "libelle": "logo",
+     "titre": null,
+     "enfants": []
+    },
+    {
+     "id": "wl-mini.1",
+     "boite": [
+      77,
+      712,
+      220,
+      20
+     ],
+     "rayon": 0,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 15,
+     "graisse": "400",
+     "libelle": "symbole prix",
+     "titre": null,
+     "enfants": []
+    },
+    {
+     "id": "wl-mini.2",
+     "boite": [
+      77,
+      734,
+      220,
+      16
+     ],
+     "rayon": 0,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(38, 166, 154)",
+     "taille": 13,
+     "graisse": "400",
+     "libelle": "variation aujourd'hui",
+     "titre": null,
+     "enfants": []
+    },
+    {
+     "id": "wl-mini.3",
+     "boite": [
+      336,
+      718,
+      24,
+      24
+     ],
+     "rayon": 0,
+     "fond": "rgba(0, 0, 0, 0)",
+     "bord": null,
+     "texte": "rgb(232, 234, 240)",
+     "taille": 13,
+     "graisse": "400",
+     "libelle": "∧",
+     "titre": null,
+     "enfants": []
+    }
+   ]
+  },
+  {
+   "id": "roue",
+   "boite": [
+    12,
+    552,
+    140,
+    168
+   ],
+   "rayon": 16,
+   "fond": "rgba(26, 30, 42, 0.6)",
+   "bord": "rgba(255, 255, 255, 0.16)",
+   "texte": "rgb(232, 234, 240)",
+   "taille": 15,
+   "graisse": "400",
+   "libelle": "roue (vidéo de Jee : 7 lignes de 24, juste au-dessus de la pilule)",
+   "titre": null,
+   "enfants": []
+  }
+ ],
+ "source_watchlist": "photos TradingView de Jee (2026-11-09), mesures ramenées à 390 pt : y des lignes relatifs au haut de la ligne",
+ "note_b": "choix B de Jee (9 nov.) : ⚙ à gauche, Argos AI au coin bas-droit (mesuré sur /maquette/ à 390×844)"
+}

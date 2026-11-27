@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#131722">
+<title>Test écran · Argos HSS Trading</title>
+<style>
+  /* 📱 Test de hauteur pour l'appli installée sur iPhone : chaque toucher change de variante. Le bon réglage est
+     celui où les DEUX bordures rouges (haut et bas) touchent les bords de l'écran. */
+  html, body { margin: 0; padding: 0; background: #000; }
+  #box { box-sizing: border-box; border-top: 6px solid #ff2d2d; border-bottom: 6px solid #ff2d2d; color: #fff; font: 15px/1.45 system-ui, sans-serif;
+    background: repeating-linear-gradient(45deg, #1f5fbf 0 18px, #2a2f45 18px 36px); overflow: hidden; }
+  #info { position: absolute; left: 12px; right: 12px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,.78); border-radius: 12px; padding: 14px; }
+  #info b { font-size: 20px; } #info pre { white-space: pre-wrap; font: 12.5px ui-monospace, monospace; margin: 8px 0; }
+  #info button { all: unset; display: inline-block; margin: 6px 6px 0 0; padding: 10px 14px; border-radius: 9px; background: #2962ff; color: #fff; font-weight: 600; }
+  #info button.x { background: #444; }
+</style>
+</head>
+<body>
+<div id="box"><div id="info"></div></div>
+<script>
+  const box = document.getElementById("box"), info = document.getElementById("info");
+  const V = [
+    ["A · recette du site (corps à 100dvh)", () => { css(document.body, "height:100dvh;overflow:hidden"); css(box, "position:fixed;left:0;right:0;top:0;height:100dvh"); }],
+    ["B · 100lvh (grande vue)", () => { css(document.documentElement, "height:100lvh"); css(document.body, "position:relative;height:100lvh;overflow:visible"); css(box, "position:absolute;top:0;left:0;right:0;height:100lvh"); }],
+    ["C · 100 % + zone sûre du haut", () => { css(document.documentElement, "height:100%"); css(document.body, "position:relative;min-height:calc(100% + env(safe-area-inset-top));overflow:visible"); css(box, "position:absolute;top:0;left:0;right:0;height:calc(100vh + env(safe-area-inset-top))"); }],
+    ["D · hauteur de l'écran en JS (screen.height)", () => { css(document.body, "position:relative;overflow:visible"); css(box, `position:absolute;top:0;left:0;right:0;height:${screen.height}px`); }],
+    ["E · -webkit-fill-available", () => { css(document.documentElement, "height:-webkit-fill-available"); css(document.body, "position:relative;min-height:-webkit-fill-available;overflow:visible"); css(box, "position:absolute;top:0;left:0;right:0;height:-webkit-fill-available"); }],
+    ["F · max(100lvh, 100vh + zone sûre du haut) (réglage proposé)", () => { css(document.documentElement, "height:100%"); css(document.body, "position:relative;overflow:visible"); css(box, "position:absolute;top:0;left:0;right:0;height:max(100lvh, calc(100vh + env(safe-area-inset-top)))"); }],
+  ];
+  const css = (el, s) => { el.setAttribute("style", s); };
+  const KEY = "argos:ios-variant";
+  let k = 0;
+  const safe = () => { const p = document.createElement("div"); p.style.cssText = "position:fixed;visibility:hidden;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)"; document.body.appendChild(p); const c = getComputedStyle(p); const r = [parseFloat(c.paddingTop) || 0, parseFloat(c.paddingBottom) || 0]; p.remove(); return r; };
+  const show = () => {
+    [document.documentElement, document.body, box].forEach(e => e.removeAttribute("style"));
+    V[k][1]();
+    requestAnimationFrame(() => {
+      const r = box.getBoundingClientRect(), [st, sb] = safe(), vv = window.visualViewport;
+      info.innerHTML = `<b>${V[k][0]}</b><pre>variante ${k + 1} / ${V.length}
+cadre : haut ${Math.round(r.top)} · hauteur ${Math.round(r.height)}
+fenêtre : ${innerWidth} × ${innerHeight} · visuel ${vv ? Math.round(vv.height) : "—"}
+écran : ${screen.width} × ${screen.height} · DPR ${devicePixelRatio}
+zones sûres : haut ${st} · bas ${sb}
+mode appli : ${matchMedia("(display-mode: standalone)").matches || navigator.standalone === true ? "oui" : "non"}</pre>
+Les deux bordures rouges touchent-elles le haut ET le bas de l'écran ?<br>
+<button data-use>Utiliser cette variante dans l'app</button><button class="x" data-next>Suivante ›</button><button class="x" data-back>‹ Revenir à l'app</button>`;
+    });
+  };
+  document.addEventListener("click", e => {
+    if (e.target.closest("[data-use]")) { try { localStorage.setItem(KEY, "ABCDEF"[k]); } catch (_) {} location.href = "/app/"; return; }
+    if (e.target.closest("[data-back]")) { location.href = "/app/"; return; }
+    k = (k + 1) % V.length; show();
+  });
+  addEventListener("resize", show);
+  show();
+</script>
+</body>
+</html>

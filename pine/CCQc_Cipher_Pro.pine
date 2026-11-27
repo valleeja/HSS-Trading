@@ -1,0 +1,267 @@
+// This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © CCQc
+
+//@version=6
+indicator(title = 'CCQc Cipher Pro', overlay = false)
+// INPUTS {
+// WaveTrend
+wtShow = input.bool(true, title = 'Show WaveTrend', group = 'WaveTrend Settings')
+wtBuyShow = input.bool(true, title = 'Show Buy dots', group = 'WaveTrend Settings')
+wtGoldShow = input.bool(true, title = 'Show Gold dots', group = 'WaveTrend Settings')
+wtSellShow = input.bool(true, title = 'Show Sell dots', group = 'WaveTrend Settings')
+wtDivShow = input.bool(true, title = 'Show Div. dots', group = 'WaveTrend Settings')
+vwapShow = input.bool(true, title = 'Show Fast WT', group = 'WaveTrend Settings')
+wtChannelLen = input.int(9, title = 'WT Channel Length', group = 'WaveTrend Settings')
+wtAverageLen = input.int(12, title = 'WT Average Length', group = 'WaveTrend Settings')
+wtMASource = input.source(hlc3, title = 'WT MA Source', group = 'WaveTrend Settings')
+wtMALen = input.int(3, title = 'WT MA Length', group = 'WaveTrend Settings')
+obLevel = input.int(53, title = 'WT Overbought Level 1', group = 'WaveTrend Settings')
+obLevel2 = input.int(60, title = 'WT Overbought Level 2', group = 'WaveTrend Settings')
+obLevel3 = input.int(100, title = 'WT Overbought Level 3', group = 'WaveTrend Settings')
+osLevel = input.int(-53, title = 'WT Oversold Level 1', group = 'WaveTrend Settings')
+osLevel2 = input.int(-60, title = 'WT Oversold Level 2', group = 'WaveTrend Settings')
+osLevel3 = input.int(-75, title = 'WT Oversold Level 3', group = 'WaveTrend Settings')
+wtShowDiv = input.bool(true, title = 'Show WT Regular Divergences', group = 'WaveTrend Settings')
+wtShowHiddenDiv = input.bool(true, title = 'Show WT Hidden Divergences', group = 'WaveTrend Settings')
+showHiddenDiv_nl = input.bool(true, title = 'Not apply OB/OS Limits on Hidden Divergences', group = 'WaveTrend Settings')
+wtDivOBLevel = input.int(45, title = 'WT Bearish Divergence min', group = 'WaveTrend Settings')
+wtDivOSLevel = input.int(-65, title = 'WT Bullish Divergence min', group = 'WaveTrend Settings')
+wtDivOBLevel_addshow = input.bool(true, title = 'Show 2nd WT Regular Divergences', group = 'WaveTrend Settings')
+wtDivOBLevel_add = input.int(15, title = 'WT 2nd Bearish Divergence', group = 'WaveTrend Settings')
+wtDivOSLevel_add = input.int(-40, title = 'WT 2nd Bullish Divergence 15 min', group = 'WaveTrend Settings')
+// MFI
+rsiMFIShow = input.bool(true, title = 'Show MFI', group = 'MFI Settings')
+rsiMFIperiod = input.int(60, title = 'MFI Period', group = 'MFI Settings')
+rsiMFIMultiplier = input.float(150.0, title = 'MFI Area multiplier', group = 'MFI Settings')
+rsiMFIPosY = input.float(2.5, title = 'MFI Area Y Pos', group = 'MFI Settings')
+mfiShowDiv = input.bool(true, title = 'Show MFI Regular Divergences', group = 'MFI Settings')
+mfiShowHiddenDiv = input.bool(false, title = 'Show MFI Hidden Divergences', group = 'MFI Settings')
+mfiDivOBLevel = input.float(0.0, title = 'MFI Bearish Divergence min', group = 'MFI Settings')
+mfiDivOSLevel = input.float(0.0, title = 'MFI Bullish Divergence min', group = 'MFI Settings')
+// RSI
+rsiShow = input.bool(true, title = 'Show RSI', group = 'RSI Settings')
+rsiSRC = input.source(close, title = 'RSI Source', group = 'RSI Settings')
+rsiLen = input.int(10, title = 'RSI Length', group = 'RSI Settings')
+rsiOversold = input.int(30, title = 'RSI Oversold', minval = 0, maxval = 50, group = 'RSI Settings')
+rsiOverbought = input.int(60, title = 'RSI Overbought', minval = 50, maxval = 100, group = 'RSI Settings')
+rsiShowDiv = input.bool(true, title = 'Show RSI Regular Divergences', group = 'RSI Settings')
+rsiShowHiddenDiv = input.bool(true, title = 'Show RSI Hidden Divergences', group = 'RSI Settings')
+rsiDivOBLevel = input.int(60, title = 'RSI Bearish Divergence min', group = 'RSI Settings')
+rsiDivOSLevel = input.int(30, title = 'RSI Bullish Divergence min', group = 'RSI Settings')
+// Stochastic RSI
+stochShow = input.bool(true, title = 'Show Stochastic RSI', group = 'Stoch Settings')
+stochUseLog = input.bool(true, title = ' Use Log?', group = 'Stoch Settings')
+stochAvg = input.bool(true, title = 'Use Average of both K & D', group = 'Stoch Settings')
+stochSRC = input.source(close, title = 'Stochastic RSI Source', group = 'Stoch Settings')
+stochLen = input.int(10, title = 'Stochastic RSI Length', group = 'Stoch Settings')
+stochRsiLen = input.int(10, title = 'RSI Length ', group = 'Stoch Settings')
+stochKSmooth = input.int(3, title = 'Stochastic RSI K Smooth', group = 'Stoch Settings')
+stochDSmooth = input.int(3, title = 'Stochastic RSI D Smooth', group = 'Stoch Settings')
+stochShowDiv = input.bool(true, title = 'Show Stoch Regular Divergences', group = 'Stoch Settings')
+stochShowHiddenDiv = input.bool(true, title = 'Show Stoch Hidden Divergences', group = 'Stoch Settings')
+// Mode
+darkMode = input.bool(false, title = 'Dark mode', group = 'Mode Settings')
+// Golden Dot table
+showGoldTable = input.bool(true, title = 'Afficher table Golden Dot', group = 'Golden Dot Table')
+goldTablePos = input.string('Bottom Right', title = 'Position', options = ['Top Right', 'Top Left', 'Bottom Right', 'Bottom Left'], group = 'Golden Dot Table')
+goldTableSize = input.string('Small', title = 'Grandeur du Tableau', options = ['Tiny', 'Small', 'Normal', 'Large', 'Huge'], group = 'Golden Dot Table')
+// Oscillateur (master toggle)
+showOscillatorPane = input.bool(true, title = 'Afficher Oscillateur (WT/RSI/Stoch/MFI)', group = 'Oscillator Pane')
+// Confluence
+showConfluenceTable = input.bool(true, title = 'Afficher tableau Confluence Divergences', group = 'Confluence Settings')
+confluenceTablePos = input.string('Top Right', title = 'Position Tableau', options = ['Top Right', 'Top Left', 'Bottom Right', 'Bottom Left'], group = 'Confluence Settings')
+confluenceTableSize = input.string('Small', title = 'Grandeur du Tableau', options = ['Tiny', 'Small', 'Normal', 'Large', 'Huge'], group = 'Confluence Settings')
+showConfluenceLabel = input.bool(true, title = 'Afficher étiquette sur le chart', group = 'Confluence Settings')
+confluenceMinShow = input.int(2, title = 'Confluence Min. pour étiquette (/4)', group = 'Confluence Settings')
+// Colors
+colorRed = #ff0000
+colorGreen = #3fff00
+colorWhite = #ffffff
+rsiobcolor = input.color(color.new(#e13e3e, 0), 'RSI OverBought', group = 'Color Settings')
+rsioscolor = input.color(color.new(#3ee145, 0), 'RSI OverSold', group = 'Color Settings')
+rsinacolor = input.color(color.new(#c33ee1, 0), 'RSI InBetween', group = 'Color Settings')
+rsiMFIColorAbove = input.color(color.new(#3ee145, 0), 'MFI Color > 0', group = 'Color Settings')
+rsiMFIColorBelow = input.color(color.new(#ff3d2e, 0), 'MFI Color < 0', group = 'Color Settings')
+colorWT1blue = input.color(color.new(#4994ec, 0), 'WT1 Fill', group = 'Color Settings')
+colorWT2purple = input.color(color.new(#1f1559, 0), 'WT2 Fill', group = 'Color Settings')
+VWAPColor = input.color(color.new(#ffffff, 50), 'VWAP', group = 'Color Settings')
+WTBearDivColorDown = input.color(color.new(#e60000, 0), 'WT Bear Div', group = 'Color Settings')
+wtBullDivColorUp = input.color(color.new(#00e676, 0), 'WT Bull Div', group = 'Color Settings')
+signalcolorup = input.color(color.new(#00e676, 0), 'WT Buy Dot', group = 'Color Settings')
+signalcolordown = input.color(color.new(#ff5252, 0), 'WT Sell Dot', group = 'Color Settings')
+stochkcolor = input.color(color.new(#21baf3, 70), 'Stoch K', group = 'Color Settings')
+stochdcolor = input.color(color.new(#673ab7, 90), 'Stoch D', group = 'Color Settings')
+goldDotColor = input.color(color.new(#ffe500, 0), 'Gold Buy Dot', group = 'Color Settings')
+mfiBearDivColorInput = input.color(color.new(#e60000, 0), 'MFI Bear Div', group = 'Color Settings')
+mfiBullDivColorInput = input.color(color.new(#38ff42, 0), 'MFI Bull Div', group = 'Color Settings')
+confluenceBullColor = input.color(color.new(#3fff00, 0), 'Confluence Bull Label', group = 'Color Settings')
+confluenceGoldColor = input.color(color.new(#ffd700, 0), 'Confluence 4/4 (Gold) Label', group = 'Color Settings')
+confluenceBearColor = input.color(color.new(#ff0000, 0), 'Confluence Bear Label', group = 'Color Settings')
+// } INPUTS
+// FUNCTIONS {
+f_top_fractal(src) => src[4] < src[2] and src[3] < src[2] and src[2] > src[1] and src[2] > src[0]
+f_bot_fractal(src) => src[4] > src[2] and src[3] > src[2] and src[2] < src[1] and src[2] < src[0]
+f_fractalize(src) => f_top_fractal(src) ? 1 : f_bot_fractal(src) ? -1 : 0
+f_findDivs(src, topLimit, botLimit, useLimits) =>
+    fractalTopFound = f_fractalize(src) > 0 and (useLimits ? src[2] >= topLimit : true)
+    fractalBotFound = f_fractalize(src) < 0 and (useLimits ? src[2] <= botLimit : true)
+    fractalTop = fractalTopFound ? src[2] : na
+    fractalBot = fractalBotFound ? src[2] : na
+    highPrev = ta.valuewhen(fractalTopFound, src[2], 0)[2]
+    highPrice = ta.valuewhen(fractalTopFound, high[2], 0)[2]
+    lowPrev = ta.valuewhen(fractalBotFound, src[2], 0)[2]
+    lowPrice = ta.valuewhen(fractalBotFound, low[2], 0)[2]
+    bearSignal = fractalTopFound and high[2] > highPrice and src[2] < highPrev
+    bullSignal = fractalBotFound and low[2] < lowPrice and src[2] > lowPrev
+    bearDivHidden = fractalTopFound and high[2] < highPrice and src[2] > highPrev
+    bullDivHidden = fractalBotFound and low[2] > lowPrice and src[2] < lowPrev
+    [fractalTop, fractalBot, lowPrev, bearSignal, bullSignal, bearDivHidden, bullDivHidden]
+f_rsimfi(_period, _multiplier) => ta.sma(((close - open) / (high - low)) * _multiplier, _period) - rsiMFIPosY
+f_wavetrend(src, chlen, avglen, malen) =>
+    esa = ta.ema(src, chlen)
+    de = ta.ema(math.abs(src - esa), chlen)
+    ci = (src - esa) / (0.015 * de)
+    wt1 = ta.ema(ci, avglen)
+    wt2 = ta.sma(wt1, malen)
+    [wt1, wt2]
+f_stochrsi(_src, _stochlen, _rsilen, _smoothk, _smoothd, _log, _avg) =>
+    src = _log ? math.log(_src) : _src
+    rsiVal = ta.rsi(src, _rsilen)
+    kk = ta.sma(ta.stoch(rsiVal, rsiVal, rsiVal, _stochlen), _smoothk)
+    d1 = ta.sma(kk, _smoothd)
+    avg_1 = math.avg(kk, d1)
+    k = _avg ? avg_1 : kk
+    [k, d1]
+f_tableSize(sz) =>
+    sz == 'Tiny' ? size.tiny : sz == 'Small' ? size.small : sz == 'Normal' ? size.normal : sz == 'Large' ? size.large : size.huge
+// } FUNCTIONS
+// CALCULATIONS {
+rsi = ta.rsi(rsiSRC, rsiLen)
+rsiColor = rsi <= rsiOversold ? rsioscolor : rsi >= rsiOverbought ? rsiobcolor : rsinacolor
+rsiMFI = f_rsimfi(rsiMFIperiod, rsiMFIMultiplier)
+rsiMFIColor = rsiMFI > 0 ? rsiMFIColorAbove : rsiMFIColorBelow
+[wt1, wt2] = f_wavetrend(wtMASource, wtChannelLen, wtAverageLen, wtMALen)
+wtVwap = wt1 - wt2
+wtOversold = wt2 <= osLevel
+wtOverbought = wt2 >= obLevel
+wtCross = ta.cross(wt1, wt2)
+wtCrossUp = wt2 - wt1 <= 0
+wtCrossDown = wt2 - wt1 >= 0
+[stochK, stochD] = f_stochrsi(stochSRC, stochLen, stochRsiLen, stochKSmooth, stochDSmooth, stochUseLog, stochAvg)
+// WT Divergences
+[wtFractalTop, wtFractalBot, wtLow_prev, wtBearDiv, wtBullDiv, wtBearDivHidden, wtBullDivHidden] = f_findDivs(wt2, wtDivOBLevel, wtDivOSLevel, true)
+[wtFractalTop_add, wtFractalBot_add, wtLow_prev_add, wtBearDiv_add, wtBullDiv_add, wtBearDivHidden_add, wtBullDivHidden_add] = f_findDivs(wt2, wtDivOBLevel_add, wtDivOSLevel_add, true)
+[wtFractalTop_nl, wtFractalBot_nl, wtLow_prev_nl, wtBearDiv_nl, wtBullDiv_nl, wtBearDivHidden_nl, wtBullDivHidden_nl] = f_findDivs(wt2, 0, 0, false)
+wtBearDivHidden_ = showHiddenDiv_nl ? wtBearDivHidden_nl : wtBearDivHidden
+wtBullDivHidden_ = showHiddenDiv_nl ? wtBullDivHidden_nl : wtBullDivHidden
+wtBearDivColor = (wtShowDiv and wtBearDiv) or (wtShowHiddenDiv and wtBearDivHidden_) ? WTBearDivColorDown : na
+wtBullDivColor = (wtShowDiv and wtBullDiv) or (wtShowHiddenDiv and wtBullDivHidden_) ? wtBullDivColorUp : na
+wtBearDivColor_add = (wtShowDiv and wtDivOBLevel_addshow and wtBearDiv_add) or (wtShowHiddenDiv and wtDivOBLevel_addshow and wtBearDivHidden_add) ? WTBearDivColorDown : na
+wtBullDivColor_add = (wtShowDiv and wtDivOBLevel_addshow and wtBullDiv_add) or (wtShowHiddenDiv and wtDivOBLevel_addshow and wtBullDivHidden_add) ? wtBullDivColorUp : na
+// RSI Divergences
+[rsiFractalTop, rsiFractalBot, rsiLow_prev, rsiBearDiv, rsiBullDiv, rsiBearDivHidden, rsiBullDivHidden] = f_findDivs(rsi, rsiDivOBLevel, rsiDivOSLevel, true)
+[rsiFractalTop_nl, rsiFractalBot_nl, rsiLow_prev_nl, rsiBearDiv_nl, rsiBullDiv_nl, rsiBearDivHidden_nl, rsiBullDivHidden_nl] = f_findDivs(rsi, 0, 0, false)
+rsiBearDivHidden_ = showHiddenDiv_nl ? rsiBearDivHidden_nl : rsiBearDivHidden
+rsiBullDivHidden_ = showHiddenDiv_nl ? rsiBullDivHidden_nl : rsiBullDivHidden
+rsiBearDivColor = (rsiShowDiv and rsiBearDiv) or (rsiShowHiddenDiv and rsiBearDivHidden_) ? color.new(#e60000, 0) : na
+rsiBullDivColor = (rsiShowDiv and rsiBullDiv) or (rsiShowHiddenDiv and rsiBullDivHidden_) ? color.new(#38ff42, 0) : na
+// Stoch Divergences
+[stochFractalTop, stochFractalBot, stochLow_prev, stochBearDiv, stochBullDiv, stochBearDivHidden, stochBullDivHidden] = f_findDivs(stochK, 0, 0, false)
+stochBearDivColor = (stochShowDiv and stochBearDiv) or (stochShowHiddenDiv and stochBearDivHidden) ? color.new(#e60000, 0) : na
+stochBullDivColor = (stochShowDiv and stochBullDiv) or (stochShowHiddenDiv and stochBullDivHidden) ? color.new(#38ff42, 0) : na
+// MFI Divergences
+[mfiFractalTop, mfiFractalBot, mfiLow_prev, mfiBearDiv, mfiBullDiv, mfiBearDivHidden, mfiBullDivHidden] = f_findDivs(rsiMFI, mfiDivOBLevel, mfiDivOSLevel, true)
+[mfiFractalTop_nl, mfiFractalBot_nl, mfiLow_prev_nl, mfiBearDiv_nl, mfiBullDiv_nl, mfiBearDivHidden_nl, mfiBullDivHidden_nl] = f_findDivs(rsiMFI, 0, 0, false)
+mfiBearDivHidden_ = showHiddenDiv_nl ? mfiBearDivHidden_nl : mfiBearDivHidden
+mfiBullDivHidden_ = showHiddenDiv_nl ? mfiBullDivHidden_nl : mfiBullDivHidden
+mfiBearDivColor = (mfiShowDiv and mfiBearDiv) or (mfiShowHiddenDiv and mfiBearDivHidden_) ? mfiBearDivColorInput : na
+mfiBullDivColor = (mfiShowDiv and mfiBullDiv) or (mfiShowHiddenDiv and mfiBullDivHidden_) ? mfiBullDivColorInput : na
+// Signals
+signalColor = wt2 - wt1 > 0 ? signalcolordown : signalcolorup
+buySignal = wtCross and wtCrossUp and wtOversold
+buySignalDiv = (wtShowDiv and wtBullDiv) or (wtShowDiv and wtBullDiv_add) or (stochShowDiv and stochBullDiv) or (rsiShowDiv and rsiBullDiv)
+buySignalDiv_color = wtBullDiv ? colorGreen : wtBullDiv_add ? color.new(colorGreen, 60) : rsiBullDiv ? colorGreen : stochBullDiv ? colorGreen : na
+sellSignal = wtCross and wtCrossDown and wtOverbought
+sellSignalDiv = (wtShowDiv and wtBearDiv) or (wtShowDiv and wtBearDiv_add) or (stochShowDiv and stochBearDiv) or (rsiShowDiv and rsiBearDiv)
+sellSignalDiv_color = wtBearDiv ? colorRed : wtBearDiv_add ? color.new(colorRed, 60) : rsiBearDiv ? colorRed : stochBearDiv ? colorRed : na
+lastRsi = ta.valuewhen(not na(wtFractalBot), rsi[2], 0)[2]
+wtGoldBuy = ((wtShowDiv and wtBullDiv) or (rsiShowDiv and rsiBullDiv)) and wtLow_prev <= osLevel3 and wt2 > osLevel3 and wtLow_prev - wt2 <= -5 and lastRsi < 30
+// Confluence des divergences (WT + RSI + Stoch + MFI)
+bullDivCount = (wtShowDiv and wtBullDiv ? 1 : 0) + (rsiShowDiv and rsiBullDiv ? 1 : 0) + (stochShowDiv and stochBullDiv ? 1 : 0) + (mfiShowDiv and mfiBullDiv ? 1 : 0)
+bearDivCount = (wtShowDiv and wtBearDiv ? 1 : 0) + (rsiShowDiv and rsiBearDiv ? 1 : 0) + (stochShowDiv and stochBearDiv ? 1 : 0) + (mfiShowDiv and mfiBearDiv ? 1 : 0)
+// } CALCULATIONS
+// DRAW {
+bgcolor(darkMode ? color.new(#000000, 0) : na)
+plot(0, color = color.new(colorWhite, 50))
+rsiMfiBarTopLine = plot(rsiMFIShow ? -95 : na, title = 'MFI Bar TOP Line', color = na)
+rsiMfiBarBottomLine = plot(rsiMFIShow ? -99 : na, title = 'MFI Bar BOTTOM Line', color = na)
+fill(rsiMfiBarTopLine, rsiMfiBarBottomLine, title = 'MFI Bar Colors', color = showOscillatorPane ? color.new(rsiMFIColor, 75) : na)
+plot(showOscillatorPane and wtShow ? wt1 : na, style = plot.style_area, title = 'WT Wave 1', color = color.new(colorWT1blue, 30))
+plot(showOscillatorPane and wtShow ? wt2 : na, style = plot.style_area, title = 'WT Wave 2', color = color.new(colorWT2purple, 25))
+plot(showOscillatorPane and vwapShow ? wtVwap : na, title = 'VWAP', color = color.new(VWAPColor, 45), style = plot.style_area, linewidth = 2)
+plot(showOscillatorPane and rsiMFIShow ? rsiMFI : na, style = plot.style_area, title = 'rsiMFI', color = color.new(rsiMFIColor, 50))
+plot(showOscillatorPane and not na(wtFractalTop) ? wt2[2] : na, title = 'WT Bearish Divergence', color = wtBearDivColor, linewidth = 2, offset = -2)
+plot(showOscillatorPane and not na(wtFractalBot) ? wt2[2] : na, title = 'WT Bullish Divergence', color = wtBullDivColor, linewidth = 2, offset = -2)
+plot(showOscillatorPane and not na(wtFractalTop_add) ? wt2[2] : na, title = 'WT 2nd Bearish Divergence', color = wtBearDivColor_add, linewidth = 2, offset = -2)
+plot(showOscillatorPane and not na(wtFractalBot_add) ? wt2[2] : na, title = 'WT 2nd Bullish Divergence', color = wtBullDivColor_add, linewidth = 2, offset = -2)
+plot(showOscillatorPane and rsiShow ? rsi : na, title = 'RSI', color = color.new(rsiColor, 25), linewidth = 2)
+plot(showOscillatorPane and not na(rsiFractalTop) ? rsi[2] : na, title = 'RSI Bearish Divergence', color = rsiBearDivColor, linewidth = 1, offset = -2)
+plot(showOscillatorPane and not na(rsiFractalBot) ? rsi[2] : na, title = 'RSI Bullish Divergence', color = rsiBullDivColor, linewidth = 1, offset = -2)
+stochKplot = plot(showOscillatorPane and stochShow ? stochK : na, title = 'Stoch K', color = stochkcolor, linewidth = 2)
+stochDplot = plot(showOscillatorPane and stochShow ? stochD : na, title = 'Stoch D', color = stochdcolor, linewidth = 1)
+fill(stochKplot, stochDplot, title = 'KD Fill', color = showOscillatorPane ? (stochK >= stochD ? color.new(#21baf3, 95) : color.new(#673ab7, 90)) : na)
+plot(showOscillatorPane and not na(stochFractalTop) ? stochK[2] : na, title = 'Stoch Bearish Divergence', color = stochBearDivColor, linewidth = 1, offset = -2)
+plot(showOscillatorPane and not na(stochFractalBot) ? stochK[2] : na, title = 'Stoch Bullish Divergence', color = stochBullDivColor, linewidth = 1, offset = -2)
+plot(showOscillatorPane and not na(mfiFractalTop) ? rsiMFI[2] : na, title = 'MFI Bearish Divergence', color = mfiBearDivColor, linewidth = 1, offset = -2)
+plot(showOscillatorPane and not na(mfiFractalBot) ? rsiMFI[2] : na, title = 'MFI Bullish Divergence', color = mfiBullDivColor, linewidth = 1, offset = -2)
+plot(showOscillatorPane ? obLevel2 : na, title = 'Over Bought Level 2', color = color.new(colorWhite, 85), linewidth = 1, style = plot.style_stepline)
+plot(showOscillatorPane ? obLevel3 : na, title = 'Over Bought Level 3', color = color.new(colorWhite, 95), linewidth = 1, style = plot.style_circles)
+plot(showOscillatorPane ? osLevel2 : na, title = 'Over Sold Level 2', color = color.new(colorWhite, 85), linewidth = 1, style = plot.style_stepline)
+plot(showOscillatorPane and wtCross ? wt2 : na, title = 'Buy and sell circle', color = color.new(signalColor, 15), style = plot.style_circles, linewidth = 3)
+plotchar(showOscillatorPane and wtBuyShow and buySignal ? -107 : na, title = 'Buy circle', char = '·', color = color.new(colorGreen, 50), location = location.absolute, size = size.small)
+plotchar(showOscillatorPane and wtSellShow and sellSignal ? 105 : na, title = 'Sell circle', char = '·', color = color.new(colorRed, 50), location = location.absolute, size = size.small)
+plotchar(showOscillatorPane and wtDivShow and buySignalDiv ? -106 : na, title = 'Divergence buy circle', char = '•', color = color.new(buySignalDiv_color, 15), location = location.absolute, size = size.small, offset = -2)
+plotchar(showOscillatorPane and wtDivShow and sellSignalDiv ? 106 : na, title = 'Divergence sell circle', char = '•', color = color.new(sellSignalDiv_color, 15), location = location.absolute, size = size.small, offset = -2)
+plotchar(showOscillatorPane and wtGoldBuy and wtGoldShow ? -106 : na, title = 'Gold buy gold circle', char = '•', color = color.new(goldDotColor, 15), location = location.absolute, size = size.normal, offset = -2)
+// Étiquette de confluence sur le chart (pas de flèche, juste le chiffre, vert=bull rouge=bear)
+if showConfluenceLabel and not na(mfiFractalBot) and bullDivCount >= confluenceMinShow
+    label.new(bar_index[2], low[2], str.tostring(bullDivCount) + '/4', yloc = yloc.belowbar, style = label.style_label_up, color = bullDivCount >= 4 ? confluenceGoldColor : confluenceBullColor, textcolor = color.black, size = size.small, force_overlay = true)
+if showConfluenceLabel and not na(mfiFractalTop) and bearDivCount >= confluenceMinShow
+    label.new(bar_index[2], high[2], str.tostring(bearDivCount) + '/4', yloc = yloc.abovebar, style = label.style_label_down, color = bearDivCount >= 4 ? confluenceGoldColor : confluenceBearColor, textcolor = bearDivCount >= 4 ? color.black : color.white, size = size.small, force_overlay = true)
+// Table Golden Dot — statut visuel + rappel du nom de l'alertcondition à choisir dans "Add Alert"
+goldTablePosVal = goldTablePos == 'Top Right' ? position.top_right : goldTablePos == 'Top Left' ? position.top_left : goldTablePos == 'Bottom Right' ? position.bottom_right : position.bottom_left
+var table goldTable = table.new(goldTablePosVal, 2, 2, border_width = 1, border_color = color.new(color.gray, 40))
+barsSinceGold = ta.barssince(wtGoldBuy)
+if showGoldTable and barstate.islast
+    table.cell(goldTable, 0, 0, 'GOLDEN DOT', text_color = color.black, bgcolor = color.new(goldDotColor, 0), text_size = f_tableSize(goldTableSize))
+    table.cell(goldTable, 1, 0, wtGoldBuy ? '🟡 ACTIF' : '-', text_color = color.white, bgcolor = wtGoldBuy ? color.new(goldDotColor, 40) : color.new(color.gray, 60), text_size = f_tableSize(goldTableSize))
+    table.cell(goldTable, 0, 1, 'Dernier signal', text_color = color.white, bgcolor = color.new(color.gray, 60), text_size = f_tableSize(goldTableSize))
+    table.cell(goldTable, 1, 1, na(barsSinceGold) ? 'aucun' : str.tostring(barsSinceGold) + ' barres', text_color = color.white, bgcolor = color.new(color.gray, 60), text_size = f_tableSize(goldTableSize))
+// Table Confluence Divergences (WT / RSI / Stoch / MFI)
+confluenceTablePosVal = confluenceTablePos == 'Top Right' ? position.top_right : confluenceTablePos == 'Top Left' ? position.top_left : confluenceTablePos == 'Bottom Right' ? position.bottom_right : position.bottom_left
+var table confluenceTable = table.new(confluenceTablePosVal, 2, 6, border_width = 1, border_color = color.new(color.gray, 40))
+if showConfluenceTable and barstate.islast
+    table.cell(confluenceTable, 0, 0, 'DIVERGENCE', text_color = color.white, bgcolor = color.new(#1e1e2f, 0), text_size = f_tableSize(confluenceTableSize))
+    table.cell(confluenceTable, 1, 0, 'BULL / BEAR', text_color = color.white, bgcolor = color.new(#1e1e2f, 0), text_size = f_tableSize(confluenceTableSize))
+    table.cell(confluenceTable, 0, 1, 'WaveTrend', text_color = color.white, bgcolor = color.new(#131722, 0), text_size = f_tableSize(confluenceTableSize))
+    table.cell(confluenceTable, 1, 1, (wtBullDiv ? '🟢' : '-') + ' / ' + (wtBearDiv ? '🔴' : '-'), text_color = color.white, bgcolor = color.new(#131722, 0), text_size = f_tableSize(confluenceTableSize))
+    table.cell(confluenceTable, 0, 2, 'RSI', text_color = color.white, bgcolor = color.new(#131722, 0), text_size = f_tableSize(confluenceTableSize))
+    table.cell(confluenceTable, 1, 2, (rsiBullDiv ? '🟢' : '-') + ' / ' + (rsiBearDiv ? '🔴' : '-'), text_color = color.white, bgcolor = color.new(#131722, 0), text_size = f_tableSize(confluenceTableSize))
+    table.cell(confluenceTable, 0, 3, 'Stoch RSI', text_color = color.white, bgcolor = color.new(#131722, 0), text_size = f_tableSize(confluenceTableSize))
+    table.cell(confluenceTable, 1, 3, (stochBullDiv ? '🟢' : '-') + ' / ' + (stochBearDiv ? '🔴' : '-'), text_color = color.white, bgcolor = color.new(#131722, 0), text_size = f_tableSize(confluenceTableSize))
+    table.cell(confluenceTable, 0, 4, 'MFI', text_color = color.white, bgcolor = color.new(#131722, 0), text_size = f_tableSize(confluenceTableSize))
+    table.cell(confluenceTable, 1, 4, (mfiBullDiv ? '🟢' : '-') + ' / ' + (mfiBearDiv ? '🔴' : '-'), text_color = color.white, bgcolor = color.new(#131722, 0), text_size = f_tableSize(confluenceTableSize))
+    table.cell(confluenceTable, 0, 5, 'TOTAL', text_color = color.black, bgcolor = color.new(#ffb300, 0), text_size = f_tableSize(confluenceTableSize))
+    table.cell(confluenceTable, 1, 5, str.tostring(bullDivCount) + '/4 🟢  ' + str.tostring(bearDivCount) + '/4 🔴', text_color = color.black, bgcolor = color.new(#ffb300, 0), text_size = f_tableSize(confluenceTableSize))
+// } DRAW
+// ALERTS {
+alertcondition(buySignal, 'Buy (Big green circle)', 'Green circle WaveTrend Oversold')
+alertcondition(buySignalDiv, 'Buy (Big green circle + Div)', 'Buy & WT Bullish Divergence & WT Overbought')
+alertcondition(wtGoldBuy, 'GOLD Buy (Big GOLDEN circle)', 'Green & GOLD circle WaveTrend Overbought')
+alertcondition(wtCross and wtCrossUp, 'Buy (Small green dot)', 'Buy small circle')
+alertcondition(sellSignal, 'Sell (Big red circle)', 'Red Circle WaveTrend Overbought')
+alertcondition(sellSignalDiv, 'Sell (Big red circle + Div)', 'Buy & WT Bearish Divergence & WT Overbought')
+alertcondition(wtCross and wtCrossDown, 'Sell (Small red dot)', 'Sell small circle')
+alertcondition(bullDivCount >= 2, 'Confluence Bullish (2+/4)', 'CCQc Cipher Pro - Confluence Bullish sur {{ticker}} ({{interval}}) @ {{close}}')
+alertcondition(bearDivCount >= 2, 'Confluence Bearish (2+/4)', 'CCQc Cipher Pro - Confluence Bearish sur {{ticker}} ({{interval}}) @ {{close}}')
+// } ALERTS

@@ -1,0 +1,27 @@
+[package]
+name = "argos-store"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "Argos — base de données locale (redb, ou en mémoire dans le navigateur) : catalogue des symboles des exchanges et watchlists, et base sensible chiffrée (journal)"
+
+[dependencies]
+argos-core = { path = "../argos-core" }
+serde = "1"
+serde_json = "1"
+
+# redb (fichier, Rust pur) sur desktop ; dans le navigateur (WASM), la base en mémoire (`MemStore`)
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+redb = "4.5"
+# 🔐 base sensible chiffrée (les mêmes que le coffre du desktop)
+aes-gcm = { version = "0.10", default-features = false, features = ["aes", "alloc"] }
+getrandom = "0.4"
+# 🔐 clé de l'appareil dans le trousseau du système (comme les clés API du desktop)
+keyring = { version = "3", features = ["apple-native", "windows-native", "async-secret-service", "tokio", "crypto-rust"] }
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+argos-data = { path = "../argos-data" }

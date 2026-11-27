@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# 🟢 « make vert » obligatoire avant chaque commit qui touche rust/ (formatage, clippy desktop + navigateur, tests,
+# audit, licences, secrets). Rouge = commit refusé. Installation, une fois par clone :  cd rust && make hooks
+set -euo pipefail
+racine=$(git rev-parse --show-toplevel)
+if ! git diff --cached --name-only | grep -q '^rust/'; then
+  echo "🟢 pre-commit : rien de rust/ dans ce commit, make vert sauté."
+  exit 0
+fi
+echo "🟢 pre-commit : make vert (fmt, clippy, tests, audit, deny)…"
+if ! make -C "$racine/rust" vert; then
+  echo "❌ make vert est rouge : commit refusé. Corrige puis relance git commit."
+  exit 1
+fi
+echo "✅ make vert : tout vert"

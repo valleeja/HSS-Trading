@@ -1,0 +1,22 @@
+[
+  {
+    "custom": [
+      7,
+      8
+    ],
+    "favorites": [
+      4,
+      5
+    ],
+    "hidden": true,
+    "interval": 6,
+    "menu_collapsed": [
+      "essai-8",
+      "essai-9"
+    ],
+    "retracted": true,
+    "vertical": true,
+    "x": 1.5,
+    "y": 2.5
+  }
+]

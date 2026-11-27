@@ -1,0 +1,22 @@
+Maquette verre, vue Cell 390 × 844, volet Trading ouvert (#panneau : 70vh, posé sur la barre d'icônes, rayon 26,
+verre rgba(26,30,42,.6), liseré blanc .16). Mesuré le 2026-11-09 dans le navigateur (getBoundingClientRect),
+en points depuis le HAUT DE LA FEUILLE : [x, y, largeur, hauteur].
+poignée            [175,   9,   40,   5]  blanc .16
+titre « Trading »  [ 15,  42.4, 246, 21.1] 15 px gras, icône 20 × 20 (dim)
+⬓ ⤢ ✕              [269 / 307 / 345, 38, 30, 30] rayon 15, blanc .07, 13 px
+🎫 Ticket          [ 13,  80,  74.5, 27.5] puce allumée (accent .35), rayon 12, 13 px
+🧪 Simulateur      [ 93.5, 80, 102.5, 27.5] puce (blanc .07)
+Compte : …         [ 13, 111.6, 364, 14.8] 11 px dim
+carte Gardien      [ 13, 132.4, 364, 203.3] rayon 14, vert .07 (dans les règles), liseré blanc .16
+  titre            [ 25, 144,  221, 17.5] 13 px gras ; ☀ Routine [297.7, 142.4, 67.3, 20.8] 11 px
+  Perte du jour    [ 25, 169.2] 12.5 px ; valeur à droite (365), gras
+  jauge            [ 25, 191.1, 340, 8] rayon 4, blanc .08 ; remplissage vert ; trait orange 2 × 14 à 80 % (y 188.1)
+  message          [ 25, 207.1, 340, 28.2] rayon 10, blanc .06, 12 px ; lien bleu (143,180,255)
+  Perte max / Positions / Risque max : titres 9.6 px dim à (25|197, 241.3|273.7), valeurs 11.5 px dessous
+  Règles : …       [ 25, 310.2] 10.8 px dim, lien « 📋 Mon plan › »
+Marché/Limite/Stop [13, 345.7, 63.5] [82.5, 56.4] [145, 47.1] h 27.5
+VENDRE / ACHETER   [ 13 | 199, 394.8, 178, 54] rayon 16, rouge (234,57,67) / vert (22,199,132), 13 px 800, prix 10.8 px
+Risque/Stop/Objectif [13, 454.8 | 496.4 | 537.9, 364, 35.5] rayon 12, blanc .07, 13 px ; valeurs à droite
+Positions          titre [15, 605] 11 px dim ; cartes [13, 627.8 + 45.6 k, 364, 37.5] rayon 14, blanc .07
+aide ⚙             [ 13, 724.9, 364, 29.7] 11 px dim
+⋯ Toutes les options [13, 766.6] 13 px dim

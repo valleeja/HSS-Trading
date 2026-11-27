@@ -1,0 +1,156 @@
+//@version=6
+indicator("🚀CCQc🚀 TVD Pro", overlay=true, max_lines_count=500, max_labels_count=500)
+rsiLen = input.int(10, "RSI Length", minval=2, maxval=100, group="AI Index")
+stochLen = input.int(10, "Stoch Length", minval=2, maxval=100, group="AI Index")
+momLen = input.int(10, "Momentum Length", minval=2, maxval=100, group="AI Index")
+smoothLen = input.int(5, "AI Smoothing", minval=1, maxval=50, group="AI Index")
+signalLen = input.int(9, "Signal Line", minval=1, maxval=50, group="AI Index")
+bullLvl = input.float(55, "AI Bull Level", minval=50, maxval=90, group="AI Index")
+bearLvl = input.float(45, "AI Bear Level", minval=10, maxval=50, group="AI Index")
+emaFastLen = input.int(13, "EMA Fast", minval=2, maxval=500, group="EMAs")
+emaSlowLen = input.int(50, "EMA Slow", minval=2, maxval=500, group="EMAs")
+emaMidLen = input.int(100, "EMA Mid", minval=2, maxval=500, group="EMAs")
+emaTrendLen = input.int(200, "EMA Trend", minval=2, maxval=500, group="EMAs")
+trendNeedsEma = input.bool(true, "Trend signals need EMA Slow confirmation", group="EMAs")
+vecMult = input.float(2.0, "Vector Volume x Avg", minval=1, maxval=10, step=0.1, group="Volume Vector")
+showVector = input.bool(true, "Vector Candles", group="Volume Vector")
+pivL = input.int(5, "Pivot Left", minval=1, maxval=30, group="Divergences")
+pivR = input.int(5, "Pivot Right", minval=1, maxval=30, group="Divergences")
+rangeMin = input.int(5, "Min Distance (bars)", minval=1, maxval=100, group="Divergences")
+rangeMax = input.int(60, "Max Distance (bars)", minval=10, maxval=300, group="Divergences")
+showReg = input.bool(true, "Regular Divergences", group="Divergences")
+showHid = input.bool(true, "Hidden Divergences", group="Divergences")
+zoneFilter = input.bool(false, "Zone Filter (bull < 50, bear > 50)", group="Divergences")
+showSignals = input.bool(true, "Trend BUY/SELL (arrows)", group="Display")
+showAiSignals = input.bool(true, "AI Reversal BUY/SELL (circles)", group="Display")
+showPatterns = input.bool(true, "Reversal Patterns", group="Display")
+showTable = input.bool(true, "Dashboard", group="Display")
+tanh(float x) =>
+    xc = math.max(math.min(x, 20.0), -20.0)
+    e = math.exp(2 * xc)
+    (e - 1) / (e + 1)
+rsiTs = ta.rsi(close, rsiLen)
+stochK = ta.sma(ta.stoch(close, high, low, stochLen), 3)
+momTs = ta.mom(close, momLen)
+sdTs = ta.stdev(close, momLen)
+momNorm = sdTs > 0 ? 50 + 50 * tanh(momTs / (sdTs * 2)) : 50.0
+aiRaw = (rsiTs + stochK + momNorm) / 3
+aiIndex = ta.ema(aiRaw, smoothLen)
+aiSignal = ta.ema(aiIndex, signalLen)
+emaFast = ta.ema(close, emaFastLen)
+emaSlow = ta.ema(close, emaSlowLen)
+emaMid = ta.ema(close, emaMidLen)
+emaTrend = ta.ema(close, emaTrendLen)
+vAvg = ta.sma(volume, 20)
+up = close >= open
+vecHigh = volume >= vAvg * vecMult
+vecMid = not vecHigh and volume >= vAvg * 1.5
+isBull = aiIndex > bullLvl and close > emaSlow
+isBear = aiIndex < bearLvl and close < emaSlow
+trendUp = aiIndex > bullLvl and aiIndex[1] <= bullLvl and (not trendNeedsEma or close > emaSlow)
+trendDn = aiIndex < bearLvl and aiIndex[1] >= bearLvl and (not trendNeedsEma or close < emaSlow)
+goldSell = trendDn and vecHigh and close < emaTrend
+goldBuy = trendUp and vecHigh and close > emaTrend
+aiBuy = ta.crossover(aiIndex, aiSignal) and aiIndex < bearLvl
+aiSell = ta.crossunder(aiIndex, aiSignal) and aiIndex > bullLvl
+body = math.abs(close - open)
+upWick = high - math.max(open, close)
+dnWick = math.min(open, close) - low
+bullEngulf = close > open and close[1] < open[1] and close >= open[1] and open <= close[1]
+bearEngulf = close < open and close[1] > open[1] and close <= open[1] and open >= close[1]
+hammer = body > 0 and dnWick >= body * 2 and upWick <= body
+star = body > 0 and upWick >= body * 2 and dnWick <= body
+bullRev = (bullEngulf or hammer) and aiIndex < 50
+bearRev = (bearEngulf or star) and aiIndex > 50
+phOsc = ta.pivothigh(aiIndex, pivL, pivR)
+plOsc = ta.pivotlow(aiIndex, pivL, pivR)
+var bool hasPH = false
+var float prevPhOsc = na
+var float prevPhPrice = na
+var int prevPhBar = na
+var bool hasPL = false
+var float prevPlOsc = na
+var float prevPlPrice = na
+var int prevPlBar = na
+newPH = not na(phOsc)
+newPL = not na(plOsc)
+pivBar = bar_index - pivR
+phPrice = high[pivR]
+plPrice = low[pivR]
+okH = newPH and hasPH and (pivBar - prevPhBar) >= rangeMin and (pivBar - prevPhBar) <= rangeMax and (not zoneFilter or phOsc > 50)
+okL = newPL and hasPL and (pivBar - prevPlBar) >= rangeMin and (pivBar - prevPlBar) <= rangeMax and (not zoneFilter or plOsc < 50)
+regBull = showReg and okL and plPrice < prevPlPrice and plOsc > prevPlOsc
+hidBull = showHid and okL and plPrice > prevPlPrice and plOsc < prevPlOsc
+regBear = showReg and okH and phPrice > prevPhPrice and phOsc < prevPhOsc
+hidBear = showHid and okH and phPrice < prevPhPrice and phOsc > prevPhOsc
+if regBull
+    line.new(prevPlBar, prevPlPrice, pivBar, plPrice, color=#22c55e, width=2)
+    label.new(pivBar, plPrice, "Bull", style=label.style_label_up, color=#16a34a, textcolor=#ffffff, size=size.small)
+if hidBull
+    line.new(prevPlBar, prevPlPrice, pivBar, plPrice, color=#86efac, width=1)
+    label.new(pivBar, plPrice, "H Bull", style=label.style_label_up, color=#86efac, textcolor=#052e16, size=size.small)
+if regBear
+    line.new(prevPhBar, prevPhPrice, pivBar, phPrice, color=#ef4444, width=2)
+    label.new(pivBar, phPrice, "Bear", style=label.style_label_down, color=#dc2626, textcolor=#ffffff, size=size.small)
+if hidBear
+    line.new(prevPhBar, prevPhPrice, pivBar, phPrice, color=#fca5a5, width=1)
+    label.new(pivBar, phPrice, "H Bear", style=label.style_label_down, color=#fca5a5, textcolor=#450a0a, size=size.small)
+var string lastDiv = "—"
+var int lastDivBar = na
+var string lastSig = "—"
+var int lastSigBar = na
+if regBull or hidBull or regBear or hidBear
+    lastDiv := regBull ? "Bull 🟢" : hidBull ? "H Bull 🟢" : regBear ? "Bear 🔴" : "H Bear 🔴"
+    lastDivBar := pivBar
+if goldBuy or goldSell or trendUp or trendDn or aiBuy or aiSell
+    lastSig := goldBuy ? "🚀 GOLD BUY" : goldSell ? "💀 GOLD SELL" : trendUp ? "Trend BUY ⬆️" : trendDn ? "Trend SELL ⬇️" : aiBuy ? "AI BUY 🟢" : "AI SELL 🔴"
+    lastSigBar := bar_index
+if newPH
+    prevPhOsc := phOsc
+    prevPhPrice := phPrice
+    prevPhBar := pivBar
+    hasPH := true
+if newPL
+    prevPlOsc := plOsc
+    prevPlPrice := plPrice
+    prevPlBar := pivBar
+    hasPL := true
+pFast = plot(emaFast, "EMA Fast", color=#22d3ee, linewidth=1)
+pSlow = plot(emaSlow, "EMA Slow", color=#f59e0b, linewidth=2)
+plot(emaMid, "EMA Mid", color=#3b82f6, linewidth=2)
+plot(emaTrend, "EMA Trend", color=#a855f7, linewidth=2)
+fill(pFast, pSlow, color=isBull ? color.new(#22c55e, 85) : isBear ? color.new(#ef4444, 85) : color.new(#94a3b8, 85), title="EMA Cloud")
+barcolor(showVector ? (vecHigh ? (up ? #00e676 : #ff1744) : vecMid ? (up ? #2962ff : #d500f9) : na) : na, title="Vector Candles")
+plotshape(showSignals and trendUp and not goldBuy, "Trend BUY", shape.triangleup, location.belowbar, #22c55e, size=size.small)
+plotshape(showSignals and trendDn and not goldSell, "Trend SELL", shape.triangledown, location.abovebar, #ef4444, size=size.small)
+plotshape(showAiSignals and aiBuy, "AI BUY", shape.circle, location.belowbar, #16a34a, size=size.tiny)
+plotshape(showAiSignals and aiSell, "AI SELL", shape.circle, location.abovebar, #dc2626, size=size.tiny)
+plotshape(showPatterns and bullRev, "Bull Reversal", shape.diamond, location.belowbar, #86efac, size=size.tiny)
+plotshape(showPatterns and bearRev, "Bear Reversal", shape.diamond, location.abovebar, #fca5a5, size=size.tiny)
+plotshape(showSignals and goldSell, "GOLD SELL", shape.labeldown, location.abovebar, #7f1d1d, text="💀 GOLD SELL", textcolor=#ffffff, size=size.small)
+plotshape(showSignals and goldBuy, "GOLD BUY", shape.labelup, location.belowbar, #14532d, text="🚀 GOLD BUY", textcolor=#ffffff, size=size.small)
+var table dash = table.new(position.top_right, 2, 9, bgcolor=#0b0f14, border_color=#1e293b, border_width=1)
+cell(int r, string k, string v, color bg) =>
+    table.cell(dash, 0, r, k, text_color=#ffffff, bgcolor=bg, text_size=size.small, text_halign=text.align_left)
+    table.cell(dash, 1, r, v, text_color=#ffffff, bgcolor=bg, text_size=size.small)
+if showTable and barstate.islast
+    cell(0, "🤖🕯️ CCQc TVD Pro", "Value", #1e293b)
+    cell(1, "AI Index / Signal", str.tostring(aiIndex, "#.#") + " / " + str.tostring(aiSignal, "#.#"), #0b0f14)
+    cell(2, "Trend", isBull ? "BULL 🟢" : isBear ? "BEAR 🔴" : "NEUTRAL ⚪", #0b0f14)
+    cell(3, "RSI / Stoch", str.tostring(math.round(rsiTs)) + " / " + str.tostring(math.round(stochK)), #0b0f14)
+    cell(4, "EMA Fast / Slow", emaFast > emaSlow ? "Bull ✅" : "Bear ❌", #0b0f14)
+    cell(5, "EMA Trend", close > emaTrend ? "Above ✅" : "Below ❌", #0b0f14)
+    cell(6, "Volume", vecHigh ? "Vector 🔥" : vecMid ? "Vector 150%" : "Normal", #0b0f14)
+    cell(7, "Last Div", na(lastDivBar) ? lastDiv : lastDiv + " (" + str.tostring(bar_index - lastDivBar) + " bars)", #0b0f14)
+    cell(8, "Last Signal", na(lastSigBar) ? lastSig : lastSig + " (" + str.tostring(bar_index - lastSigBar) + " bars)", #0b0f14)
+alertcondition(trendUp, "Trend BUY", "CCQc TVD Pro : Trend BUY")
+alertcondition(trendDn, "Trend SELL", "CCQc TVD Pro : Trend SELL")
+alertcondition(goldSell, "GOLD SELL", "CCQc TVD Pro : 💀 GOLD SELL")
+alertcondition(goldBuy, "GOLD BUY", "CCQc TVD Pro : 🚀 GOLD BUY")
+alertcondition(aiBuy, "AI BUY", "CCQc TVD Pro : AI BUY")
+alertcondition(aiSell, "AI SELL", "CCQc TVD Pro : AI SELL")
+alertcondition(vecHigh, "Vector Candle 200%", "CCQc TVD Pro : Vector candle 200%")
+alertcondition(regBull, "Bull Div", "CCQc TVD Pro : bullish divergence")
+alertcondition(regBear, "Bear Div", "CCQc TVD Pro : bearish divergence")
+alertcondition(hidBull, "Hidden Bull Div", "CCQc TVD Pro : hidden bullish divergence")
+alertcondition(hidBear, "Hidden Bear Div", "CCQc TVD Pro : hidden bearish divergence")

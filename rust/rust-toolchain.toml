@@ -1,0 +1,7 @@
+# 🦀 Version de Rust figée pour tout le dépôt (la même partout : ton ordi, le build du site, les hooks).
+# Pour monter de version : changer « channel », puis make vert et make web.
+[toolchain]
+channel = "1.99.1"
+components = ["rustfmt", "clippy"]
+targets = ["wasm32-unknown-unknown"]
+profile = "minimal"

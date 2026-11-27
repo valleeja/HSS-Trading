@@ -1,0 +1,31 @@
+[package]
+name = "argos-render"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "Argos — moteur de dessin de la chart (bougies maison, sans TradingView) : dessine dans une image en pixels"
+
+[dependencies]
+argos-core = { path = "../argos-core" }
+argos-lens = { path = "../argos-lens" }
+argos-script = { path = "../argos-script" }
+argos-data = { path = "../argos-data" }
+argos-academy = { path = "../argos-academy" }
+argos-propfirm = { path = "../argos-propfirm" }
+tiny-skia = "0.11"
+resvg = { version = "0.45", default-features = false }
+# 🔍 text with hinting (letters on the pixel grid at small sizes), Apache-2.0 OR MIT — « ok swash » from Jee, 17 Nov
+swash = { version = "=0.2.10", default-features = false, features = ["std", "scale", "render"] }
+serde = { version = "1", features = ["derive"] }
+chrono = { version = "0.4", default-features = false }
+# horloge qui marche aussi dans le navigateur
+web-time = "1"
+chrono-tz = { version = "0.10", default-features = false }
+
+[dev-dependencies]
+# relire les réglages écrits (tests seulement)
+serde_json = "1"
+
+[lints]
+workspace = true

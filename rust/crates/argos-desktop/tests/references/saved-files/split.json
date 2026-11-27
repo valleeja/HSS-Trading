@@ -1,0 +1,23 @@
+[
+  {
+    "layout": "essai-1",
+    "liees": [
+      true,
+      true
+    ],
+    "panes": [
+      [
+        "essai-2",
+        4
+      ],
+      [
+        "essai-4",
+        6
+      ]
+    ],
+    "sync_crosshair": true,
+    "sync_interval": true,
+    "sync_symbol": true,
+    "sync_time": true
+  }
+]

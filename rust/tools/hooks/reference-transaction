@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# 🛡 Quality gate (Jee, 24 Nov 2026: « la version n'entre pas tant qu'elle ne respecte pas tous les garde-fous »).
+# git runs this hook for every change of a ref. Before anything is written, it refuses any change of
+# refs/heads/interface-2 (merge, fast-forward, rebase, reset, commit, branch -f, update-ref, rename, delete) to a commit
+# whose exact content (its tree) has no stamp of the gate: `make porte`, all green, writes that stamp
+# (rust/tools/porte/tampon.sh). A branch that fails the gate is fixed and goes through it again.
+# Installed once per clone by `make hooks` (core.hooksPath, the main clone's hooks for every worktree).
+set -u
+[ "${1:-}" = "prepared" ] || exit 0
+# git pack-refs (run by git gc and git maintenance) only moves refs between the loose files and packed-refs: no value
+# changes, nothing to refuse (its moves look like a creation and a deletion)
+mapfile -d '' -t parent < "/proc/$PPID/cmdline" 2>/dev/null || parent=()
+[ "${#parent[@]}" -ge 2 ] && [ "${parent[0]##*/}" = git ] && [ "${parent[1]}" = pack-refs ] && exit 0
+zero=0000000000000000000000000000000000000000
+common=$(git rev-parse --git-common-dir)
+cur=$(git rev-parse --verify --quiet refs/heads/interface-2) || cur=""
+refuse=0
+while read -r old new ref; do
+  [ "$ref" = "refs/heads/interface-2" ] || continue
+  # a deletion: git gives the old value only when the command names it (git branch -D gives zero, zero)
+  if [ "$new" = "$zero" ]; then
+    echo "⛔ Porte de qualité : interface-2 ne s'efface pas." >&2
+    refuse=1
+    continue
+  fi
+  # not moving: interface-2 written again with the value it has
+  [ "$new" = "$cur" ] && continue
+  tree=$(git rev-parse --verify --quiet "$new^{tree}") || tree=""
+  if [ -z "$tree" ] || [ ! -s "$common/argos-porte/$tree" ]; then
+    echo "⛔ Porte de qualité : interface-2 ne va pas à $new." >&2
+    echo "   Ce contenu n'a pas passé « make porte » (aucun tampon pour l'arbre ${tree:-?})." >&2
+    echo "   Lance  cd rust && make porte  sur la branche, corrige ce qui est rouge, puis refais la fusion." >&2
+    echo "   (une fusion refusée a pu déjà changer les fichiers du clone : « git status » ; « git reset --merge » les remet comme interface-2)" >&2
+    refuse=1
+  fi
+done
+exit $refuse

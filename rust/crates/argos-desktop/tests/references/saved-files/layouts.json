@@ -1,0 +1,1340 @@
+[
+  {
+    "liste": [
+      {
+        "dessins": [
+          "essai-9",
+          {
+            "bar_spacing": 11.5,
+            "drawings": [
+              {
+                "pts": [
+                  {
+                    "p": 150.5,
+                    "t": 1700000000
+                  },
+                  {
+                    "p": 205.25,
+                    "t": 1700003600
+                  }
+                ],
+                "style": {
+                  "account": 10000.0,
+                  "bold": false,
+                  "border": false,
+                  "color": "",
+                  "compact": false,
+                  "dash": false,
+                  "dotted": false,
+                  "extend": 0,
+                  "halign": 0,
+                  "hidden": false,
+                  "intervals": [],
+                  "invert": false,
+                  "italic": false,
+                  "locked": false,
+                  "lot": 1.0,
+                  "median": true,
+                  "name": "",
+                  "opacity": 1.0,
+                  "price_labels": true,
+                  "risk": 1.0,
+                  "risk_pct": true,
+                  "rr": 2.0,
+                  "stats": 4079,
+                  "stats_always": false,
+                  "stop_color": "",
+                  "sync": 0,
+                  "target_color": "",
+                  "tcolor": "",
+                  "text": "",
+                  "tsize": 14.0,
+                  "valign": 0,
+                  "vis": [],
+                  "width": 1.5
+                },
+                "tool": "trend"
+              },
+              {
+                "pts": [
+                  {
+                    "p": 180.5,
+                    "t": 1700000000
+                  }
+                ],
+                "style": {
+                  "account": 10000.0,
+                  "bold": false,
+                  "border": false,
+                  "color": "",
+                  "compact": false,
+                  "dash": false,
+                  "dotted": false,
+                  "extend": 0,
+                  "halign": 0,
+                  "hidden": false,
+                  "intervals": [],
+                  "invert": false,
+                  "italic": false,
+                  "locked": false,
+                  "lot": 1.0,
+                  "median": true,
+                  "name": "",
+                  "opacity": 1.0,
+                  "price_labels": true,
+                  "risk": 1.0,
+                  "risk_pct": true,
+                  "rr": 2.0,
+                  "stats": 4079,
+                  "stats_always": false,
+                  "stop_color": "",
+                  "sync": 0,
+                  "target_color": "",
+                  "tcolor": "",
+                  "text": "",
+                  "tsize": 14.0,
+                  "valign": 0,
+                  "vis": [],
+                  "width": 1.5
+                },
+                "tool": "hline"
+              }
+            ],
+            "settings": {
+              "band_view": {
+                "Bollinger": [
+                  82.5,
+                  83.5
+                ],
+                "Macd": [
+                  80.5,
+                  81.5
+                ]
+              },
+              "bands": {
+                "AiTrend": 30.5,
+                "AnchoredVwap": 44.5,
+                "ArgosMurs": 72.5,
+                "ArgosVague": 73.5,
+                "Aroon": 60.5,
+                "Atr": 24.5,
+                "Bands": 35.5,
+                "BandsOsc": 36.5,
+                "Bollinger": 21.5,
+                "BollingerRsi": 71.5,
+                "BookHeat": 46.5,
+                "Bubbles": 41.5,
+                "Cci": 56.5,
+                "Cipher": 29.5,
+                "Cvd": 62.5,
+                "Dmi": 55.5,
+                "Donchian": 53.5,
+                "EmaCross": 22.5,
+                "EmaMulti": 28.5,
+                "Footprint": 40.5,
+                "Heatmap": 33.5,
+                "Hma": 67.5,
+                "Ichimoku": 51.5,
+                "Keltner": 52.5,
+                "Lens": 63.5,
+                "LiqMap": 47.5,
+                "LuxAlgoSmc": 74.5,
+                "MaRibbon": 70.5,
+                "Macd": 20.5,
+                "Mfi": 61.5,
+                "MtfTable": 49.5,
+                "Obv": 58.5,
+                "Patterns": 45.5,
+                "PriceAction": 43.5,
+                "Profile": 34.5,
+                "Psar": 54.5,
+                "RelVolume": 26.5,
+                "Rsi": 75.5,
+                "Sma": 65.5,
+                "SmartSwingVwap": 39.5,
+                "Smc": 32.5,
+                "SmcPro": 37.5,
+                "Smma": 69.5,
+                "SpringTension": 64.5,
+                "StochRsi": 50.5,
+                "Stochastic": 23.5,
+                "Supertrend": 59.5,
+                "SwingVwap": 38.5,
+                "Tape": 42.5,
+                "Tbo": 31.5,
+                "Tvd": 27.5,
+                "VectorZone": 48.5,
+                "Vwap": 25.5,
+                "Vwma": 68.5,
+                "WilliamsR": 57.5,
+                "Wma": 66.5
+              },
+              "econ_events": true,
+              "econ_news": true,
+              "labels": {
+                "bid_ask": true,
+                "countdown": true,
+                "high_low": true,
+                "high_low_chart": true,
+                "prev_close": true,
+                "symbol_name": true
+              },
+              "lines": {
+                "bid_ask": true,
+                "high_low": true,
+                "prev_close": true
+              },
+              "plus_button": true,
+              "propfirm_windows": true,
+              "scale": {
+                "grid": true,
+                "invert": true,
+                "last_price_label": true,
+                "last_price_line": true,
+                "lock_ratio": 14.5,
+                "main_only": true,
+                "manual": [
+                  12.5,
+                  13.5
+                ],
+                "mode": "Normal"
+              },
+              "script_bands": {
+                "essai-76": 77.5,
+                "essai-78": 79.5
+              },
+              "script_view": {
+                "essai-84": [
+                  85.5,
+                  86.5
+                ],
+                "essai-87": [
+                  88.5,
+                  89.5
+                ]
+              },
+              "session_breaks": true,
+              "timezone": "essai-15",
+              "tpo": {
+                "block": 17,
+                "blocks": true,
+                "ib": 19,
+                "letters": true,
+                "va": 18
+              }
+            },
+            "style": "essai-10"
+          }
+        ],
+        "favori": true,
+        "indicateurs": 7.5,
+        "marche": {
+          "base": "essai-4",
+          "ex": "essai-3",
+          "interval": 6
+        },
+        "nom": "essai-2",
+        "reglages": 8.5,
+        "split": 6.5
+      },
+      {
+        "dessins": [
+          "essai-97",
+          {
+            "bar_spacing": 99.5,
+            "drawings": [
+              {
+                "pts": [
+                  {
+                    "p": 150.5,
+                    "t": 1700000000
+                  },
+                  {
+                    "p": 205.25,
+                    "t": 1700003600
+                  }
+                ],
+                "style": {
+                  "account": 10000.0,
+                  "bold": false,
+                  "border": false,
+                  "color": "",
+                  "compact": false,
+                  "dash": false,
+                  "dotted": false,
+                  "extend": 0,
+                  "halign": 0,
+                  "hidden": false,
+                  "intervals": [],
+                  "invert": false,
+                  "italic": false,
+                  "locked": false,
+                  "lot": 1.0,
+                  "median": true,
+                  "name": "",
+                  "opacity": 1.0,
+                  "price_labels": true,
+                  "risk": 1.0,
+                  "risk_pct": true,
+                  "rr": 2.0,
+                  "stats": 4079,
+                  "stats_always": false,
+                  "stop_color": "",
+                  "sync": 0,
+                  "target_color": "",
+                  "tcolor": "",
+                  "text": "",
+                  "tsize": 14.0,
+                  "valign": 0,
+                  "vis": [],
+                  "width": 1.5
+                },
+                "tool": "trend"
+              },
+              {
+                "pts": [
+                  {
+                    "p": 180.5,
+                    "t": 1700000000
+                  }
+                ],
+                "style": {
+                  "account": 10000.0,
+                  "bold": false,
+                  "border": false,
+                  "color": "",
+                  "compact": false,
+                  "dash": false,
+                  "dotted": false,
+                  "extend": 0,
+                  "halign": 0,
+                  "hidden": false,
+                  "intervals": [],
+                  "invert": false,
+                  "italic": false,
+                  "locked": false,
+                  "lot": 1.0,
+                  "median": true,
+                  "name": "",
+                  "opacity": 1.0,
+                  "price_labels": true,
+                  "risk": 1.0,
+                  "risk_pct": true,
+                  "rr": 2.0,
+                  "stats": 4079,
+                  "stats_always": false,
+                  "stop_color": "",
+                  "sync": 0,
+                  "target_color": "",
+                  "tcolor": "",
+                  "text": "",
+                  "tsize": 14.0,
+                  "valign": 0,
+                  "vis": [],
+                  "width": 1.5
+                },
+                "tool": "hline"
+              }
+            ],
+            "settings": {
+              "band_view": {
+                "Atr": [
+                  113.5,
+                  114.5
+                ],
+                "Vwap": [
+                  115.5,
+                  116.5
+                ]
+              },
+              "bands": {
+                "EmaCross": 107.5,
+                "Stochastic": 108.5
+              },
+              "econ_events": true,
+              "econ_news": true,
+              "labels": {
+                "bid_ask": true,
+                "countdown": true,
+                "high_low": true,
+                "high_low_chart": true,
+                "prev_close": true,
+                "symbol_name": true
+              },
+              "lines": {
+                "bid_ask": true,
+                "high_low": true,
+                "prev_close": true
+              },
+              "plus_button": true,
+              "propfirm_windows": true,
+              "scale": {
+                "grid": true,
+                "invert": true,
+                "last_price_label": true,
+                "last_price_line": true,
+                "lock_ratio": 102.5,
+                "main_only": true,
+                "manual": [
+                  100.5,
+                  101.5
+                ],
+                "mode": "Percent"
+              },
+              "script_bands": {
+                "essai-109": 110.5,
+                "essai-111": 112.5
+              },
+              "script_view": {
+                "essai-117": [
+                  118.5,
+                  119.5
+                ],
+                "essai-120": [
+                  121.5,
+                  122.5
+                ]
+              },
+              "session_breaks": true,
+              "timezone": "essai-103",
+              "tpo": {
+                "block": 5,
+                "blocks": true,
+                "ib": 7,
+                "letters": true,
+                "va": 6
+              }
+            },
+            "style": "essai-98"
+          }
+        ],
+        "favori": true,
+        "indicateurs": 95.5,
+        "marche": {
+          "base": "essai-92",
+          "ex": "essai-91",
+          "interval": 94
+        },
+        "nom": "essai-90",
+        "reglages": 96.5,
+        "split": 94.5
+      },
+      {
+        "dessins": [
+          "essai-130",
+          {
+            "bar_spacing": 132.5,
+            "drawings": [
+              {
+                "pts": [
+                  {
+                    "p": 150.5,
+                    "t": 1700000000
+                  },
+                  {
+                    "p": 205.25,
+                    "t": 1700003600
+                  }
+                ],
+                "style": {
+                  "account": 10000.0,
+                  "bold": false,
+                  "border": false,
+                  "color": "",
+                  "compact": false,
+                  "dash": false,
+                  "dotted": false,
+                  "extend": 0,
+                  "halign": 0,
+                  "hidden": false,
+                  "intervals": [],
+                  "invert": false,
+                  "italic": false,
+                  "locked": false,
+                  "lot": 1.0,
+                  "median": true,
+                  "name": "",
+                  "opacity": 1.0,
+                  "price_labels": true,
+                  "risk": 1.0,
+                  "risk_pct": true,
+                  "rr": 2.0,
+                  "stats": 4079,
+                  "stats_always": false,
+                  "stop_color": "",
+                  "sync": 0,
+                  "target_color": "",
+                  "tcolor": "",
+                  "text": "",
+                  "tsize": 14.0,
+                  "valign": 0,
+                  "vis": [],
+                  "width": 1.5
+                },
+                "tool": "trend"
+              },
+              {
+                "pts": [
+                  {
+                    "p": 180.5,
+                    "t": 1700000000
+                  }
+                ],
+                "style": {
+                  "account": 10000.0,
+                  "bold": false,
+                  "border": false,
+                  "color": "",
+                  "compact": false,
+                  "dash": false,
+                  "dotted": false,
+                  "extend": 0,
+                  "halign": 0,
+                  "hidden": false,
+                  "intervals": [],
+                  "invert": false,
+                  "italic": false,
+                  "locked": false,
+                  "lot": 1.0,
+                  "median": true,
+                  "name": "",
+                  "opacity": 1.0,
+                  "price_labels": true,
+                  "risk": 1.0,
+                  "risk_pct": true,
+                  "rr": 2.0,
+                  "stats": 4079,
+                  "stats_always": false,
+                  "stop_color": "",
+                  "sync": 0,
+                  "target_color": "",
+                  "tcolor": "",
+                  "text": "",
+                  "tsize": 14.0,
+                  "valign": 0,
+                  "vis": [],
+                  "width": 1.5
+                },
+                "tool": "hline"
+              }
+            ],
+            "settings": {
+              "band_view": {
+                "Cipher": [
+                  148.5,
+                  149.5
+                ],
+                "EmaMulti": [
+                  146.5,
+                  147.5
+                ]
+              },
+              "bands": {
+                "RelVolume": 140.5,
+                "Tvd": 141.5
+              },
+              "econ_events": true,
+              "econ_news": true,
+              "labels": {
+                "bid_ask": true,
+                "countdown": true,
+                "high_low": true,
+                "high_low_chart": true,
+                "prev_close": true,
+                "symbol_name": true
+              },
+              "lines": {
+                "bid_ask": true,
+                "high_low": true,
+                "prev_close": true
+              },
+              "plus_button": true,
+              "propfirm_windows": true,
+              "scale": {
+                "grid": true,
+                "invert": true,
+                "last_price_label": true,
+                "last_price_line": true,
+                "lock_ratio": 135.5,
+                "main_only": true,
+                "manual": [
+                  133.5,
+                  134.5
+                ],
+                "mode": "Indexed"
+              },
+              "script_bands": {
+                "essai-142": 143.5,
+                "essai-144": 145.5
+              },
+              "script_view": {
+                "essai-150": [
+                  151.5,
+                  152.5
+                ],
+                "essai-153": [
+                  154.5,
+                  155.5
+                ]
+              },
+              "session_breaks": true,
+              "timezone": "essai-136",
+              "tpo": {
+                "block": 38,
+                "blocks": true,
+                "ib": 40,
+                "letters": true,
+                "va": 39
+              }
+            },
+            "style": "essai-131"
+          }
+        ],
+        "favori": true,
+        "indicateurs": 128.5,
+        "marche": {
+          "base": "essai-125",
+          "ex": "essai-124",
+          "interval": 27
+        },
+        "nom": "essai-123",
+        "reglages": 129.5,
+        "split": 127.5
+      },
+      {
+        "dessins": [
+          "essai-163",
+          {
+            "bar_spacing": 165.5,
+            "drawings": [
+              {
+                "pts": [
+                  {
+                    "p": 150.5,
+                    "t": 1700000000
+                  },
+                  {
+                    "p": 205.25,
+                    "t": 1700003600
+                  }
+                ],
+                "style": {
+                  "account": 10000.0,
+                  "bold": false,
+                  "border": false,
+                  "color": "",
+                  "compact": false,
+                  "dash": false,
+                  "dotted": false,
+                  "extend": 0,
+                  "halign": 0,
+                  "hidden": false,
+                  "intervals": [],
+                  "invert": false,
+                  "italic": false,
+                  "locked": false,
+                  "lot": 1.0,
+                  "median": true,
+                  "name": "",
+                  "opacity": 1.0,
+                  "price_labels": true,
+                  "risk": 1.0,
+                  "risk_pct": true,
+                  "rr": 2.0,
+                  "stats": 4079,
+                  "stats_always": false,
+                  "stop_color": "",
+                  "sync": 0,
+                  "target_color": "",
+                  "tcolor": "",
+                  "text": "",
+                  "tsize": 14.0,
+                  "valign": 0,
+                  "vis": [],
+                  "width": 1.5
+                },
+                "tool": "trend"
+              },
+              {
+                "pts": [
+                  {
+                    "p": 180.5,
+                    "t": 1700000000
+                  }
+                ],
+                "style": {
+                  "account": 10000.0,
+                  "bold": false,
+                  "border": false,
+                  "color": "",
+                  "compact": false,
+                  "dash": false,
+                  "dotted": false,
+                  "extend": 0,
+                  "halign": 0,
+                  "hidden": false,
+                  "intervals": [],
+                  "invert": false,
+                  "italic": false,
+                  "locked": false,
+                  "lot": 1.0,
+                  "median": true,
+                  "name": "",
+                  "opacity": 1.0,
+                  "price_labels": true,
+                  "risk": 1.0,
+                  "risk_pct": true,
+                  "rr": 2.0,
+                  "stats": 4079,
+                  "stats_always": false,
+                  "stop_color": "",
+                  "sync": 0,
+                  "target_color": "",
+                  "tcolor": "",
+                  "text": "",
+                  "tsize": 14.0,
+                  "valign": 0,
+                  "vis": [],
+                  "width": 1.5
+                },
+                "tool": "hline"
+              }
+            ],
+            "settings": {
+              "band_view": {
+                "Heatmap": [
+                  181.5,
+                  182.5
+                ],
+                "Smc": [
+                  179.5,
+                  180.5
+                ]
+              },
+              "bands": {
+                "AiTrend": 173.5,
+                "Tbo": 174.5
+              },
+              "econ_events": true,
+              "econ_news": true,
+              "labels": {
+                "bid_ask": true,
+                "countdown": true,
+                "high_low": true,
+                "high_low_chart": true,
+                "prev_close": true,
+                "symbol_name": true
+              },
+              "lines": {
+                "bid_ask": true,
+                "high_low": true,
+                "prev_close": true
+              },
+              "plus_button": true,
+              "propfirm_windows": true,
+              "scale": {
+                "grid": true,
+                "invert": true,
+                "last_price_label": true,
+                "last_price_line": true,
+                "lock_ratio": 168.5,
+                "main_only": true,
+                "manual": [
+                  166.5,
+                  167.5
+                ],
+                "mode": "Log"
+              },
+              "script_bands": {
+                "essai-175": 176.5,
+                "essai-177": 178.5
+              },
+              "script_view": {
+                "essai-183": [
+                  184.5,
+                  185.5
+                ],
+                "essai-186": [
+                  187.5,
+                  188.5
+                ]
+              },
+              "session_breaks": true,
+              "timezone": "essai-169",
+              "tpo": {
+                "block": 71,
+                "blocks": true,
+                "ib": 73,
+                "letters": true,
+                "va": 72
+              }
+            },
+            "style": "essai-164"
+          }
+        ],
+        "favori": true,
+        "indicateurs": 161.5,
+        "marche": {
+          "base": "essai-158",
+          "ex": "essai-157",
+          "interval": 60
+        },
+        "nom": "essai-156",
+        "reglages": 162.5,
+        "split": 160.5
+      },
+      {
+        "dessins": [
+          "essai-196",
+          {
+            "bar_spacing": 198.5,
+            "drawings": [
+              {
+                "pts": [
+                  {
+                    "p": 150.5,
+                    "t": 1700000000
+                  },
+                  {
+                    "p": 205.25,
+                    "t": 1700003600
+                  }
+                ],
+                "style": {
+                  "account": 10000.0,
+                  "bold": false,
+                  "border": false,
+                  "color": "",
+                  "compact": false,
+                  "dash": false,
+                  "dotted": false,
+                  "extend": 0,
+                  "halign": 0,
+                  "hidden": false,
+                  "intervals": [],
+                  "invert": false,
+                  "italic": false,
+                  "locked": false,
+                  "lot": 1.0,
+                  "median": true,
+                  "name": "",
+                  "opacity": 1.0,
+                  "price_labels": true,
+                  "risk": 1.0,
+                  "risk_pct": true,
+                  "rr": 2.0,
+                  "stats": 4079,
+                  "stats_always": false,
+                  "stop_color": "",
+                  "sync": 0,
+                  "target_color": "",
+                  "tcolor": "",
+                  "text": "",
+                  "tsize": 14.0,
+                  "valign": 0,
+                  "vis": [],
+                  "width": 1.5
+                },
+                "tool": "trend"
+              },
+              {
+                "pts": [
+                  {
+                    "p": 180.5,
+                    "t": 1700000000
+                  }
+                ],
+                "style": {
+                  "account": 10000.0,
+                  "bold": false,
+                  "border": false,
+                  "color": "",
+                  "compact": false,
+                  "dash": false,
+                  "dotted": false,
+                  "extend": 0,
+                  "halign": 0,
+                  "hidden": false,
+                  "intervals": [],
+                  "invert": false,
+                  "italic": false,
+                  "locked": false,
+                  "lot": 1.0,
+                  "median": true,
+                  "name": "",
+                  "opacity": 1.0,
+                  "price_labels": true,
+                  "risk": 1.0,
+                  "risk_pct": true,
+                  "rr": 2.0,
+                  "stats": 4079,
+                  "stats_always": false,
+                  "stop_color": "",
+                  "sync": 0,
+                  "target_color": "",
+                  "tcolor": "",
+                  "text": "",
+                  "tsize": 14.0,
+                  "valign": 0,
+                  "vis": [],
+                  "width": 1.5
+                },
+                "tool": "hline"
+              }
+            ],
+            "settings": {
+              "band_view": {
+                "BandsOsc": [
+                  212.5,
+                  213.5
+                ],
+                "SmcPro": [
+                  214.5,
+                  215.5
+                ]
+              },
+              "bands": {
+                "Bands": 207.5,
+                "Profile": 206.5
+              },
+              "econ_events": true,
+              "econ_news": true,
+              "labels": {
+                "bid_ask": true,
+                "countdown": true,
+                "high_low": true,
+                "high_low_chart": true,
+                "prev_close": true,
+                "symbol_name": true
+              },
+              "lines": {
+                "bid_ask": true,
+                "high_low": true,
+                "prev_close": true
+              },
+              "plus_button": true,
+              "propfirm_windows": true,
+              "scale": {
+                "grid": true,
+                "invert": true,
+                "last_price_label": true,
+                "last_price_line": true,
+                "lock_ratio": 201.5,
+                "main_only": true,
+                "manual": [
+                  199.5,
+                  200.5
+                ],
+                "mode": "Normal"
+              },
+              "script_bands": {
+                "essai-208": 209.5,
+                "essai-210": 211.5
+              },
+              "script_view": {
+                "essai-216": [
+                  217.5,
+                  218.5
+                ],
+                "essai-219": [
+                  220.5,
+                  221.5
+                ]
+              },
+              "session_breaks": true,
+              "timezone": "essai-202",
+              "tpo": {
+                "block": 4,
+                "blocks": true,
+                "ib": 6,
+                "letters": true,
+                "va": 5
+              }
+            },
+            "style": "essai-197"
+          }
+        ],
+        "favori": true,
+        "indicateurs": 194.5,
+        "marche": {
+          "base": "essai-191",
+          "ex": "essai-190",
+          "interval": 93
+        },
+        "nom": "essai-189",
+        "reglages": 195.5,
+        "split": 193.5
+      }
+    ],
+    "ouverte": "essai-1"
+  },
+  {
+    "liste": [
+      {
+        "dessins": [
+          "essai-230",
+          {
+            "bar_spacing": 232.5,
+            "drawings": [
+              {
+                "pts": [
+                  {
+                    "p": 150.5,
+                    "t": 1700000000
+                  },
+                  {
+                    "p": 205.25,
+                    "t": 1700003600
+                  }
+                ],
+                "style": {
+                  "account": 10000.0,
+                  "bold": false,
+                  "border": false,
+                  "color": "",
+                  "compact": false,
+                  "dash": false,
+                  "dotted": false,
+                  "extend": 0,
+                  "halign": 0,
+                  "hidden": false,
+                  "intervals": [],
+                  "invert": false,
+                  "italic": false,
+                  "locked": false,
+                  "lot": 1.0,
+                  "median": true,
+                  "name": "",
+                  "opacity": 1.0,
+                  "price_labels": true,
+                  "risk": 1.0,
+                  "risk_pct": true,
+                  "rr": 2.0,
+                  "stats": 4079,
+                  "stats_always": false,
+                  "stop_color": "",
+                  "sync": 0,
+                  "target_color": "",
+                  "tcolor": "",
+                  "text": "",
+                  "tsize": 14.0,
+                  "valign": 0,
+                  "vis": [],
+                  "width": 1.5
+                },
+                "tool": "trend"
+              },
+              {
+                "pts": [
+                  {
+                    "p": 180.5,
+                    "t": 1700000000
+                  }
+                ],
+                "style": {
+                  "account": 10000.0,
+                  "bold": false,
+                  "border": false,
+                  "color": "",
+                  "compact": false,
+                  "dash": false,
+                  "dotted": false,
+                  "extend": 0,
+                  "halign": 0,
+                  "hidden": false,
+                  "intervals": [],
+                  "invert": false,
+                  "italic": false,
+                  "locked": false,
+                  "lot": 1.0,
+                  "median": true,
+                  "name": "",
+                  "opacity": 1.0,
+                  "price_labels": true,
+                  "risk": 1.0,
+                  "risk_pct": true,
+                  "rr": 2.0,
+                  "stats": 4079,
+                  "stats_always": false,
+                  "stop_color": "",
+                  "sync": 0,
+                  "target_color": "",
+                  "tcolor": "",
+                  "text": "",
+                  "tsize": 14.0,
+                  "valign": 0,
+                  "vis": [],
+                  "width": 1.5
+                },
+                "tool": "hline"
+              }
+            ],
+            "settings": {
+              "band_view": {
+                "Bubbles": [
+                  248.5,
+                  249.5
+                ],
+                "Footprint": [
+                  246.5,
+                  247.5
+                ]
+              },
+              "bands": {
+                "SmartSwingVwap": 241.5,
+                "SwingVwap": 240.5
+              },
+              "econ_events": true,
+              "econ_news": true,
+              "labels": {
+                "bid_ask": true,
+                "countdown": true,
+                "high_low": true,
+                "high_low_chart": true,
+                "prev_close": true,
+                "symbol_name": true
+              },
+              "lines": {
+                "bid_ask": true,
+                "high_low": true,
+                "prev_close": true
+              },
+              "plus_button": true,
+              "propfirm_windows": true,
+              "scale": {
+                "grid": true,
+                "invert": true,
+                "last_price_label": true,
+                "last_price_line": true,
+                "lock_ratio": 235.5,
+                "main_only": true,
+                "manual": [
+                  233.5,
+                  234.5
+                ],
+                "mode": "Percent"
+              },
+              "script_bands": {
+                "essai-242": 243.5,
+                "essai-244": 245.5
+              },
+              "script_view": {
+                "essai-250": [
+                  251.5,
+                  252.5
+                ],
+                "essai-253": [
+                  254.5,
+                  255.5
+                ]
+              },
+              "session_breaks": true,
+              "timezone": "essai-236",
+              "tpo": {
+                "block": 38,
+                "blocks": true,
+                "ib": 40,
+                "letters": true,
+                "va": 39
+              }
+            },
+            "style": "essai-231"
+          }
+        ],
+        "favori": true,
+        "indicateurs": 228.5,
+        "marche": {
+          "base": "essai-225",
+          "ex": "essai-224",
+          "interval": 27
+        },
+        "nom": "essai-223",
+        "reglages": 229.5,
+        "split": 227.5
+      },
+      {
+        "dessins": [
+          "essai-263",
+          {
+            "bar_spacing": 265.5,
+            "drawings": [
+              {
+                "pts": [
+                  {
+                    "p": 150.5,
+                    "t": 1700000000
+                  },
+                  {
+                    "p": 205.25,
+                    "t": 1700003600
+                  }
+                ],
+                "style": {
+                  "account": 10000.0,
+                  "bold": false,
+                  "border": false,
+                  "color": "",
+                  "compact": false,
+                  "dash": false,
+                  "dotted": false,
+                  "extend": 0,
+                  "halign": 0,
+                  "hidden": false,
+                  "intervals": [],
+                  "invert": false,
+                  "italic": false,
+                  "locked": false,
+                  "lot": 1.0,
+                  "median": true,
+                  "name": "",
+                  "opacity": 1.0,
+                  "price_labels": true,
+                  "risk": 1.0,
+                  "risk_pct": true,
+                  "rr": 2.0,
+                  "stats": 4079,
+                  "stats_always": false,
+                  "stop_color": "",
+                  "sync": 0,
+                  "target_color": "",
+                  "tcolor": "",
+                  "text": "",
+                  "tsize": 14.0,
+                  "valign": 0,
+                  "vis": [],
+                  "width": 1.5
+                },
+                "tool": "trend"
+              },
+              {
+                "pts": [
+                  {
+                    "p": 180.5,
+                    "t": 1700000000
+                  }
+                ],
+                "style": {
+                  "account": 10000.0,
+                  "bold": false,
+                  "border": false,
+                  "color": "",
+                  "compact": false,
+                  "dash": false,
+                  "dotted": false,
+                  "extend": 0,
+                  "halign": 0,
+                  "hidden": false,
+                  "intervals": [],
+                  "invert": false,
+                  "italic": false,
+                  "locked": false,
+                  "lot": 1.0,
+                  "median": true,
+                  "name": "",
+                  "opacity": 1.0,
+                  "price_labels": true,
+                  "risk": 1.0,
+                  "risk_pct": true,
+                  "rr": 2.0,
+                  "stats": 4079,
+                  "stats_always": false,
+                  "stop_color": "",
+                  "sync": 0,
+                  "target_color": "",
+                  "tcolor": "",
+                  "text": "",
+                  "tsize": 14.0,
+                  "valign": 0,
+                  "vis": [],
+                  "width": 1.5
+                },
+                "tool": "hline"
+              }
+            ],
+            "settings": {
+              "band_view": {
+                "AnchoredVwap": [
+                  279.5,
+                  280.5
+                ],
+                "Patterns": [
+                  281.5,
+                  282.5
+                ]
+              },
+              "bands": {
+                "PriceAction": 274.5,
+                "Tape": 273.5
+              },
+              "econ_events": true,
+              "econ_news": true,
+              "labels": {
+                "bid_ask": true,
+                "countdown": true,
+                "high_low": true,
+                "high_low_chart": true,
+                "prev_close": true,
+                "symbol_name": true
+              },
+              "lines": {
+                "bid_ask": true,
+                "high_low": true,
+                "prev_close": true
+              },
+              "plus_button": true,
+              "propfirm_windows": true,
+              "scale": {
+                "grid": true,
+                "invert": true,
+                "last_price_label": true,
+                "last_price_line": true,
+                "lock_ratio": 268.5,
+                "main_only": true,
+                "manual": [
+                  266.5,
+                  267.5
+                ],
+                "mode": "Indexed"
+              },
+              "script_bands": {
+                "essai-275": 276.5,
+                "essai-277": 278.5
+              },
+              "script_view": {
+                "essai-283": [
+                  284.5,
+                  285.5
+                ],
+                "essai-286": [
+                  287.5,
+                  288.5
+                ]
+              },
+              "session_breaks": true,
+              "timezone": "essai-269",
+              "tpo": {
+                "block": 71,
+                "blocks": true,
+                "ib": 73,
+                "letters": true,
+                "va": 72
+              }
+            },
+            "style": "essai-264"
+          }
+        ],
+        "favori": true,
+        "indicateurs": 261.5,
+        "marche": {
+          "base": "essai-258",
+          "ex": "essai-257",
+          "interval": 60
+        },
+        "nom": "essai-256",
+        "reglages": 262.5,
+        "split": 260.5
+      }
+    ],
+    "ouverte": "essai-222"
+  }
+]

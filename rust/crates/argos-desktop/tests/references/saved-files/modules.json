@@ -1,0 +1,38 @@
+[
+  [
+    {
+      "asked": [
+        "essai-5",
+        "essai-6"
+      ],
+      "fichiers": true,
+      "hidden": true,
+      "id": "essai-1",
+      "manifest": "essai-3",
+      "on": true,
+      "sha": "essai-4",
+      "values": {
+        "essai-7": 8.5,
+        "essai-9": 10.5
+      },
+      "version": "essai-2"
+    },
+    {
+      "asked": [
+        "essai-15",
+        "essai-16"
+      ],
+      "fichiers": true,
+      "hidden": true,
+      "id": "essai-11",
+      "manifest": "essai-13",
+      "on": true,
+      "sha": "essai-14",
+      "values": {
+        "essai-17": 18.5,
+        "essai-19": 20.5
+      },
+      "version": "essai-12"
+    }
+  ]
+]

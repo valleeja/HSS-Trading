@@ -1,0 +1,378 @@
+[
+  {
+    "barre": {
+      "hidden": true,
+      "retracted": true,
+      "vertical": true,
+      "x": 2.5,
+      "y": 3.5
+    },
+    "bienvenue_vue": true,
+    "colonne_outils": [
+      "Watchlist",
+      "Indicators",
+      "Trading",
+      "Journal",
+      "Exchanges",
+      "Marketplace",
+      "Market",
+      "Ai",
+      "Agenda",
+      "News",
+      "Whales",
+      "Modules",
+      "Alertes",
+      "Support",
+      "Dessin",
+      "Gardien",
+      "Script",
+      "Academie",
+      "Communaute",
+      "Portfolio",
+      "Liquidations",
+      "Reglages",
+      "Demo",
+      "Carnet",
+      "Explorer",
+      "Stats",
+      "Strategie",
+      "Watchlist"
+    ],
+    "colonne_repliee": true,
+    "curseur": "Croix",
+    "idee_cachee": 28,
+    "legende_ouverte": true,
+    "modules_hauteurs": [
+      [
+        "Book",
+        4.5
+      ],
+      [
+        "Trades",
+        5.5
+      ],
+      [
+        "Funding",
+        6.5
+      ],
+      [
+        "Watchlist",
+        7.5
+      ],
+      [
+        "Positions",
+        8.5
+      ],
+      [
+        "Agenda",
+        9.5
+      ],
+      [
+        "News",
+        10.5
+      ],
+      [
+        "Account",
+        11.5
+      ],
+      [
+        "Market",
+        12.5
+      ],
+      [
+        "Whales",
+        13.5
+      ],
+      [
+        "World",
+        14.5
+      ],
+      [
+        "Sentiment",
+        15.5
+      ],
+      [
+        "Liquidations",
+        16.5
+      ],
+      [
+        "KeyStats",
+        17.5
+      ],
+      [
+        "Watch",
+        18.5
+      ],
+      [
+        "Scanner",
+        19.5
+      ],
+      [
+        "Dex",
+        20.5
+      ],
+      [
+        "Backtest",
+        21.5
+      ],
+      [
+        "Wallet",
+        22.5
+      ],
+      [
+        "Explorer",
+        23.5
+      ],
+      [
+        "Stats",
+        24.5
+      ],
+      [
+        "Book",
+        25.5
+      ]
+    ],
+    "modules_largeur": 26.5,
+    "panneaux_ordre": [
+      "Macd",
+      "Bollinger"
+    ],
+    "panneaux_replies": [
+      "Rsi",
+      "Macd",
+      "Bollinger",
+      "EmaCross",
+      "Stochastic",
+      "Atr",
+      "Vwap",
+      "RelVolume",
+      "Tvd",
+      "EmaMulti",
+      "Cipher",
+      "AiTrend",
+      "Tbo",
+      "Smc",
+      "Heatmap",
+      "Profile",
+      "Bands",
+      "BandsOsc",
+      "SmcPro",
+      "SwingVwap",
+      "SmartSwingVwap",
+      "Footprint",
+      "Bubbles",
+      "Tape",
+      "PriceAction",
+      "AnchoredVwap",
+      "Patterns",
+      "BookHeat",
+      "LiqMap",
+      "VectorZone",
+      "MtfTable",
+      "StochRsi",
+      "Ichimoku",
+      "Keltner",
+      "Donchian",
+      "Psar",
+      "Dmi",
+      "Cci",
+      "WilliamsR",
+      "Obv",
+      "Supertrend",
+      "Aroon",
+      "Mfi",
+      "Cvd",
+      "Lens",
+      "SpringTension",
+      "Sma",
+      "Wma",
+      "Hma",
+      "Vwma",
+      "Smma",
+      "MaRibbon",
+      "BollingerRsi",
+      "ArgosMurs",
+      "ArgosVague",
+      "LuxAlgoSmc",
+      "Rsi"
+    ],
+    "pilule_repliee": true,
+    "plein_ecran_bulles": 2,
+    "rail_deplie": true,
+    "sans_bandeaux": true,
+    "tickers_pct": true,
+    "volet_large": true
+  },
+  {
+    "barre": {
+      "hidden": true,
+      "retracted": true,
+      "vertical": true,
+      "x": 29.5,
+      "y": 30.5
+    },
+    "bienvenue_vue": true,
+    "colonne_outils": [
+      "Indicators",
+      "Trading"
+    ],
+    "colonne_repliee": true,
+    "curseur": "Point",
+    "idee_cachee": 35,
+    "legende_ouverte": true,
+    "modules_hauteurs": [
+      [
+        "Trades",
+        31.5
+      ],
+      [
+        "Funding",
+        32.5
+      ]
+    ],
+    "modules_largeur": 33.5,
+    "panneaux_ordre": [
+      "Atr",
+      "Vwap"
+    ],
+    "panneaux_replies": [
+      "EmaCross",
+      "Stochastic"
+    ],
+    "pilule_repliee": true,
+    "plein_ecran_bulles": 29,
+    "rail_deplie": true,
+    "sans_bandeaux": true,
+    "tickers_pct": true,
+    "volet_large": true
+  },
+  {
+    "barre": {
+      "hidden": true,
+      "retracted": true,
+      "vertical": true,
+      "x": 36.5,
+      "y": 37.5
+    },
+    "bienvenue_vue": true,
+    "colonne_outils": [
+      "Journal",
+      "Exchanges"
+    ],
+    "colonne_repliee": true,
+    "curseur": "Fleche",
+    "idee_cachee": 42,
+    "legende_ouverte": true,
+    "modules_hauteurs": [
+      [
+        "Watchlist",
+        38.5
+      ],
+      [
+        "Positions",
+        39.5
+      ]
+    ],
+    "modules_largeur": 40.5,
+    "panneaux_ordre": [
+      "EmaMulti",
+      "Cipher"
+    ],
+    "panneaux_replies": [
+      "RelVolume",
+      "Tvd"
+    ],
+    "pilule_repliee": true,
+    "plein_ecran_bulles": 36,
+    "rail_deplie": true,
+    "sans_bandeaux": true,
+    "tickers_pct": true,
+    "volet_large": true
+  },
+  {
+    "barre": {
+      "hidden": true,
+      "retracted": true,
+      "vertical": true,
+      "x": 43.5,
+      "y": 44.5
+    },
+    "bienvenue_vue": true,
+    "colonne_outils": [
+      "Marketplace",
+      "Market"
+    ],
+    "colonne_repliee": true,
+    "curseur": "Demonstration",
+    "idee_cachee": 49,
+    "legende_ouverte": true,
+    "modules_hauteurs": [
+      [
+        "Agenda",
+        45.5
+      ],
+      [
+        "News",
+        46.5
+      ]
+    ],
+    "modules_largeur": 47.5,
+    "panneaux_ordre": [
+      "Smc",
+      "Heatmap"
+    ],
+    "panneaux_replies": [
+      "AiTrend",
+      "Tbo"
+    ],
+    "pilule_repliee": true,
+    "plein_ecran_bulles": 43,
+    "rail_deplie": true,
+    "sans_bandeaux": true,
+    "tickers_pct": true,
+    "volet_large": true
+  },
+  {
+    "barre": {
+      "hidden": true,
+      "retracted": true,
+      "vertical": true,
+      "x": 50.5,
+      "y": 51.5
+    },
+    "bienvenue_vue": true,
+    "colonne_outils": [
+      "Ai",
+      "Agenda"
+    ],
+    "colonne_repliee": true,
+    "curseur": "Croix",
+    "idee_cachee": 56,
+    "legende_ouverte": true,
+    "modules_hauteurs": [
+      [
+        "Account",
+        52.5
+      ],
+      [
+        "Market",
+        53.5
+      ]
+    ],
+    "modules_largeur": 54.5,
+    "panneaux_ordre": [
+      "BandsOsc",
+      "SmcPro"
+    ],
+    "panneaux_replies": [
+      "Profile",
+      "Bands"
+    ],
+    "pilule_repliee": true,
+    "plein_ecran_bulles": 50,
+    "rail_deplie": true,
+    "sans_bandeaux": true,
+    "tickers_pct": true,
+    "volet_large": true
+  }
+]

@@ -1,0 +1,12 @@
+:root { color-scheme: dark; --fond: #0f1117; --texte: #e6e6e6; --gris: #8b90a0; --accent: #a78bfa; --ligne: #f5b942; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fond); color: var(--texte); font: 14px system-ui, sans-serif; display: flex; flex-direction: column; height: 100vh; }
+header { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid #262a36; }
+h1 { font-size: 17px; margin: 0; }
+small { color: var(--gris); font-weight: normal; }
+.outils { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+input[type=number] { width: 64px; background: #1a1d27; color: var(--texte); border: 1px solid #333849; border-radius: 6px; padding: 4px 6px; }
+button { background: var(--accent); color: #111; border: 0; border-radius: 6px; padding: 6px 12px; font-weight: 600; }
+canvas { flex: 1; width: 100%; min-height: 0; }
+#etat { margin: 0; padding: 8px 16px 12px; color: var(--gris); font-size: 12.5px; }
+.erreur { color: #ef4444 !important; }

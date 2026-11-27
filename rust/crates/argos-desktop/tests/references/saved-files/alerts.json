@@ -1,0 +1,825 @@
+[
+  {
+    "declenchements": [
+      {
+        "coin": "essai-90",
+        "every": true,
+        "id": 88,
+        "price": null,
+        "sens": "Up",
+        "sym": "essai-89",
+        "target": null,
+        "tf": 92,
+        "ts": 89
+      },
+      {
+        "coin": "essai-97",
+        "every": true,
+        "id": 95,
+        "price": null,
+        "sens": "Down",
+        "sym": "essai-96",
+        "target": null,
+        "tf": 99,
+        "ts": 96
+      },
+      {
+        "coin": "essai-104",
+        "every": true,
+        "id": 2,
+        "price": null,
+        "sens": "Cross",
+        "sym": "essai-103",
+        "target": null,
+        "tf": 6,
+        "ts": 3
+      },
+      {
+        "coin": "essai-111",
+        "every": true,
+        "id": 9,
+        "price": null,
+        "sens": {
+          "Conds": 14
+        },
+        "sym": "essai-110",
+        "target": null,
+        "tf": 13,
+        "ts": 10
+      },
+      {
+        "coin": "essai-119",
+        "every": true,
+        "id": 17,
+        "price": null,
+        "sens": "Up",
+        "sym": "essai-118",
+        "target": null,
+        "tf": 21,
+        "ts": 18
+      }
+    ],
+    "history": [
+      {
+        "id": 81,
+        "text": "essai-82",
+        "ts": 82
+      },
+      {
+        "id": 84,
+        "text": "essai-85",
+        "ts": 85
+      }
+    ],
+    "list": [
+      {
+        "coin": "essai-14",
+        "created": 17,
+        "every": 5,
+        "fired": 8,
+        "id": 2,
+        "kind": {
+          "Price": {
+            "dir": "Up",
+            "price": 3.5
+          }
+        },
+        "lines": [
+          [
+            10,
+            "essai-10"
+          ],
+          [
+            12,
+            "essai-12"
+          ]
+        ],
+        "msg": "essai-6",
+        "on": true,
+        "seen": 8.5,
+        "son": "essai-13",
+        "sym": "essai-2",
+        "tf": 16,
+        "until": 6
+      },
+      {
+        "coin": "essai-44",
+        "created": 47,
+        "every": 35,
+        "fired": 38,
+        "id": 18,
+        "kind": {
+          "Multi": {
+            "all": true,
+            "conds": [
+              {
+                "l": "Close",
+                "op": "Above",
+                "r": "Open",
+                "r2": "High"
+              },
+              {
+                "l": "Low",
+                "op": "Below",
+                "r": {
+                  "Ema": 21
+                },
+                "r2": "Rsi"
+              },
+              {
+                "l": "Volume",
+                "op": "CrossUp",
+                "r": "VolMa",
+                "r2": {
+                  "Num": 21.5
+                }
+              },
+              {
+                "l": {
+                  "Line": 23
+                },
+                "op": "CrossDown",
+                "r": {
+                  "Trend": {
+                    "p0": 24.5,
+                    "p1": 26.5,
+                    "t0": 24,
+                    "t1": 26
+                  }
+                },
+                "r2": "Close"
+              },
+              {
+                "l": "Open",
+                "op": "Cross",
+                "r": "High",
+                "r2": "Low"
+              },
+              {
+                "l": {
+                  "Ema": 28
+                },
+                "op": "EntersZone",
+                "r": "Rsi",
+                "r2": "Volume"
+              },
+              {
+                "l": "VolMa",
+                "op": "LeavesZone",
+                "r": {
+                  "Num": 28.5
+                },
+                "r2": {
+                  "Line": 30
+                }
+              },
+              {
+                "l": {
+                  "Trend": {
+                    "p0": 31.5,
+                    "p1": 33.5,
+                    "t0": 31,
+                    "t1": 33
+                  }
+                },
+                "op": "Above",
+                "r": "Close",
+                "r2": "Open"
+              }
+            ],
+            "tf": 20
+          }
+        },
+        "lines": [
+          [
+            40,
+            "essai-40"
+          ],
+          [
+            42,
+            "essai-42"
+          ]
+        ],
+        "msg": "essai-36",
+        "on": true,
+        "seen": 38.5,
+        "son": "essai-43",
+        "sym": "essai-18",
+        "tf": 46,
+        "until": 36
+      },
+      {
+        "coin": "essai-60",
+        "created": 63,
+        "every": 51,
+        "fired": 54,
+        "id": 48,
+        "kind": {
+          "Price": {
+            "dir": "Down",
+            "price": 49.5
+          }
+        },
+        "lines": [
+          [
+            56,
+            "essai-56"
+          ],
+          [
+            58,
+            "essai-58"
+          ]
+        ],
+        "msg": "essai-52",
+        "on": true,
+        "seen": 54.5,
+        "son": "essai-59",
+        "sym": "essai-48",
+        "tf": 62,
+        "until": 52
+      },
+      {
+        "coin": "essai-77",
+        "created": 80,
+        "every": 68,
+        "fired": 71,
+        "id": 64,
+        "kind": {
+          "Multi": {
+            "all": true,
+            "conds": [
+              {
+                "l": "High",
+                "op": "Below",
+                "r": "Low",
+                "r2": {
+                  "Ema": 67
+                }
+              },
+              {
+                "l": "Rsi",
+                "op": "CrossUp",
+                "r": "Volume",
+                "r2": "VolMa"
+              }
+            ],
+            "tf": 66
+          }
+        },
+        "lines": [
+          [
+            73,
+            "essai-73"
+          ],
+          [
+            75,
+            "essai-75"
+          ]
+        ],
+        "msg": "essai-69",
+        "on": true,
+        "seen": 71.5,
+        "son": "essai-76",
+        "sym": "essai-64",
+        "tf": 79,
+        "until": 69
+      }
+    ],
+    "next": 87
+  },
+  {
+    "declenchements": [
+      {
+        "coin": "essai-171",
+        "every": true,
+        "id": 69,
+        "price": null,
+        "sens": "Down",
+        "sym": "essai-170",
+        "target": null,
+        "tf": 73,
+        "ts": 70
+      },
+      {
+        "coin": "essai-178",
+        "every": true,
+        "id": 76,
+        "price": null,
+        "sens": "Cross",
+        "sym": "essai-177",
+        "target": null,
+        "tf": 80,
+        "ts": 77
+      }
+    ],
+    "history": [
+      {
+        "id": 62,
+        "text": "essai-163",
+        "ts": 63
+      },
+      {
+        "id": 65,
+        "text": "essai-166",
+        "ts": 66
+      }
+    ],
+    "list": [
+      {
+        "coin": "essai-136",
+        "created": 39,
+        "every": 27,
+        "fired": 30,
+        "id": 24,
+        "kind": {
+          "Price": {
+            "dir": "Both",
+            "price": 125.5
+          }
+        },
+        "lines": [
+          [
+            32,
+            "essai-132"
+          ],
+          [
+            34,
+            "essai-134"
+          ]
+        ],
+        "msg": "essai-128",
+        "on": true,
+        "seen": 130.5,
+        "son": "essai-135",
+        "sym": "essai-124",
+        "tf": 38,
+        "until": 28
+      },
+      {
+        "coin": "essai-158",
+        "created": 61,
+        "every": 49,
+        "fired": 52,
+        "id": 40,
+        "kind": {
+          "Multi": {
+            "all": true,
+            "conds": [
+              {
+                "l": {
+                  "Num": 142.5
+                },
+                "op": "CrossDown",
+                "r": {
+                  "Line": 44
+                },
+                "r2": {
+                  "Trend": {
+                    "p0": 145.5,
+                    "p1": 147.5,
+                    "t0": 45,
+                    "t1": 47
+                  }
+                }
+              },
+              {
+                "l": "Close",
+                "op": "Cross",
+                "r": "Open",
+                "r2": "High"
+              }
+            ],
+            "tf": 42
+          }
+        },
+        "lines": [
+          [
+            54,
+            "essai-154"
+          ],
+          [
+            56,
+            "essai-156"
+          ]
+        ],
+        "msg": "essai-150",
+        "on": true,
+        "seen": 152.5,
+        "son": "essai-157",
+        "sym": "essai-140",
+        "tf": 60,
+        "until": 50
+      }
+    ],
+    "next": 68
+  },
+  {
+    "declenchements": [
+      {
+        "coin": "essai-226",
+        "every": true,
+        "id": 24,
+        "price": null,
+        "sens": {
+          "Conds": 29
+        },
+        "sym": "essai-225",
+        "target": null,
+        "tf": 28,
+        "ts": 25
+      },
+      {
+        "coin": "essai-234",
+        "every": true,
+        "id": 32,
+        "price": null,
+        "sens": "Up",
+        "sym": "essai-233",
+        "target": null,
+        "tf": 36,
+        "ts": 33
+      }
+    ],
+    "history": [
+      {
+        "id": 17,
+        "text": "essai-218",
+        "ts": 18
+      },
+      {
+        "id": 20,
+        "text": "essai-221",
+        "ts": 21
+      }
+    ],
+    "list": [
+      {
+        "coin": "essai-195",
+        "created": 98,
+        "every": 86,
+        "fired": 89,
+        "id": 83,
+        "kind": {
+          "Price": {
+            "dir": "Up",
+            "price": 184.5
+          }
+        },
+        "lines": [
+          [
+            91,
+            "essai-191"
+          ],
+          [
+            93,
+            "essai-193"
+          ]
+        ],
+        "msg": "essai-187",
+        "on": true,
+        "seen": 189.5,
+        "son": "essai-194",
+        "sym": "essai-183",
+        "tf": 97,
+        "until": 87
+      },
+      {
+        "coin": "essai-213",
+        "created": 16,
+        "every": 4,
+        "fired": 7,
+        "id": 99,
+        "kind": {
+          "Multi": {
+            "all": true,
+            "conds": [
+              {
+                "l": "Low",
+                "op": "EntersZone",
+                "r": {
+                  "Ema": 2
+                },
+                "r2": "Rsi"
+              },
+              {
+                "l": "Volume",
+                "op": "LeavesZone",
+                "r": "VolMa",
+                "r2": {
+                  "Num": 202.5
+                }
+              }
+            ],
+            "tf": 1
+          }
+        },
+        "lines": [
+          [
+            9,
+            "essai-209"
+          ],
+          [
+            11,
+            "essai-211"
+          ]
+        ],
+        "msg": "essai-205",
+        "on": true,
+        "seen": 207.5,
+        "son": "essai-212",
+        "sym": "essai-199",
+        "tf": 15,
+        "until": 5
+      }
+    ],
+    "next": 23
+  },
+  {
+    "declenchements": [
+      {
+        "coin": "essai-90",
+        "every": true,
+        "id": 88,
+        "price": "58901.25",
+        "sens": "Up",
+        "sym": "essai-89",
+        "target": "58897.5",
+        "tf": 92,
+        "ts": 89
+      },
+      {
+        "coin": "essai-97",
+        "every": true,
+        "id": 95,
+        "price": "58902.25",
+        "sens": "Down",
+        "sym": "essai-96",
+        "target": "58898.5",
+        "tf": 99,
+        "ts": 96
+      },
+      {
+        "coin": "essai-104",
+        "every": true,
+        "id": 2,
+        "price": "58903.25",
+        "sens": "Cross",
+        "sym": "essai-103",
+        "target": "58899.5",
+        "tf": 6,
+        "ts": 3
+      },
+      {
+        "coin": "essai-111",
+        "every": true,
+        "id": 9,
+        "price": "58904.25",
+        "sens": {
+          "Conds": 14
+        },
+        "sym": "essai-110",
+        "target": "58900.5",
+        "tf": 13,
+        "ts": 10
+      },
+      {
+        "coin": "essai-119",
+        "every": true,
+        "id": 17,
+        "price": "58905.25",
+        "sens": "Up",
+        "sym": "essai-118",
+        "target": "58901.5",
+        "tf": 21,
+        "ts": 18
+      }
+    ],
+    "history": [
+      {
+        "id": 81,
+        "text": "essai-82",
+        "ts": 82
+      },
+      {
+        "id": 84,
+        "text": "essai-85",
+        "ts": 85
+      }
+    ],
+    "list": [
+      {
+        "coin": "essai-14",
+        "created": 17,
+        "every": 5,
+        "fired": 8,
+        "id": 2,
+        "kind": {
+          "Price": {
+            "dir": "Up",
+            "price": 3.5
+          }
+        },
+        "lines": [
+          [
+            10,
+            "essai-10"
+          ],
+          [
+            12,
+            "essai-12"
+          ]
+        ],
+        "msg": "essai-6",
+        "on": true,
+        "seen": 8.5,
+        "son": "essai-13",
+        "sym": "essai-2",
+        "tf": 16,
+        "until": 6
+      },
+      {
+        "coin": "essai-44",
+        "created": 47,
+        "every": 35,
+        "fired": 38,
+        "id": 18,
+        "kind": {
+          "Multi": {
+            "all": true,
+            "conds": [
+              {
+                "l": "Close",
+                "op": "Above",
+                "r": "Open",
+                "r2": "High"
+              },
+              {
+                "l": "Low",
+                "op": "Below",
+                "r": {
+                  "Ema": 21
+                },
+                "r2": "Rsi"
+              },
+              {
+                "l": "Volume",
+                "op": "CrossUp",
+                "r": "VolMa",
+                "r2": {
+                  "Num": 21.5
+                }
+              },
+              {
+                "l": {
+                  "Line": 23
+                },
+                "op": "CrossDown",
+                "r": {
+                  "Trend": {
+                    "p0": 24.5,
+                    "p1": 26.5,
+                    "t0": 24,
+                    "t1": 26
+                  }
+                },
+                "r2": "Close"
+              },
+              {
+                "l": "Open",
+                "op": "Cross",
+                "r": "High",
+                "r2": "Low"
+              },
+              {
+                "l": {
+                  "Ema": 28
+                },
+                "op": "EntersZone",
+                "r": "Rsi",
+                "r2": "Volume"
+              },
+              {
+                "l": "VolMa",
+                "op": "LeavesZone",
+                "r": {
+                  "Num": 28.5
+                },
+                "r2": {
+                  "Line": 30
+                }
+              },
+              {
+                "l": {
+                  "Trend": {
+                    "p0": 31.5,
+                    "p1": 33.5,
+                    "t0": 31,
+                    "t1": 33
+                  }
+                },
+                "op": "Above",
+                "r": "Close",
+                "r2": "Open"
+              }
+            ],
+            "tf": 20
+          }
+        },
+        "lines": [
+          [
+            40,
+            "essai-40"
+          ],
+          [
+            42,
+            "essai-42"
+          ]
+        ],
+        "msg": "essai-36",
+        "on": true,
+        "seen": 38.5,
+        "son": "essai-43",
+        "sym": "essai-18",
+        "tf": 46,
+        "until": 36
+      },
+      {
+        "coin": "essai-60",
+        "created": 63,
+        "every": 51,
+        "fired": 54,
+        "id": 48,
+        "kind": {
+          "Price": {
+            "dir": "Down",
+            "price": 49.5
+          }
+        },
+        "lines": [
+          [
+            56,
+            "essai-56"
+          ],
+          [
+            58,
+            "essai-58"
+          ]
+        ],
+        "msg": "essai-52",
+        "on": true,
+        "seen": 54.5,
+        "son": "essai-59",
+        "sym": "essai-48",
+        "tf": 62,
+        "until": 52
+      },
+      {
+        "coin": "essai-77",
+        "created": 80,
+        "every": 68,
+        "fired": 71,
+        "id": 64,
+        "kind": {
+          "Multi": {
+            "all": true,
+            "conds": [
+              {
+                "l": "High",
+                "op": "Below",
+                "r": "Low",
+                "r2": {
+                  "Ema": 67
+                }
+              },
+              {
+                "l": "Rsi",
+                "op": "CrossUp",
+                "r": "Volume",
+                "r2": "VolMa"
+              }
+            ],
+            "tf": 66
+          }
+        },
+        "lines": [
+          [
+            73,
+            "essai-73"
+          ],
+          [
+            75,
+            "essai-75"
+          ]
+        ],
+        "msg": "essai-69",
+        "on": true,
+        "seen": 71.5,
+        "son": "essai-76",
+        "sym": "essai-64",
+        "tf": 79,
+        "until": 69
+      }
+    ],
+    "next": 87
+  }
+]

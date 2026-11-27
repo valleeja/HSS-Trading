@@ -1,0 +1,779 @@
+[
+  {
+    "balance": 3.5,
+    "curve": [
+      [
+        32,
+        232.5
+      ],
+      [
+        34,
+        234.5
+      ]
+    ],
+    "fee_rate": 4.5,
+    "funding_log": [
+      [
+        36,
+        236.5
+      ],
+      [
+        38,
+        238.5
+      ]
+    ],
+    "history": [
+      {
+        "base": "essai-110",
+        "closed_at": 18,
+        "entry": 112.5,
+        "exit": 113.5,
+        "fees": 115.5,
+        "funding": 121.5,
+        "glissement": 120.5,
+        "levier": 122.5,
+        "opened_at": 17,
+        "partiel": true,
+        "plan": {
+          "lecture": {
+            "autres": 35,
+            "contre": [
+              "essai-130",
+              "essai-131"
+            ],
+            "neutres": [
+              "essai-132",
+              "essai-133"
+            ],
+            "pas_lue": "essai-135",
+            "pour": [
+              "essai-128",
+              "essai-129"
+            ]
+          },
+          "retouches": {
+            "objectif_eloigne": true,
+            "objectif_rapproche": true,
+            "stop_eloigne": 127.5,
+            "stop_rapproche": true
+          },
+          "stop": 125.5,
+          "stop0": 123.5,
+          "target": 126.5,
+          "target0": 124.5
+        },
+        "pnl": 114.5,
+        "qty": 111.5,
+        "real_closed_at": 37,
+        "reason": "essai-118",
+        "risk": 119.5,
+        "side": "Short"
+      },
+      {
+        "base": "essai-137",
+        "closed_at": 45,
+        "entry": 139.5,
+        "exit": 140.5,
+        "fees": 142.5,
+        "funding": 148.5,
+        "glissement": 147.5,
+        "levier": 149.5,
+        "opened_at": 44,
+        "partiel": true,
+        "plan": {
+          "lecture": {
+            "autres": 62,
+            "contre": [
+              "essai-157",
+              "essai-158"
+            ],
+            "neutres": [
+              "essai-159",
+              "essai-160"
+            ],
+            "pas_lue": "essai-162",
+            "pour": [
+              "essai-155",
+              "essai-156"
+            ]
+          },
+          "retouches": {
+            "objectif_eloigne": true,
+            "objectif_rapproche": true,
+            "stop_eloigne": 154.5,
+            "stop_rapproche": true
+          },
+          "stop": 152.5,
+          "stop0": 150.5,
+          "target": 153.5,
+          "target0": 151.5
+        },
+        "pnl": 141.5,
+        "qty": 138.5,
+        "real_closed_at": 64,
+        "reason": "essai-145",
+        "risk": 146.5,
+        "side": "Long"
+      }
+    ],
+    "name": "essai-1",
+    "next_id": 65,
+    "pending": [
+      {
+        "gestion": {
+          "be_r": 181.5,
+          "paliers": [
+            {
+              "part": 184.5,
+              "prix": 183.5
+            },
+            {
+              "part": 186.5,
+              "prix": 185.5
+            }
+          ],
+          "suiveur": 182.5
+        },
+        "id": 66,
+        "kind": "Limit",
+        "oco": 81,
+        "order": {
+          "base": "essai-166",
+          "couts": {
+            "ecart": 173.5,
+            "glissement": 174.5,
+            "maker": 171.5,
+            "taker": 172.5
+          },
+          "perp": {
+            "funding_h": 177.5,
+            "levier": 175.5,
+            "maintenance": 176.5
+          },
+          "price": 168.5,
+          "qty": 167.5,
+          "side": "Short",
+          "stop": 169.5,
+          "target": 170.5
+        },
+        "placed_at": 79,
+        "reduce_only": true,
+        "until": 80
+      },
+      {
+        "gestion": {
+          "be_r": 203.5,
+          "paliers": [
+            {
+              "part": 206.5,
+              "prix": 205.5
+            },
+            {
+              "part": 208.5,
+              "prix": 207.5
+            }
+          ],
+          "suiveur": 204.5
+        },
+        "id": 88,
+        "kind": "Stop",
+        "oco": 3,
+        "order": {
+          "base": "essai-188",
+          "couts": {
+            "ecart": 195.5,
+            "glissement": 196.5,
+            "maker": 193.5,
+            "taker": 194.5
+          },
+          "perp": {
+            "funding_h": 199.5,
+            "levier": 197.5,
+            "maintenance": 198.5
+          },
+          "price": 190.5,
+          "qty": 189.5,
+          "side": "Long",
+          "stop": 191.5,
+          "target": 192.5
+        },
+        "placed_at": 1,
+        "reduce_only": true,
+        "until": 2
+      },
+      {
+        "gestion": {
+          "be_r": 225.5,
+          "paliers": [
+            {
+              "part": 228.5,
+              "prix": 227.5
+            },
+            {
+              "part": 230.5,
+              "prix": 229.5
+            }
+          ],
+          "suiveur": 226.5
+        },
+        "id": 10,
+        "kind": "Limit",
+        "oco": 25,
+        "order": {
+          "base": "essai-210",
+          "couts": {
+            "ecart": 217.5,
+            "glissement": 218.5,
+            "maker": 215.5,
+            "taker": 216.5
+          },
+          "perp": {
+            "funding_h": 221.5,
+            "levier": 219.5,
+            "maintenance": 220.5
+          },
+          "price": 212.5,
+          "qty": 211.5,
+          "side": "Short",
+          "stop": 213.5,
+          "target": 214.5
+        },
+        "placed_at": 23,
+        "reduce_only": true,
+        "until": 24
+      }
+    ],
+    "positions": [
+      {
+        "base": "essai-6",
+        "couts": {
+          "ecart": 23.5,
+          "glissement": 24.5,
+          "maker": 21.5,
+          "taker": 22.5
+        },
+        "entry": 8.5,
+        "extreme": 20.5,
+        "funding": 28.5,
+        "funding_vu": 30,
+        "gestion": {
+          "be_r": 12.5,
+          "paliers": [
+            {
+              "part": 15.5,
+              "prix": 14.5
+            },
+            {
+              "part": 17.5,
+              "prix": 16.5
+            }
+          ],
+          "suiveur": 13.5
+        },
+        "id": 6,
+        "lecture": {
+          "autres": 39,
+          "contre": [
+            "essai-34",
+            "essai-35"
+          ],
+          "neutres": [
+            "essai-36",
+            "essai-37"
+          ],
+          "pas_lue": "essai-39",
+          "pour": [
+            "essai-32",
+            "essai-33"
+          ]
+        },
+        "maker_in": true,
+        "opened_at": 12,
+        "perp": {
+          "funding_h": 27.5,
+          "levier": 25.5,
+          "maintenance": 26.5
+        },
+        "qty": 7.5,
+        "qty0": 19.5,
+        "retouches": {
+          "objectif_eloigne": true,
+          "objectif_rapproche": true,
+          "stop_eloigne": 31.5,
+          "stop_rapproche": true
+        },
+        "side": "Long",
+        "stop": 9.5,
+        "stop0": 18.5,
+        "target": 10.5,
+        "target0": 30.5
+      },
+      {
+        "base": "essai-41",
+        "couts": {
+          "ecart": 58.5,
+          "glissement": 59.5,
+          "maker": 56.5,
+          "taker": 57.5
+        },
+        "entry": 43.5,
+        "extreme": 55.5,
+        "funding": 63.5,
+        "funding_vu": 65,
+        "gestion": {
+          "be_r": 47.5,
+          "paliers": [
+            {
+              "part": 50.5,
+              "prix": 49.5
+            },
+            {
+              "part": 52.5,
+              "prix": 51.5
+            }
+          ],
+          "suiveur": 48.5
+        },
+        "id": 41,
+        "lecture": {
+          "autres": 74,
+          "contre": [
+            "essai-69",
+            "essai-70"
+          ],
+          "neutres": [
+            "essai-71",
+            "essai-72"
+          ],
+          "pas_lue": "essai-74",
+          "pour": [
+            "essai-67",
+            "essai-68"
+          ]
+        },
+        "maker_in": true,
+        "opened_at": 47,
+        "perp": {
+          "funding_h": 62.5,
+          "levier": 60.5,
+          "maintenance": 61.5
+        },
+        "qty": 42.5,
+        "qty0": 54.5,
+        "retouches": {
+          "objectif_eloigne": true,
+          "objectif_rapproche": true,
+          "stop_eloigne": 66.5,
+          "stop_rapproche": true
+        },
+        "side": "Short",
+        "stop": 44.5,
+        "stop0": 53.5,
+        "target": 45.5,
+        "target0": 65.5
+      },
+      {
+        "base": "essai-76",
+        "couts": {
+          "ecart": 93.5,
+          "glissement": 94.5,
+          "maker": 91.5,
+          "taker": 92.5
+        },
+        "entry": 78.5,
+        "extreme": 90.5,
+        "funding": 98.5,
+        "funding_vu": 100,
+        "gestion": {
+          "be_r": 82.5,
+          "paliers": [
+            {
+              "part": 85.5,
+              "prix": 84.5
+            },
+            {
+              "part": 87.5,
+              "prix": 86.5
+            }
+          ],
+          "suiveur": 83.5
+        },
+        "id": 76,
+        "lecture": {
+          "autres": 9,
+          "contre": [
+            "essai-104",
+            "essai-105"
+          ],
+          "neutres": [
+            "essai-106",
+            "essai-107"
+          ],
+          "pas_lue": "essai-109",
+          "pour": [
+            "essai-102",
+            "essai-103"
+          ]
+        },
+        "maker_in": true,
+        "opened_at": 82,
+        "perp": {
+          "funding_h": 97.5,
+          "levier": 95.5,
+          "maintenance": 96.5
+        },
+        "qty": 77.5,
+        "qty0": 89.5,
+        "retouches": {
+          "objectif_eloigne": true,
+          "objectif_rapproche": true,
+          "stop_eloigne": 101.5,
+          "stop_rapproche": true
+        },
+        "side": "Long",
+        "stop": 79.5,
+        "stop0": 88.5,
+        "target": 80.5,
+        "target0": 100.5
+      }
+    ],
+    "sans_frais": true,
+    "start": 2.5
+  },
+  {
+    "balance": 241.5,
+    "curve": [
+      [
+        13,
+        413.5
+      ],
+      [
+        15,
+        415.5
+      ]
+    ],
+    "fee_rate": 242.5,
+    "funding_log": [
+      [
+        17,
+        417.5
+      ],
+      [
+        19,
+        419.5
+      ]
+    ],
+    "history": [
+      {
+        "base": "essai-313",
+        "closed_at": 21,
+        "entry": 315.5,
+        "exit": 316.5,
+        "fees": 318.5,
+        "funding": 324.5,
+        "glissement": 323.5,
+        "levier": 325.5,
+        "opened_at": 20,
+        "partiel": true,
+        "plan": {
+          "lecture": {
+            "autres": 38,
+            "contre": [
+              "essai-333",
+              "essai-334"
+            ],
+            "neutres": [
+              "essai-335",
+              "essai-336"
+            ],
+            "pas_lue": "essai-338",
+            "pour": [
+              "essai-331",
+              "essai-332"
+            ]
+          },
+          "retouches": {
+            "objectif_eloigne": true,
+            "objectif_rapproche": true,
+            "stop_eloigne": 330.5,
+            "stop_rapproche": true
+          },
+          "stop": 328.5,
+          "stop0": 326.5,
+          "target": 329.5,
+          "target0": 327.5
+        },
+        "pnl": 317.5,
+        "qty": 314.5,
+        "real_closed_at": 40,
+        "reason": "essai-321",
+        "risk": 322.5,
+        "side": "Long"
+      },
+      {
+        "base": "essai-340",
+        "closed_at": 48,
+        "entry": 342.5,
+        "exit": 343.5,
+        "fees": 345.5,
+        "funding": 351.5,
+        "glissement": 350.5,
+        "levier": 352.5,
+        "opened_at": 47,
+        "partiel": true,
+        "plan": {
+          "lecture": {
+            "autres": 65,
+            "contre": [
+              "essai-360",
+              "essai-361"
+            ],
+            "neutres": [
+              "essai-362",
+              "essai-363"
+            ],
+            "pas_lue": "essai-365",
+            "pour": [
+              "essai-358",
+              "essai-359"
+            ]
+          },
+          "retouches": {
+            "objectif_eloigne": true,
+            "objectif_rapproche": true,
+            "stop_eloigne": 357.5,
+            "stop_rapproche": true
+          },
+          "stop": 355.5,
+          "stop0": 353.5,
+          "target": 356.5,
+          "target0": 354.5
+        },
+        "pnl": 344.5,
+        "qty": 341.5,
+        "real_closed_at": 67,
+        "reason": "essai-348",
+        "risk": 349.5,
+        "side": "Short"
+      }
+    ],
+    "name": "essai-239",
+    "next_id": 68,
+    "pending": [
+      {
+        "gestion": {
+          "be_r": 384.5,
+          "paliers": [
+            {
+              "part": 387.5,
+              "prix": 386.5
+            },
+            {
+              "part": 389.5,
+              "prix": 388.5
+            }
+          ],
+          "suiveur": 385.5
+        },
+        "id": 69,
+        "kind": "Stop",
+        "oco": 84,
+        "order": {
+          "base": "essai-369",
+          "couts": {
+            "ecart": 376.5,
+            "glissement": 377.5,
+            "maker": 374.5,
+            "taker": 375.5
+          },
+          "perp": {
+            "funding_h": 380.5,
+            "levier": 378.5,
+            "maintenance": 379.5
+          },
+          "price": 371.5,
+          "qty": 370.5,
+          "side": "Long",
+          "stop": 372.5,
+          "target": 373.5
+        },
+        "placed_at": 82,
+        "reduce_only": true,
+        "until": 83
+      },
+      {
+        "gestion": {
+          "be_r": 406.5,
+          "paliers": [
+            {
+              "part": 409.5,
+              "prix": 408.5
+            },
+            {
+              "part": 411.5,
+              "prix": 410.5
+            }
+          ],
+          "suiveur": 407.5
+        },
+        "id": 91,
+        "kind": "Limit",
+        "oco": 6,
+        "order": {
+          "base": "essai-391",
+          "couts": {
+            "ecart": 398.5,
+            "glissement": 399.5,
+            "maker": 396.5,
+            "taker": 397.5
+          },
+          "perp": {
+            "funding_h": 402.5,
+            "levier": 400.5,
+            "maintenance": 401.5
+          },
+          "price": 393.5,
+          "qty": 392.5,
+          "side": "Short",
+          "stop": 394.5,
+          "target": 395.5
+        },
+        "placed_at": 4,
+        "reduce_only": true,
+        "until": 5
+      }
+    ],
+    "positions": [
+      {
+        "base": "essai-244",
+        "couts": {
+          "ecart": 261.5,
+          "glissement": 262.5,
+          "maker": 259.5,
+          "taker": 260.5
+        },
+        "entry": 246.5,
+        "extreme": 258.5,
+        "funding": 266.5,
+        "funding_vu": 68,
+        "gestion": {
+          "be_r": 250.5,
+          "paliers": [
+            {
+              "part": 253.5,
+              "prix": 252.5
+            },
+            {
+              "part": 255.5,
+              "prix": 254.5
+            }
+          ],
+          "suiveur": 251.5
+        },
+        "id": 44,
+        "lecture": {
+          "autres": 77,
+          "contre": [
+            "essai-272",
+            "essai-273"
+          ],
+          "neutres": [
+            "essai-274",
+            "essai-275"
+          ],
+          "pas_lue": "essai-277",
+          "pour": [
+            "essai-270",
+            "essai-271"
+          ]
+        },
+        "maker_in": true,
+        "opened_at": 50,
+        "perp": {
+          "funding_h": 265.5,
+          "levier": 263.5,
+          "maintenance": 264.5
+        },
+        "qty": 245.5,
+        "qty0": 257.5,
+        "retouches": {
+          "objectif_eloigne": true,
+          "objectif_rapproche": true,
+          "stop_eloigne": 269.5,
+          "stop_rapproche": true
+        },
+        "side": "Long",
+        "stop": 247.5,
+        "stop0": 256.5,
+        "target": 248.5,
+        "target0": 268.5
+      },
+      {
+        "base": "essai-279",
+        "couts": {
+          "ecart": 296.5,
+          "glissement": 297.5,
+          "maker": 294.5,
+          "taker": 295.5
+        },
+        "entry": 281.5,
+        "extreme": 293.5,
+        "funding": 301.5,
+        "funding_vu": 3,
+        "gestion": {
+          "be_r": 285.5,
+          "paliers": [
+            {
+              "part": 288.5,
+              "prix": 287.5
+            },
+            {
+              "part": 290.5,
+              "prix": 289.5
+            }
+          ],
+          "suiveur": 286.5
+        },
+        "id": 79,
+        "lecture": {
+          "autres": 12,
+          "contre": [
+            "essai-307",
+            "essai-308"
+          ],
+          "neutres": [
+            "essai-309",
+            "essai-310"
+          ],
+          "pas_lue": "essai-312",
+          "pour": [
+            "essai-305",
+            "essai-306"
+          ]
+        },
+        "maker_in": true,
+        "opened_at": 85,
+        "perp": {
+          "funding_h": 300.5,
+          "levier": 298.5,
+          "maintenance": 299.5
+        },
+        "qty": 280.5,
+        "qty0": 292.5,
+        "retouches": {
+          "objectif_eloigne": true,
+          "objectif_rapproche": true,
+          "stop_eloigne": 304.5,
+          "stop_rapproche": true
+        },
+        "side": "Short",
+        "stop": 282.5,
+        "stop0": 291.5,
+        "target": 283.5,
+        "target0": 303.5
+      }
+    ],
+    "sans_frais": true,
+    "start": 240.5
+  }
+]

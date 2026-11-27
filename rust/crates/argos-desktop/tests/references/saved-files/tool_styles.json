@@ -1,0 +1,102 @@
+[
+  {
+    "essai-1": {
+      "account": 9.5,
+      "bold": true,
+      "border": true,
+      "color": "essai-2",
+      "compact": true,
+      "dash": true,
+      "dotted": true,
+      "extend": 17,
+      "halign": 21,
+      "hidden": true,
+      "intervals": [
+        7,
+        8
+      ],
+      "invert": true,
+      "italic": true,
+      "locked": true,
+      "lot": 11.5,
+      "median": true,
+      "name": "essai-18",
+      "opacity": 25.5,
+      "price_labels": true,
+      "risk": 10.5,
+      "risk_pct": true,
+      "rr": 8.5,
+      "stats": 16,
+      "stats_always": true,
+      "stop_color": "essai-12",
+      "sync": 18,
+      "target_color": "essai-13",
+      "tcolor": "essai-14",
+      "text": "essai-4",
+      "tsize": 5.5,
+      "valign": 20,
+      "vis": [
+        [
+          true,
+          22,
+          23
+        ],
+        [
+          true,
+          24,
+          25
+        ]
+      ],
+      "width": 3.5
+    },
+    "essai-26": {
+      "account": 34.5,
+      "bold": true,
+      "border": true,
+      "color": "essai-27",
+      "compact": true,
+      "dash": true,
+      "dotted": true,
+      "extend": 42,
+      "halign": 46,
+      "hidden": true,
+      "intervals": [
+        32,
+        33
+      ],
+      "invert": true,
+      "italic": true,
+      "locked": true,
+      "lot": 36.5,
+      "median": true,
+      "name": "essai-43",
+      "opacity": 50.5,
+      "price_labels": true,
+      "risk": 35.5,
+      "risk_pct": true,
+      "rr": 33.5,
+      "stats": 41,
+      "stats_always": true,
+      "stop_color": "essai-37",
+      "sync": 43,
+      "target_color": "essai-38",
+      "tcolor": "essai-39",
+      "text": "essai-29",
+      "tsize": 30.5,
+      "valign": 45,
+      "vis": [
+        [
+          true,
+          47,
+          48
+        ],
+        [
+          true,
+          49,
+          50
+        ]
+      ],
+      "width": 28.5
+    }
+  }
+]

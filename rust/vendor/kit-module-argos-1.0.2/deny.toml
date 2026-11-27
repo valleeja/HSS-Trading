@@ -1,0 +1,33 @@
+# cargo-deny policy for Argos modules, used by `argos-modules build`.
+# Stricter than the core policy: modules run in the sandbox on users' devices.
+
+[graph]
+all-features = false
+targets = ["wasm32-unknown-unknown"]
+
+[advisories]
+# Any advisory fails, including unmaintained and yanked crates.
+unmaintained = "all"
+yanked = "deny"
+ignore = []
+
+[licenses]
+# Permissive licences only.
+allow = ["Apache-2.0", "BSD-3-Clause", "ISC", "MIT", "Unicode-3.0", "Zlib"]
+confidence-threshold = 0.9
+
+[licenses.private]
+# The module itself and the Argos module kit (publish = false).
+ignore = true
+
+[bans]
+multiple-versions = "deny"
+wildcards = "deny"
+allow-wildcard-paths = true
+
+[sources]
+# Only crates.io: no unknown registry, no git dependency.
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []

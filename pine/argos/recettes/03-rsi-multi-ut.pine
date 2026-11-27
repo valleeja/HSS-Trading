@@ -1,0 +1,14 @@
+//@version=6
+indicator("RSI multi-UT", overlay = true)
+r1 = request.security(syminfo.tickerid, "60", ta.rsi(close, 14))
+r4 = request.security(syminfo.tickerid, "240", ta.rsi(close, 14))
+rD = request.security(syminfo.tickerid, "D", ta.rsi(close, 14))
+coul(r) => r > 70 ? color.red : r < 30 ? color.green : color.gray
+var t = table.new(position.top_right, 2, 3, bgcolor = color.new(color.black, 30))
+if barstate.islast
+    table.cell(t, 0, 0, "1 h", text_color = color.white)
+    table.cell(t, 1, 0, str.tostring(r1, "#"), text_color = coul(r1))
+    table.cell(t, 0, 1, "4 h", text_color = color.white)
+    table.cell(t, 1, 1, str.tostring(r4, "#"), text_color = coul(r4))
+    table.cell(t, 0, 2, "Jour", text_color = color.white)
+    table.cell(t, 1, 2, str.tostring(rD, "#"), text_color = coul(rD))

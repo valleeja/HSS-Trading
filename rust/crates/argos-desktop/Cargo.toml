@@ -1,0 +1,52 @@
+[package]
+name = "argos-desktop"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+description = "Argos HSS Trading — l'app : bougies maison (argos-render), données des exchanges via le superviseur (argos-data). Desktop (fenêtre) et navigateur (WASM, même code)"
+
+[dependencies]
+argos-core = { path = "../argos-core" }
+argos-render = { path = "../argos-render" }
+argos-propfirm = { path = "../argos-propfirm" }
+argos-ai = { path = "../argos-ai" }
+argos-lens = { path = "../argos-lens" }
+argos-script = { path = "../argos-script" }
+argos-module-host = { path = "../argos-module-host" }
+argos-store = { path = "../argos-store" }
+argos-scanner = { path = "../argos-scanner", default-features = false }
+winit = "0.30"
+softbuffer = "0.4"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+serde_json = "1"
+tiny-skia = "0.11"
+serde = { version = "1", features = ["derive"] }
+# horloge qui marche aussi dans le navigateur
+web-time = "1"
+# 🔐 coffre de la clé Claude : AES-256-GCM, clé tirée de ton code (PBKDF2-SHA256), hasard du système
+aes-gcm = { version = "0.10", default-features = false, features = ["aes", "alloc"] }
+pbkdf2 = { version = "0.13", default-features = false, features = ["hmac"] }
+sha2 = { version = "0.11", default-features = false }
+base64 = "0.22"
+getrandom = "0.4"
+
+# desktop : réseau natif, presse-papiers et trousseau du système
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+argos-data = { path = "../argos-data", features = ["native"] }
+arboard = { version = "3", default-features = false }
+
+# navigateur (WASM) : fetch et WebSocket de la page, stockage de la page
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+argos-data = { path = "../argos-data", features = ["web"] }
+# heure locale par le navigateur
+chrono = { version = "0.4", default-features = false, features = ["clock", "wasmbind"] }
+wasm-bindgen = "0.2"
+js-sys = "0.3"
+wasm-bindgen-futures = "0.4"
+console_error_panic_hook = "0.1"
+getrandom = { version = "0.4", features = ["wasm_js"] }
+web-sys = { version = "0.3", features = ["Window", "Document", "Storage", "Location", "UrlSearchParams", "Navigator", "Clipboard", "ClipboardEvent", "DataTransfer", "Blob", "Url", "HtmlAnchorElement", "Element", "HtmlElement", "HtmlCanvasElement", "CssStyleDeclaration", "MouseEvent", "PointerEvent", "Event", "EventTarget", "HtmlInputElement", "KeyboardEvent", "Node", "CanvasRenderingContext2d", "ImageData", "CacheStorage", "Cache", "Response"] }
+
+[lints]
+workspace = true

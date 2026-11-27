@@ -1,0 +1,19 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Refus par défaut. Seulement les événements de base de Tauri pour la fenêtre principale ; aucun plugin (fichiers, réseau, shell…). Les commandes de l'app sont listées dans build.rs : T0 le module EMA, T1 le réseau (liste blanche), le direct et les modules faits par le cœur ; la session partagée (réglages de l'app de bureau, liste blanche) par le cœur.",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:event:default",
+    "allow-module-ema",
+    "allow-reseau",
+    "allow-module-lancer",
+    "allow-direct-ouvrir",
+    "allow-direct-fermer",
+    "allow-reglages-tout",
+    "allow-reglage-ecrire",
+    "allow-reglages-changements"
+  ]
+}

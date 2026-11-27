@@ -1,0 +1,170 @@
+[
+  {
+    "items": [
+      {
+        "module": "Book",
+        "on": true,
+        "size": "Small"
+      },
+      {
+        "module": "Trades",
+        "on": true,
+        "size": "Medium"
+      },
+      {
+        "module": "Funding",
+        "on": true,
+        "size": "Large"
+      },
+      {
+        "module": "Watchlist",
+        "on": true,
+        "size": "Fill"
+      },
+      {
+        "module": "Positions",
+        "on": true,
+        "size": "Small"
+      },
+      {
+        "module": "Agenda",
+        "on": true,
+        "size": "Medium"
+      },
+      {
+        "module": "News",
+        "on": true,
+        "size": "Large"
+      },
+      {
+        "module": "Account",
+        "on": true,
+        "size": "Fill"
+      },
+      {
+        "module": "Market",
+        "on": true,
+        "size": "Small"
+      },
+      {
+        "module": "Whales",
+        "on": true,
+        "size": "Medium"
+      },
+      {
+        "module": "World",
+        "on": true,
+        "size": "Large"
+      },
+      {
+        "module": "Sentiment",
+        "on": true,
+        "size": "Fill"
+      },
+      {
+        "module": "Liquidations",
+        "on": true,
+        "size": "Small"
+      },
+      {
+        "module": "KeyStats",
+        "on": true,
+        "size": "Medium"
+      },
+      {
+        "module": "Watch",
+        "on": true,
+        "size": "Large"
+      },
+      {
+        "module": "Scanner",
+        "on": true,
+        "size": "Fill"
+      },
+      {
+        "module": "Dex",
+        "on": true,
+        "size": "Small"
+      },
+      {
+        "module": "Backtest",
+        "on": true,
+        "size": "Medium"
+      },
+      {
+        "module": "Wallet",
+        "on": true,
+        "size": "Large"
+      },
+      {
+        "module": "Explorer",
+        "on": true,
+        "size": "Fill"
+      },
+      {
+        "module": "Stats",
+        "on": true,
+        "size": "Small"
+      },
+      {
+        "module": "Book",
+        "on": true,
+        "size": "Medium"
+      }
+    ],
+    "on": true,
+    "pos": "Left",
+    "size": 2
+  },
+  {
+    "items": [
+      {
+        "module": "Trades",
+        "on": true,
+        "size": "Large"
+      },
+      {
+        "module": "Funding",
+        "on": true,
+        "size": "Fill"
+      }
+    ],
+    "on": true,
+    "pos": "Right",
+    "size": 3
+  },
+  {
+    "items": [
+      {
+        "module": "Watchlist",
+        "on": true,
+        "size": "Small"
+      },
+      {
+        "module": "Positions",
+        "on": true,
+        "size": "Medium"
+      }
+    ],
+    "on": true,
+    "pos": "Bottom",
+    "size": 4
+  },
+  {
+    "items": [
+      {
+        "module": "Agenda",
+        "on": true,
+        "size": "Large"
+      },
+      {
+        "module": "News",
+        "on": true,
+        "size": "Fill"
+      }
+    ],
+    "on": true,
+    "pos": "Left",
+    "size": 5
+  }
+]

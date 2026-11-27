@@ -1,0 +1,26 @@
+//@version=6
+// Written by Argos from TradingView's built-in « Bollinger Bands » (19 Nov 2026): its inputs, calculation, plots and
+// fill as TradingView's own script; the untitled length input is titled « Length », as TradingView's dialog shows it.
+indicator(shorttitle="BB", title="Bollinger Bands", overlay=true, timeframe="", timeframe_gaps=true)
+length = input.int(20, minval=1, title="Length")
+maType = input.string("SMA", "Basis MA Type", options = ["SMA", "EMA", "SMMA (RMA)", "WMA", "VWMA"])
+src = input(close, title="Source")
+mult = input.float(2.0, minval=0.001, maxval=50, title="StdDev")
+
+ma(source, length, _type) =>
+    switch _type
+        "SMA" => ta.sma(source, length)
+        "EMA" => ta.ema(source, length)
+        "SMMA (RMA)" => ta.rma(source, length)
+        "WMA" => ta.wma(source, length)
+        "VWMA" => ta.vwma(source, length)
+
+basis = ma(src, length, maType)
+dev = mult * ta.stdev(src, length)
+upper = basis + dev
+lower = basis - dev
+offset = input.int(0, "Offset", minval = -500, maxval = 500, display = display.data_window)
+plot(basis, "Basis", color=#2962FF, offset = offset)
+p1 = plot(upper, "Upper", color=#F23645, offset = offset)
+p2 = plot(lower, "Lower", color=#089981, offset = offset)
+fill(p1, p2, title = "Background", color=color.rgb(33, 150, 243, 95))

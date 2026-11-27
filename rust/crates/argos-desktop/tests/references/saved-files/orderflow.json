@@ -1,0 +1,14 @@
+[
+  {
+    "liste": [
+      {
+        "exchange": "essai-1",
+        "symbole": "essai-2"
+      },
+      {
+        "exchange": "essai-3",
+        "symbole": "essai-4"
+      }
+    ]
+  }
+]

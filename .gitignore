@@ -1,0 +1,24 @@
+node_modules/
+.DS_Store
+_test.html
+/data/
+dist/
+
+# Secrets : ne jamais committer
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.cle
+id_rsa*
+*secret*.json
+credentials*.json
+seed*.txt
+*mnemonic*
+
+# 🖼 images de référence : la version changée, écrite pour comparer à l’œil (jamais commitée)
+rust/crates/argos-render/tests/references/*.nouveau.png
+rust/crates/argos-desktop/tests/references/*.nouveau.png

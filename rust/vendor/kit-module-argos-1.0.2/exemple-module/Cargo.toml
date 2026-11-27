@@ -1,0 +1,15 @@
+[package]
+name = "argos-exemple"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Example Argos module built with the module kit"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+argos-module-sdk = { path = "../argos-module-sdk" }
+
+# Its own workspace: modules are built alone.
+[workspace]

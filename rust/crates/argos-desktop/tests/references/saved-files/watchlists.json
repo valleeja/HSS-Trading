@@ -1,0 +1,42 @@
+[
+  {
+    "items": [
+      [
+        1,
+        "Section A",
+        "essai:AAA"
+      ],
+      [
+        1,
+        "Section A",
+        "essai:CCC"
+      ],
+      [
+        1,
+        "Section B",
+        "essai:BBB"
+      ]
+    ],
+    "lists": [
+      [
+        1,
+        "Essai 1"
+      ],
+      [
+        2,
+        "Essai 2"
+      ]
+    ],
+    "sections": [
+      [
+        1,
+        "Section A"
+      ],
+      [
+        1,
+        "Section B"
+      ]
+    ],
+    "v": 2
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "cmc_every_h": 7,
+    "cmc_url": "essai-5",
+    "custom": [
+      "essai-3",
+      "essai-4"
+    ],
+    "enabled": [
+      "essai-1",
+      "essai-2"
+    ]
+  }
+]

@@ -1,0 +1,9 @@
+//@version=6
+indicator("Supertrend", overlay = true)
+facteur = input.float(3.0, "Facteur", step = 0.1)
+periode = input.int(10, "Période ATR", minval = 1)
+[st, dir] = ta.supertrend(facteur, periode)
+plot(dir < 0 ? st : na, "Haussier", color.green, style = plot.style_linebr)
+plot(dir > 0 ? st : na, "Baissier", color.red, style = plot.style_linebr)
+plotshape(ta.change(dir) < 0, "Achat", shape.triangleup, location.belowbar, color.green)
+plotshape(ta.change(dir) > 0, "Vente", shape.triangledown, location.abovebar, color.red)

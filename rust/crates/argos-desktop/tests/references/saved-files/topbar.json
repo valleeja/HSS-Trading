@@ -1,0 +1,24 @@
+[
+  {
+    "accueil": true,
+    "accueil_v2": true,
+    "auto_save": true,
+    "bienvenue_vue": true,
+    "cell_bas_cache": true,
+    "cell_haut_cache": true,
+    "couleur_alertes": "essai-6",
+    "estomper": true,
+    "flagged": true,
+    "glass": true,
+    "language": 3,
+    "layout_name": "essai-3",
+    "lignes_alerte": true,
+    "number_format": 2,
+    "pct": true,
+    "profil": 6,
+    "son_alertes": "essai-7",
+    "theme": 5,
+    "verre_v1": true,
+    "volume_alertes": 9
+  }
+]

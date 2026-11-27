@@ -1,0 +1,216 @@
+[
+  {
+    "essai-1": [
+      [
+        "essai-2",
+        {
+          "account": 10.5,
+          "bold": true,
+          "border": true,
+          "color": "essai-3",
+          "compact": true,
+          "dash": true,
+          "dotted": true,
+          "extend": 18,
+          "halign": 22,
+          "hidden": true,
+          "intervals": [
+            8,
+            9
+          ],
+          "invert": true,
+          "italic": true,
+          "locked": true,
+          "lot": 12.5,
+          "median": true,
+          "name": "essai-19",
+          "opacity": 26.5,
+          "price_labels": true,
+          "risk": 11.5,
+          "risk_pct": true,
+          "rr": 9.5,
+          "stats": 17,
+          "stats_always": true,
+          "stop_color": "essai-13",
+          "sync": 19,
+          "target_color": "essai-14",
+          "tcolor": "essai-15",
+          "text": "essai-5",
+          "tsize": 6.5,
+          "valign": 21,
+          "vis": [
+            [
+              true,
+              23,
+              24
+            ],
+            [
+              true,
+              25,
+              26
+            ]
+          ],
+          "width": 4.5
+        }
+      ],
+      [
+        "essai-27",
+        {
+          "account": 35.5,
+          "bold": true,
+          "border": true,
+          "color": "essai-28",
+          "compact": true,
+          "dash": true,
+          "dotted": true,
+          "extend": 43,
+          "halign": 47,
+          "hidden": true,
+          "intervals": [
+            33,
+            34
+          ],
+          "invert": true,
+          "italic": true,
+          "locked": true,
+          "lot": 37.5,
+          "median": true,
+          "name": "essai-44",
+          "opacity": 51.5,
+          "price_labels": true,
+          "risk": 36.5,
+          "risk_pct": true,
+          "rr": 34.5,
+          "stats": 42,
+          "stats_always": true,
+          "stop_color": "essai-38",
+          "sync": 44,
+          "target_color": "essai-39",
+          "tcolor": "essai-40",
+          "text": "essai-30",
+          "tsize": 31.5,
+          "valign": 46,
+          "vis": [
+            [
+              true,
+              48,
+              49
+            ],
+            [
+              true,
+              50,
+              51
+            ]
+          ],
+          "width": 29.5
+        }
+      ]
+    ],
+    "essai-52": [
+      [
+        "essai-53",
+        {
+          "account": 61.5,
+          "bold": true,
+          "border": true,
+          "color": "essai-54",
+          "compact": true,
+          "dash": true,
+          "dotted": true,
+          "extend": 69,
+          "halign": 73,
+          "hidden": true,
+          "intervals": [
+            59,
+            60
+          ],
+          "invert": true,
+          "italic": true,
+          "locked": true,
+          "lot": 63.5,
+          "median": true,
+          "name": "essai-70",
+          "opacity": 77.5,
+          "price_labels": true,
+          "risk": 62.5,
+          "risk_pct": true,
+          "rr": 60.5,
+          "stats": 68,
+          "stats_always": true,
+          "stop_color": "essai-64",
+          "sync": 70,
+          "target_color": "essai-65",
+          "tcolor": "essai-66",
+          "text": "essai-56",
+          "tsize": 57.5,
+          "valign": 72,
+          "vis": [
+            [
+              true,
+              74,
+              75
+            ],
+            [
+              true,
+              76,
+              77
+            ]
+          ],
+          "width": 55.5
+        }
+      ],
+      [
+        "essai-78",
+        {
+          "account": 86.5,
+          "bold": true,
+          "border": true,
+          "color": "essai-79",
+          "compact": true,
+          "dash": true,
+          "dotted": true,
+          "extend": 94,
+          "halign": 98,
+          "hidden": true,
+          "intervals": [
+            84,
+            85
+          ],
+          "invert": true,
+          "italic": true,
+          "locked": true,
+          "lot": 88.5,
+          "median": true,
+          "name": "essai-95",
+          "opacity": 102.5,
+          "price_labels": true,
+          "risk": 87.5,
+          "risk_pct": true,
+          "rr": 85.5,
+          "stats": 93,
+          "stats_always": true,
+          "stop_color": "essai-89",
+          "sync": 95,
+          "target_color": "essai-90",
+          "tcolor": "essai-91",
+          "text": "essai-81",
+          "tsize": 82.5,
+          "valign": 97,
+          "vis": [
+            [
+              true,
+              99,
+              100
+            ],
+            [
+              true,
+              1,
+              2
+            ]
+          ],
+          "width": 80.5
+        }
+      ]
+    ]
+  }
+]

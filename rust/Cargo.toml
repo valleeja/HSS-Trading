@@ -1,0 +1,28 @@
+[workspace]
+resolver = "2"
+members = ["crates/argos-core", "crates/argos-data", "crates/argos-script", "crates/argos-render", "crates/argos-store", "crates/argos-propfirm", "crates/argos-desktop", "crates/argos-scanner", "crates/argos-module-host", "crates/argos-academy", "crates/argos-lens", "crates/argos-serveur", "crates/argos-ai"]
+# copie figée du kit Argos : jamais modifiée, hors de l'espace de travail (dépendance par chemin)
+exclude = ["vendor", "modules", "argos-tauri", "tools"]
+
+# Règles Clippy communes à toutes les crates (chaque crate les reprend avec `[lints] workspace = true`).
+[workspace.lints.clippy]
+# `!(x > 0.0)` est voulu : c'est vrai aussi pour NaN, contrairement à `x <= 0.0`.
+neg_cmp_op_on_partial_ord = "allow"
+
+[workspace.package]
+edition = "2021"
+license = "PolyForm-Noncommercial-1.0.0"
+publish = false
+
+# Développement : ton code un peu optimisé (compile vite), les librairies (tokio, serde, WebSocket…) à fond
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+# Version finale : un peu plus rapide et plus petite (compilation release un peu plus longue)
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true

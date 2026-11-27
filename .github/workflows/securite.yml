@@ -1,0 +1,63 @@
+# 🛡️ Sécurité d'Argos : lancement MANUEL seulement (onglet Actions ▸ « Sécurité » ▸ Run workflow).
+# Les minutes GitHub Actions sont payantes : les vérifications se font en local avant chaque PR
+# (voir CONTRIBUTING.md : make check et make audit dans rust/).
+# - dépendances Rust : failles connues (base RustSec) ;
+# - secrets : aucune clé, aucun jeton dans le code ni dans l'historique (gitleaks) ;
+# - code Rust : formatage (cargo fmt), clippy (un avertissement = échec) et tous les tests.
+name: Sécurité
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: securite-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  dependances:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+      - name: Failles connues des dépendances (RustSec)
+        working-directory: rust
+        run: |
+          cargo install cargo-audit --locked --quiet
+          cargo audit --deny unsound
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - name: Aucun secret dans le code ni l'historique (gitleaks)
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.24.2/gitleaks_8.24.2_linux_x64.tar.gz | tar xz gitleaks
+          ./gitleaks git --redact --no-banner --exit-code 1 .
+  code:
+    runs-on: ubuntu-latest
+    env:
+      CARGO_TERM_COLOR: never
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      # version fixe : une nouvelle version de Rust apporte de nouvelles règles clippy ; on la monte exprès, pas par surprise
+      - uses: dtolnay/rust-toolchain@d124f86f28ff42855784ff3319f48ac182c248f8 # 1.99
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
+        with:
+          workspaces: rust
+      - name: Paquets du système (fenêtre, presse-papiers)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libxkbcommon-dev libwayland-dev libx11-dev libxcursor-dev libxrandr-dev libxi-dev libdbus-1-dev pkg-config >/dev/null
+      - name: Formatage
+        working-directory: rust
+        run: cargo fmt --all --check
+      - name: Clippy
+        working-directory: rust
+        run: |
+          set -o pipefail
+          cargo clippy --workspace --all-targets --quiet -- -D warnings 2>&1 | tee clippy.log || { tail -n 80 clippy.log | sed 's/%/%25/g' | awk '{b[int((NR-1)/10)]=b[int((NR-1)/10)] $0 "%0A"} END {for (i=0;i<8;i++) if (b[i]!="") print "::error title=Clippy " i+1 "::" b[i]}'; exit 1; }
+      - name: Tests
+        working-directory: rust
+        run: |
+          set -o pipefail
+          cargo test --workspace --quiet --features argos-data/native 2>&1 | tee test.log || { grep -E -A6 '^(error|test .* FAILED|thread .* panicked|failures:)' test.log | tail -n 80 | sed 's/%/%25/g' | awk '{b[int((NR-1)/10)]=b[int((NR-1)/10)] $0 "%0A"} END {for (i=0;i<8;i++) if (b[i]!="") print "::error title=Tests " i+1 "::" b[i]}'; exit 1; }

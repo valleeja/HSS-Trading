@@ -1,0 +1,18 @@
+# crates.io crates an Argos module may depend on: `name exact-version [build-script]`.
+# Any other crate, or any other version in Cargo.lock, is refused by `argos-modules build`.
+# `build-script` marks a crate whose build script (code that runs on the build machine,
+# outside the sandbox) was reviewed; a crate with an unmarked build script is refused.
+# Procedural macros are always refused.
+# Adding or upgrading a crate is an Argos decision after review (licence, unsafe code,
+# build script). The Argos module kit (argos-module-sdk) is the only path dependency.
+
+# Serialization, without the derive macros.
+serde 1.0.229 build-script
+serde_core 1.0.229 build-script
+
+# Exact decimal amounts (money): never f64.
+rust_decimal 1.43.0 build-script
+arrayvec 0.7.8
+num-traits 0.2.19 build-script
+# Library used by the num-traits build script to detect compiler features.
+autocfg 1.5.1

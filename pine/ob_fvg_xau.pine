@@ -1,0 +1,291 @@
+//@version=6
+indicator("OB/FVG", shorttitle="OB/FVG", overlay=true, max_boxes_count=500, max_labels_count=500)
+
+// =====================================================================
+//  ORDER BLOCK suivi d'une FVG
+//  Haussier : dernière bougie baissière avant une impulsion haussière
+//             qui laisse une FVG haussière (low[0] > high[2]).
+//  Baissier : dernière bougie haussière avant une impulsion baissière
+//             qui laisse une FVG baissière (high[0] < low[2]).
+//
+//  Mitigation : l'OB et la FVG sont suivis séparément et supprimés
+//  du graphique dès qu'ils sont mitigés. Trois niveaux au choix :
+//   - Touche        : la mèche entre dans la zone (le plus strict)
+//   - Mèche au-delà : la mèche traverse toute la zone
+//   - Clôture au-delà : une bougie clôture au-delà de la zone
+//  Seules les bougies APRÈS la formation du setup sont testées.
+// =====================================================================
+
+// ----------------------------- Paramètres -----------------------------
+atrLen   = input.int(14, "Longueur ATR", minval=1, group="Détection")
+dispMult = input.float(1.0, "Impulsion : corps min (x ATR)", minval=0.1, step=0.1, group="Détection", tooltip="Taille minimale du corps de la bougie d'impulsion (celle du milieu de la FVG), en multiple de l'ATR.")
+fvgMin   = input.float(0.1, "FVG : taille min (x ATR)", minval=0.0, step=0.05, group="Détection", tooltip="Filtre les micro-FVG. 0 = toutes les FVG.")
+obLook   = input.int(5, "OB : recherche (barres avant l'impulsion)", minval=0, maxval=20, group="Détection", tooltip="Nombre de bougies analysées en amont pour trouver la dernière bougie de couleur opposée.")
+useBody  = input.bool(false, "OB sur le corps uniquement (sans mèches)", group="Détection")
+
+obMitMode  = input.string("Touche", "OB mitigé quand...", options=["Touche", "Mèche au-delà", "Clôture au-delà"], group="Mitigation", tooltip="Touche : la mèche entre dans l'OB.\nMèche au-delà : la mèche traverse tout l'OB.\nClôture au-delà : une bougie clôture au-delà de l'OB.")
+fvgMitMode = input.string("Touche", "FVG mitigée quand...", options=["Touche", "Mèche au-delà", "Clôture au-delà"], group="Mitigation", tooltip="Touche : la mèche entre dans la FVG.\nMèche au-delà : la mèche comble toute la FVG.\nClôture au-delà : une bougie clôture au-delà de la FVG.")
+obShrink  = input.bool(false, "OB : mitigation graduelle (la zone rétrécit à chaque mèche)", group="Mitigation", tooltip="Activé : quand une mèche entre dans l'OB, la partie touchée est retirée (le bord proche recule au niveau de la mèche). L'OB n'est supprimé que lorsque le prix atteint son bord opposé (mode « Touche »), ou le dépasse (modes « Mèche au-delà » / « Clôture au-delà »).")
+fvgShrink = input.bool(false, "FVG : mitigation graduelle (la zone rétrécit à chaque mèche)", group="Mitigation", tooltip="Même principe pour les FVG : la partie comblée par les mèches disparaît, le reste de la FVG continue.")
+
+showBull = input.bool(true, "Afficher les zones haussières", group="Affichage")
+showBear = input.bool(true, "Afficher les zones baissières", group="Affichage")
+maxZones = input.int(20, "Nombre max de zones actives", minval=1, maxval=100, group="Affichage")
+
+// --- Extension vers la droite & emplacement du texte ---
+extendOb  = input.string("À l'infini", "Prolongation des OB vers la droite", options=["Aucune", "Jusqu'à la barre actuelle", "À l'infini"], group="Extension & texte", tooltip="Aucune : l'OB garde sa largeur d'origine (de la bougie OB jusqu'à la formation de la FVG).\nJusqu'à la barre actuelle : l'OB s'allonge à chaque barre.\nÀ l'infini : comme X-ray, la zone continue vers la droite au-delà de la dernière barre.\nDans tous les cas la zone disparaît quand elle est mitigée.")
+obTxtH    = input.string("Centre", "OB : texte horizontal", options=["Gauche", "Centre", "Droite"], group="Extension & texte")
+obTxtV    = input.string("Centre", "OB : texte vertical", options=["Haut", "Centre", "Bas"], group="Extension & texte")
+extendFvg = input.string("À l'infini", "Prolongation des FVG vers la droite", options=["Aucune", "Jusqu'à la barre actuelle", "À l'infini"], group="Extension & texte", tooltip="Aucune : la FVG garde sa largeur d'origine (3 bougies).\nJusqu'à la barre actuelle : la FVG s'allonge à chaque barre.\nÀ l'infini : comme X-ray, la zone continue vers la droite au-delà de la dernière barre.\nDans tous les cas la zone disparaît quand elle est mitigée.")
+fvgTxtH   = input.string("Centre", "FVG : texte horizontal", options=["Gauche", "Centre", "Droite"], group="Extension & texte")
+fvgTxtV   = input.string("Centre", "FVG : texte vertical", options=["Haut", "Centre", "Bas"], group="Extension & texte")
+
+obBullCol  = input.color(color.green, "OB haussier", group="Couleurs", inline="ob")
+obBearCol  = input.color(color.red, "OB baissier", group="Couleurs", inline="ob")
+obFill     = input.int(80, "Transparence remplissage OB (%)", minval=0, maxval=100, group="Couleurs", tooltip="0 = opaque, 100 = invisible.")
+fvgBullCol = input.color(color.aqua, "FVG haussière", group="Couleurs", inline="fvg")
+fvgBearCol = input.color(color.orange, "FVG baissière", group="Couleurs", inline="fvg")
+fvgFill    = input.int(85, "Transparence remplissage FVG (%)", minval=0, maxval=100, group="Couleurs", tooltip="0 = opaque, 100 = invisible.")
+
+// --- EMA / VWAP ---
+emaOn    = input.bool(true, "Afficher l'EMA", group="EMA / VWAP")
+emaLen   = input.int(8, "EMA : longueur", minval=1, group="EMA / VWAP")
+emaCol   = input.color(#2962FF, "EMA : couleur", group="EMA / VWAP")
+vwapOn   = input.bool(true, "Afficher le VWAP", group="EMA / VWAP")
+vwapAnch = input.string("Jour", "VWAP : remise à zéro", options=["Jour", "Semaine", "Mois"], group="EMA / VWAP")
+vwapCol  = input.color(#E040FB, "VWAP : couleur", group="EMA / VWAP")
+
+// --- Bulles de market orders ---
+bubOn     = input.bool(true, "Afficher les bulles de market orders", group="Bulles market orders", tooltip="Une bulle verte (market buy) sous la bougie et une bulle rouge (market sell) au-dessus. Plus le volume est grand par rapport à la moyenne, plus la bulle est grosse. Passe la souris sur une bulle pour voir le volume.")
+bubTf     = input.timeframe("1", "Unité de temps de calcul", group="Bulles market orders", tooltip="Les market orders sont ESTIMÉS à partir des bougies de cette unité plus petite : bougie haussière = volume acheteur, baissière = volume vendeur. Elle doit être plus petite que celle du graphique, sinon le volume de la bougie est réparti selon la position de sa clôture.")
+bubAvgLen = input.int(50, "Taille relative à la moyenne des N dernières barres", minval=5, group="Bulles market orders")
+bubMin    = input.float(1.2, "Afficher si volume ≥ x × la moyenne", minval=0.0, step=0.1, group="Bulles market orders", tooltip="Monte cette valeur pour ne garder que les grosses bulles.")
+bubBuyCol  = input.color(color.green, "Market buy", group="Bulles market orders", inline="bub")
+bubSellCol = input.color(color.red, "Market sell", group="Bulles market orders", inline="bub")
+bubTransp  = input.int(40, "Transparence des bulles (%)", minval=0, maxval=95, group="Bulles market orders")
+
+// --- Flèches de test / retest de l'OB ---
+showTouch1 = input.bool(true, "Flèche : 1er contact de l'OB (test)", group="Flèches test / retest", inline="t1")
+touch1Col  = input.color(color.black, "", group="Flèches test / retest", inline="t1")
+showTouch2 = input.bool(true, "Flèche : retest n°2 de l'OB", group="Flèches test / retest", inline="t2", tooltip="Le retest n°2 est le 2e contact distinct : le prix doit d'abord ressortir de l'OB, puis y revenir.\nAvec la mitigation « Touche » (sans mitigation graduelle), l'OB disparaît dès le 1er contact : il n'y a donc jamais de retest n°2. Utilise « Mèche au-delà » ou « Clôture au-delà » pour le voir.")
+touch2Col  = input.color(color.red, "", group="Flèches test / retest", inline="t2")
+
+// Couleurs des signaux (triangles / cercles)
+bullCol  = obBullCol
+bearCol  = obBearCol
+
+// Alignement du texte dans les boîtes
+obHAlign  = obTxtH  == "Gauche" ? text.align_left : obTxtH  == "Droite" ? text.align_right  : text.align_center
+obVAlign  = obTxtV  == "Haut"   ? text.align_top  : obTxtV  == "Bas"    ? text.align_bottom : text.align_center
+fvgHAlign = fvgTxtH == "Gauche" ? text.align_left : fvgTxtH == "Droite" ? text.align_right  : text.align_center
+fvgVAlign = fvgTxtV == "Haut"   ? text.align_top  : fvgTxtV == "Bas"    ? text.align_bottom : text.align_center
+
+// ------------------------------- Types --------------------------------
+type Zone
+    box ob
+    box fvg
+    bool bull
+    float top      // haut de l'OB
+    float bot      // bas de l'OB
+    float fTop     // haut de la FVG
+    float fBot     // bas de la FVG
+    int obBar
+    int born
+    bool touched
+    bool obAlive
+    bool fvgAlive
+    int  touches = 0     // nombre de contacts distincts du prix avec l'OB
+    bool inOb = false    // la bougie précédente touchait-elle l'OB ?
+
+var array<Zone> zones = array.new<Zone>()
+
+// ----------------------------- Fonctions ------------------------------
+// Cherche la dernière bougie de couleur opposée avant l'impulsion.
+// Retourne le décalage (en barres) ou -1 si rien trouvé.
+findOb(bool bull) =>
+    int k = -1
+    for i = 2 to 2 + obLook
+        if bull ? close[i] < open[i] : close[i] > open[i]
+            k := i
+            break
+    k
+
+// Une zone [bot, top] est-elle mitigée par la bougie courante ?
+isMit(bool bull, float top, float bot, string mode, bool gradual) =>
+    bool r = false
+    if mode == "Touche"
+        // graduelle : mitigée seulement quand le bord OPPOSÉ est atteint
+        r := gradual ? (bull ? low <= bot : high >= top) : (bull ? low <= top : high >= bot)
+    else if mode == "Mèche au-delà"
+        r := bull ? low < bot : high > top
+    else
+        r := bull ? close < bot : close > top
+    r
+
+// Crée la zone (OB + FVG). Retourne true si une nouvelle zone a été créée.
+addZone(bool bull, int k) =>
+    int obBar = bar_index - k
+    bool dup = false
+    for z in zones
+        if z.bull == bull and z.obBar == obBar
+            dup := true
+    if not dup
+        color oc = bull ? obBullCol : obBearCol
+        color fc = bull ? fvgBullCol : fvgBearCol
+        float top = useBody ? math.max(open[k], close[k]) : high[k]
+        float bot = useBody ? math.min(open[k], close[k]) : low[k]
+        float fTop = bull ? low : low[2]
+        float fBot = bull ? high[2] : high
+        box ob = box.new(left=obBar, top=top, right=bar_index, bottom=bot, xloc=xloc.bar_index, extend=extendOb == "À l'infini" ? extend.right : extend.none, border_color=oc, bgcolor=color.new(oc, obFill), text=bull ? "OB ▲" : "OB ▼", text_color=oc, text_size=size.small, text_halign=obHAlign, text_valign=obVAlign)
+        box fv = box.new(left=bar_index - 2, top=fTop, right=bar_index, bottom=fBot, xloc=xloc.bar_index, extend=extendFvg == "À l'infini" ? extend.right : extend.none, border_color=color.new(fc, 40), bgcolor=color.new(fc, fvgFill), border_style=line.style_dotted, text="FVG", text_color=fc, text_size=size.tiny, text_halign=fvgHAlign, text_valign=fvgVAlign)
+        zones.push(Zone.new(ob, fv, bull, top, bot, fTop, fBot, obBar, bar_index, false, true, true))
+        if zones.size() > maxZones
+            Zone old = zones.shift()
+            old.ob.delete()
+            old.fvg.delete()
+    not dup
+
+// ------------------------------ Calculs -------------------------------
+atr = ta.atr(atrLen)
+
+bool dispUp  = close[1] > open[1] and (close[1] - open[1]) > dispMult * atr[1]
+bool dispDn  = close[1] < open[1] and (open[1] - close[1]) > dispMult * atr[1]
+bool bullFvg = low > high[2] and (low - high[2]) >= fvgMin * atr
+bool bearFvg = high < low[2] and (low[2] - high) >= fvgMin * atr
+
+bool bullSetup  = false
+bool bearSetup  = false
+bool bullRetest = false
+bool bearRetest = false
+bool bullRetest2 = false
+bool bearRetest2 = false
+
+if barstate.isconfirmed
+    // 1) Mise à jour des zones : retest, mitigation (suppression), prolongation
+    if zones.size() > 0
+        for i = zones.size() - 1 to 0
+            Zone z = zones.get(i)
+
+            // --- Order Block ---
+            if z.obAlive
+                // Signal de retest : premier contact du prix avec l'OB
+                if not z.touched
+                    bool touchOb = z.bull ? low <= z.top : high >= z.bot
+                    if touchOb
+                        z.touched := true
+                        if z.bull
+                            bullRetest := true
+                        else
+                            bearRetest := true
+                // Contacts successifs : nouveau contact = le prix touche l'OB après en être sorti
+                bool touchNow = z.bull ? low <= z.top : high >= z.bot
+                if touchNow and not z.inOb
+                    z.touches += 1
+                    if z.touches == 2
+                        if z.bull
+                            bullRetest2 := true
+                        else
+                            bearRetest2 := true
+                z.inOb := touchNow
+                // Mitigation -> suppression (ou rétrécissement graduel)
+                if isMit(z.bull, z.top, z.bot, obMitMode, obShrink)
+                    z.ob.delete()
+                    z.obAlive := false
+                else
+                    if obShrink
+                        if z.bull and low < z.top
+                            z.top := math.max(low, z.bot)
+                            z.ob.set_top(z.top)
+                        else if not z.bull and high > z.bot
+                            z.bot := math.min(high, z.top)
+                            z.ob.set_bottom(z.bot)
+                    if extendOb != "Aucune"
+                        z.ob.set_right(bar_index)
+
+            // --- FVG ---
+            if z.fvgAlive
+                if isMit(z.bull, z.fTop, z.fBot, fvgMitMode, fvgShrink)
+                    z.fvg.delete()
+                    z.fvgAlive := false
+                else
+                    if fvgShrink
+                        if z.bull and low < z.fTop
+                            z.fTop := math.max(low, z.fBot)
+                            z.fvg.set_top(z.fTop)
+                        else if not z.bull and high > z.fBot
+                            z.fBot := math.min(high, z.fTop)
+                            z.fvg.set_bottom(z.fBot)
+                    if extendFvg != "Aucune"
+                        z.fvg.set_right(bar_index)
+
+            // --- Plus rien à suivre : on retire la zone ---
+            if not z.obAlive and not z.fvgAlive
+                zones.remove(i)
+
+    // 2) Détection de nouvelles zones OB + FVG
+    //    (ajoutées après la mise à jour : elles ne sont testées qu'à partir de la barre suivante)
+    if showBull and bullFvg and dispUp
+        int k = findOb(true)
+        if k > 0
+            bullSetup := addZone(true, k)
+
+    if showBear and bearFvg and dispDn
+        int k = findOb(false)
+        if k > 0
+            bearSetup := addZone(false, k)
+
+// ------------------------ EMA / VWAP / Bulles --------------------------
+emaVal  = ta.ema(close, emaLen)
+vwapTf  = vwapAnch == "Jour" ? "D" : vwapAnch == "Semaine" ? "W" : "M"
+vwapVal = ta.vwap(hlc3, timeframe.change(vwapTf))
+plot(emaOn ? emaVal : na, "EMA", emaCol, 2)
+plot(vwapOn ? vwapVal : na, "VWAP", vwapCol, 2)
+
+// Volume acheteur / vendeur estimé avec les bougies de l'unité plus petite
+bool ltfOk = timeframe.in_seconds(bubTf) < timeframe.in_seconds()
+array<float> signedV = array.new_float()
+if bubOn and ltfOk
+    signedV := request.security_lower_tf(syminfo.tickerid, bubTf, close > open ? volume : close < open ? -volume : 0.0)
+
+float buyVol  = 0.0
+float sellVol = 0.0
+if not na(signedV) and array.size(signedV) > 0
+    for i = 0 to array.size(signedV) - 1
+        float sv = nz(array.get(signedV, i))
+        if sv > 0
+            buyVol += sv
+        else if sv < 0
+            sellVol -= sv
+else
+    // Repli : on répartit le volume de la bougie selon la position de sa clôture
+    float rngBar = high - low
+    buyVol  := rngBar > 0 ? volume * (close - low) / rngBar : volume / 2
+    sellVol := volume - buyVol
+
+float avgSide = ta.sma((buyVol + sellVol) / 2, bubAvgLen)
+
+bubSize(float r) =>
+    r >= 3.0 ? size.huge : r >= 2.0 ? size.large : r >= 1.5 ? size.normal : r >= 1.0 ? size.small : size.tiny
+
+if bubOn and barstate.isconfirmed and avgSide > 0
+    float rb = buyVol / avgSide
+    float rs = sellVol / avgSide
+    if rb >= bubMin
+        label.new(bar_index, low, "", yloc=yloc.price, style=label.style_circle, color=color.new(bubBuyCol, bubTransp), size=bubSize(rb), tooltip="Market buy ≈ " + str.tostring(buyVol, format.volume) + " (" + str.tostring(rb, "0.0") + "x la moyenne)")
+    if rs >= bubMin
+        label.new(bar_index, high, "", yloc=yloc.price, style=label.style_circle, color=color.new(bubSellCol, bubTransp), size=bubSize(rs), tooltip="Market sell ≈ " + str.tostring(sellVol, format.volume) + " (" + str.tostring(rs, "0.0") + "x la moyenne)")
+
+// ------------------------- Signaux & alertes --------------------------
+plotshape(bullSetup, "OB+FVG haussier", shape.triangleup, location.belowbar, bullCol, text="OB+FVG", size=size.tiny)
+plotshape(bearSetup, "OB+FVG baissier", shape.triangledown, location.abovebar, bearCol, text="OB+FVG", size=size.tiny)
+plotshape(showTouch1 and bullRetest, "Test OB haussier (1er contact)", shape.arrowup, location.belowbar, touch1Col, size=size.small)
+plotshape(showTouch2 and bullRetest2, "Retest n°2 OB haussier", shape.arrowup, location.belowbar, touch2Col, size=size.small)
+plotshape(showTouch1 and bearRetest, "Test OB baissier (1er contact)", shape.arrowdown, location.abovebar, touch1Col, size=size.small)
+plotshape(showTouch2 and bearRetest2, "Retest n°2 OB baissier", shape.arrowdown, location.abovebar, touch2Col, size=size.small)
+
+alertcondition(bullSetup, "Nouvel OB+FVG haussier", "Nouvel OB + FVG haussier sur {{ticker}} ({{interval}})")
+alertcondition(bearSetup, "Nouvel OB+FVG baissier", "Nouvel OB + FVG baissier sur {{ticker}} ({{interval}})")
+alertcondition(bullRetest, "Retest OB haussier", "Retest d'un OB haussier sur {{ticker}} ({{interval}})")
+alertcondition(bearRetest, "Retest OB baissier", "Retest d'un OB baissier sur {{ticker}} ({{interval}})")
+alertcondition(bullRetest2, "Retest n°2 OB haussier", "Retest n°2 d'un OB haussier sur {{ticker}} ({{interval}})")
+alertcondition(bearRetest2, "Retest n°2 OB baissier", "Retest n°2 d'un OB baissier sur {{ticker}} ({{interval}})")

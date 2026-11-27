@@ -1,0 +1,17 @@
+[
+  {
+    "done": [
+      "essai-3",
+      "essai-4"
+    ],
+    "fuseau": "NewYork",
+    "read": [
+      "essai-1",
+      "essai-2"
+    ],
+    "scores": {
+      "essai-5": 7,
+      "essai-7": 9
+    }
+  }
+]

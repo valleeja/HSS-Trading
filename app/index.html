@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<script>
+  // 📱 Safari (onglet, pas l'appli installée) : sans « viewport-fit=cover », Safari garde lui-même la page hors de
+  // l'encoche / Dynamic Island et de sa barre d'adresse flottante. L'appli installée garde « cover » (zones sûres).
+  if (!(matchMedia("(display-mode: standalone)").matches || navigator.standalone === true))
+    document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width,initial-scale=1");
+</script>
+<meta name="theme-color" content="#131722">
+<meta name="description" content="Chart de trading en direct, indicateurs Argos, trading démo et assistant.">
+<!-- 📲 appli installable : Android / ordi (manifest) et iPhone / iPad (balises Apple) -->
+<link rel="manifest" href="/app/manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<!-- 📱 barre d'état transparente, comme le site (qui remplit tout l'écran de l'iPhone de Jee, iOS 26.1, vérifié le 2026-11-05) -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HSS Trading">
+<link rel="apple-touch-icon" href="/app/apple-touch-icon.png">
+<link rel="icon" href="/favicon.png">
+<title>Argos HSS Trading</title>
+<style>
+  /* 🦀 l'app Rust d'Argos (la même que sur desktop) dessine tout dans le canvas ; il évite les zones sûres
+     (encoche, coins arrondis, barre du bas d'iOS) : rien d'important ne passe dessous */
+  /* 📱 iPhone (Safari et appli installée) : la page prend tout l'écran ; le canvas va d'une zone sûre à l'autre, en
+     pourcentage de l'écran (pas de 100dvh, faux en mode appli sur iOS) ; les zones sûres prennent la couleur du haut et
+     du bas de l'app (argosChrome) : pas de bande vide */
+  html { height: 100%; background: var(--ag-top, #131722); }
+  /* même recette que le site (qui remplit tout l'écran de l'iPhone installé) : corps à 100dvh, pas fixé */
+  body { height: 100dvh; margin: 0; overflow: hidden; overscroll-behavior: none;
+    background: linear-gradient(to bottom, var(--ag-top, #131722) 50%, var(--ag-bottom, #131722) 50%); }
+  /* 📱 conteneur racine dimensionné seulement en CSS, comme la barre du bas du site (bloc fixé, top 0 / bottom 0) :
+     iOS le fait aller jusqu'en bas de l'écran même en mode appli ; les zones sûres sont son rembourrage (env()).
+     Le canvas de l'app y est déplacé et prend 100 % de son intérieur : sa taille ne vient jamais d'innerHeight. */
+  #argos-root { position: fixed; top: 0; right: 0; bottom: 0; left: 0; box-sizing: border-box;
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+  #argos-root > canvas { display: block; position: static; width: 100%; height: 100%; outline: none; touch-action: none; }
+  canvas { display: block; outline: none; touch-action: none; }
+  /* 📱 appli installée sur iOS (barre d'état translucide) : iOS donne une vue trop courte (innerHeight 751 sur un écran
+     de 812) alors qu'il dessine tout l'écran. Par défaut (variante B, vérifiée sur l'iPhone de Jee) la page, le corps et
+     le conteneur font 100lvh, sans coupe ; le conteneur n'est pas « fixed » (iOS le bornerait à la vue courte). Les zones
+     sûres restent son rembourrage : en-tête sous la zone du haut, barre du bas au-dessus de celle du bas. */
+  html.ios-app { height: var(--ios-h); }
+  html.ios-app body { position: relative; height: var(--ios-h); overflow: visible; }
+  html.ios-app #argos-root { position: absolute; top: 0; left: 0; right: 0; bottom: auto; height: var(--ios-h); }
+  html.ios-app .ag-veil { position: absolute; top: 0; left: 0; right: 0; bottom: auto; height: var(--ios-h); box-sizing: border-box;
+    padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px)); }
+  html.ios-app .ag-dlg { max-height: min(calc(var(--ios-h) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 32px),
+    calc(100svh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 32px)); }
+  html.ios-app .ag-bar { position: absolute; bottom: auto; top: calc(var(--ios-h) - 16px - env(safe-area-inset-bottom, 0px)); transform: translate(-50%, -100%); }
+  #argos-wait { position: fixed; inset: 0; display: grid; place-items: center; color: #8a8e9a; font: 15px system-ui, sans-serif; }
+  /* ☰ Appli : bandeau de mise à jour, petits messages et fenêtres (lisibles en clair comme en sombre) */
+  .ag-bar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 50;
+    display: flex; align-items: center; gap: 12px; padding: 10px 12px 10px 16px; border-radius: 12px; background: #1e222d; color: #e6e8ee;
+    font: 14px system-ui, sans-serif; box-shadow: 0 10px 30px rgba(0,0,0,.45); border: 1px solid #363a45; max-width: calc(100vw - 32px); }
+  .ag-bar button, .ag-dlg button { all: unset; cursor: pointer; padding: 9px 14px; min-height: 22px; border-radius: 8px; background: #2962ff; color: #fff; font: 600 14px system-ui, sans-serif; }
+  .ag-bar button.ag-x, .ag-dlg button.ag-x { background: transparent; color: #b2b5be; }
+  .ag-bar span { flex: 1 1 auto; } .ag-bar button { white-space: nowrap; flex: none; }
+  @media (max-width: 480px) { .ag-bar { width: calc(100vw - 32px); box-sizing: border-box; gap: 8px; font-size: 13px; padding: 8px 8px 8px 12px; } }
+  .ag-toast { position: fixed; left: 50%; transform: translateX(-50%); top: calc(64px + env(safe-area-inset-top, 0px)); z-index: 51; padding: 10px 16px;
+    border-radius: 10px; background: #1e222d; color: #e6e8ee; border: 1px solid #363a45; font: 14px system-ui, sans-serif; box-shadow: 0 8px 24px rgba(0,0,0,.4); max-width: calc(100vw - 32px); }
+  .ag-veil { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.5); display: grid; place-items: center; padding: 16px; }
+  /* 👆 fenêtres : défilent au doigt (iPhone : la vue réelle peut être plus courte que l'écran, 100svh la suit) */
+  .ag-dlg { width: min(440px, 100%); max-height: min(calc(100dvh - 32px), calc(100svh - 32px)); overflow-y: auto; -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain; touch-action: pan-y; box-sizing: border-box; padding: 20px; border-radius: 14px;
+    background: #1e222d; color: #e6e8ee; border: 1px solid #363a45; font: 14.5px/1.5 system-ui, sans-serif; }
+  .ag-dlg h2 { margin: 0 0 8px; font-size: 18px; } .ag-dlg h3 { margin: 14px 0 4px; font-size: 15px; } .ag-dlg ol { margin: 4px 0; padding-left: 20px; }
+  .ag-dlg small, .ag-dlg .ag-dim { color: #b2b5be; } .ag-dlg .ag-row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+  .ag-dlg code { background: #2a2e39; padding: 1px 6px; border-radius: 5px; }
+  /* 📄 « Imprimer en PDF » (rapport du mois, lot 8) : la page claire A4 donnée par l'app, cachée à l'écran ; sur le
+     papier, elle seule (le canvas et le reste de la page n'y vont pas) */
+  #argos-imprime { display: none; }
+  @media print {
+    html, body, html.ios-app, html.ios-app body { height: auto !important; overflow: visible !important; position: static !important; background: #fff !important; }
+    body > *:not(#argos-imprime) { display: none !important; }
+    #argos-imprime { display: block; }
+  }
+</style>
+</head>
+<body>
+<div id="argos-root"></div>
+<div id="argos-wait">⏳ Chargement d'Argos…</div>
+<script>
+  // le canvas de l'app (ajouté au corps par winit) va dans le conteneur racine
+  (() => { const root = document.getElementById("argos-root");
+    const move = () => { const c = document.querySelector("body > canvas"); if (c) root.appendChild(c); return !!c; };
+    if (!move()) new MutationObserver((_, o) => { if (move()) o.disconnect(); }).observe(document.body, { childList: true }); })();
+</script>
+<script>
+  // 📱 iOS, mode appli : la hauteur s'ajuste toute seule (Jee, 20 nov. 2026 : « pas moyen qu'il s'ajuste
+  // automatiquement ? »). iOS donne parfois à l'appli installée une vue plus courte que l'écran, exactement de la
+  // hauteur de la zone du haut (mesuré sur la capture de Jee : écran 812, vue 751, zone du haut 61), alors qu'il
+  // dessine tout l'écran : il restait une bande noire en bas. La page mesure au démarrage, quand on tourne l'iPhone et
+  // quand on revient dans l'appli : vue courte → la page, le corps et le conteneur prennent la hauteur de l'écran ;
+  // vue juste → rien ne change (recette du site, conteneur collé aux 4 bords). Une variante choisie à la main dans
+  // ☰ Appli → Test écran (B…F) passe avant la mesure.
+  (() => {
+    const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const app = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+    if (!ios || !app) return;
+    const r = document.documentElement;
+    // un ancien choix du test (d'avant la mesure automatique) est oublié une fois : tout le monde repart sur l'auto
+    try { if (localStorage.getItem("argos:ios-auto") !== "2") { localStorage.removeItem("argos:ios-variant"); localStorage.setItem("argos:ios-auto", "2"); } } catch (_) {}
+    let v = ""; try { v = localStorage.getItem("argos:ios-variant") || ""; } catch (_) {}
+    const H = { B: "100lvh", C: "calc(100vh + env(safe-area-inset-top, 0px))", D: screen.height + "px", E: "-webkit-fill-available",
+      F: "max(100lvh, calc(100vh + env(safe-area-inset-top, 0px)))" }[v];
+    if (H) { r.style.setProperty("--ios-h", H); r.classList.add("ios-app"); return; } // choisie à la main
+    const zoneHaut = () => {
+      const pr = document.createElement("div");
+      pr.style.cssText = "position:fixed;visibility:hidden;padding-top:env(safe-area-inset-top,0px)";
+      (document.body || r).appendChild(pr); const t = parseFloat(getComputedStyle(pr).paddingTop) || 0; pr.remove(); return t;
+    };
+    const ajuste = () => {
+      const portrait = innerHeight >= innerWidth;
+      // iOS donne screen.width × screen.height en portrait, même couché
+      const sh = portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
+      const haut = zoneHaut(), manque = sh - innerHeight;
+      const courte = haut > 0 && manque > 2 && Math.abs(manque - haut) <= 3;
+      const avant = r.classList.contains("ios-app");
+      if (courte) { r.style.setProperty("--ios-h", sh + "px"); r.classList.add("ios-app"); }
+      else { r.classList.remove("ios-app"); r.style.removeProperty("--ios-h"); }
+      // l'app redessine à la nouvelle taille
+      if (avant !== courte) requestAnimationFrame(() => dispatchEvent(new Event("resize")));
+    };
+    let attente = 0;
+    const plusTard = () => { clearTimeout(attente); attente = setTimeout(ajuste, 300); };
+    if (document.body) ajuste(); else addEventListener("DOMContentLoaded", ajuste);
+    addEventListener("resize", () => { ajuste(); plusTard(); });
+    addEventListener("orientationchange", plusTard);
+    addEventListener("pageshow", plusTard);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) plusTard(); });
+  })();
+</script>
+<script>
+  // version de cette page, écrite à la construction (argos-outils version-app)
+  window.ARGOS_VERSION = "__ARGOS_VERSION__"; window.ARGOS_COMMIT = "__ARGOS_COMMIT__"; window.ARGOS_BUILT = "__ARGOS_BUILT__";
+
+  // 🔔 alertes d'Argos (appelées par l'app) : son choisi, et notification du navigateur seulement si elle est permise
+  window.argosAlertAsk = () => { try { if ("Notification" in window && Notification.permission === "default") Notification.requestPermission(); } catch (_) {} };
+  // 🔊 the 8 alert sounds, synthesised (no file); same names as argos_core::alerts::SONS.
+  // Each note: [frequency Hz, start s, length s, wave, loudness]
+  const SONS = {
+    "Bip": [[880, 0, 0.4, "sine", 1]],
+    "Carillon": [[988, 0, 0.5, "sine", 1], [784, 0.22, 0.7, "sine", 1]],
+    "Cloche": [[660, 0, 1.6, "sine", 1], [1650, 0, 0.9, "sine", 0.35], [2310, 0, 0.5, "sine", 0.2]],
+    "Triple bip": [[1000, 0, 0.12, "square", 0.35], [1000, 0.18, 0.12, "square", 0.35], [1000, 0.36, 0.12, "square", 0.35]],
+    "Montée": [[523, 0, 0.18, "triangle", 1], [659, 0.15, 0.18, "triangle", 1], [784, 0.3, 0.32, "triangle", 1]],
+    "Descente": [[784, 0, 0.18, "triangle", 1], [659, 0.15, 0.18, "triangle", 1], [523, 0.3, 0.32, "triangle", 1]],
+    "Gong doux": [[196, 0, 2.2, "sine", 1], [294, 0, 1.6, "sine", 0.4], [392, 0, 1.0, "triangle", 0.25]],
+    "Clochette": [[2093, 0, 0.35, "sine", 0.6], [2637, 0.12, 0.45, "sine", 0.5]],
+  };
+  // one AudioContext for the page, unlocked by the first touch / click / key (iPhone: sound only after a gesture)
+  let audio = null;
+  const ctxAudio = () => {
+    if (!audio) { const A = window.AudioContext || window.webkitAudioContext; if (!A) return null; audio = new A(); }
+    if (audio.state === "suspended") audio.resume();
+    return audio;
+  };
+  const debloque = () => {
+    try { const c = ctxAudio(); if (c) { const b = c.createBuffer(1, 1, 22050), s = c.createBufferSource(); s.buffer = b; s.connect(c.destination); s.start(0); } } catch (_) {}
+    for (const ev of ["pointerdown", "touchend", "keydown"]) removeEventListener(ev, debloque, true);
+  };
+  for (const ev of ["pointerdown", "touchend", "keydown"]) addEventListener(ev, debloque, true);
+  // ▶ plays `son` at `volume` (0 – 100; unknown name: Bip; « aucun »: nothing); returns the number of notes played
+  window.argosSon = (son, volume) => {
+    if (son === "aucun") return 0;
+    const n0 = Number(volume), v = Math.max(0, Math.min(100, Number.isFinite(n0) ? n0 : 60)) / 100;
+    if (v <= 0) return 0;
+    const notes = SONS[son] || SONS["Bip"];
+    try {
+      const c = ctxAudio(); if (!c) return 0;
+      const t0 = c.currentTime + 0.01;
+      for (const [f, debut, duree, onde, fort] of notes) {
+        const o = c.createOscillator(), g = c.createGain(), t = t0 + debut;
+        o.type = onde; o.frequency.value = f;
+        // (Bip at 60 %: 0.15, the beep of before)
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(Math.max(0.0002, 0.25 * v * fort), t + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + duree);
+        o.connect(g).connect(c.destination); o.start(t); o.stop(t + duree + 0.02);
+      }
+      return notes.length;
+    } catch (_) { return 0; }
+  };
+  window.argosAlert = (title, body, son, volume) => {
+    const n = window.argosSon(son, volume);
+    try { if ("Notification" in window && Notification.permission === "granted") new Notification(title, { body, icon: "/app/icon-192.png" }); } catch (_) {}
+    return n;
+  };
+
+  // 📤 partage d'une idée (appelé par l'app) : feuille de partage du téléphone avec l'image, sinon téléchargement
+  window.argosShare = (name, b64, text) => {
+    const title = "Argos HSS Trading";
+    let file = null;
+    try { const bin = atob(b64 || ""), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); if (u.length) file = new File([u], name, { type: "image/png" }); } catch (_) {}
+    const data = file ? { files: [file], title, text } : { title, text };
+    const save = () => { if (!file) { try { navigator.clipboard.writeText(text); } catch (_) {} return; } const url = URL.createObjectURL(file), a = document.createElement("a"); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 4000); };
+    try { if (navigator.share && (!file || (navigator.canShare && navigator.canShare(data)))) { navigator.share(data).catch(e => { if (e && e.name !== "AbortError") save(); }); return; } } catch (_) {}
+    save();
+  };
+
+  // 📄 « Imprimer en PDF » (rapport du mois, lot 8) : l'app donne la page à imprimer (son style et son contenu) ; elle
+  // est posée dans #argos-imprime (seule à aller sur le papier), puis la fenêtre d'impression du navigateur s'ouvre une
+  // fois ses images prêtes (« Enregistrer en PDF » ; sur iPhone : Partager › Imprimer). La page reste posée après
+  // (Safari imprime parfois après le retour de print()).
+  window.argosImprimer = (html) => {
+    let el = document.getElementById("argos-imprime");
+    if (!el) { el = document.createElement("div"); el.id = "argos-imprime"; document.body.appendChild(el); }
+    el.innerHTML = html;
+    const images = Array.from(el.querySelectorAll("img")).map(i => (i.decode ? i.decode().catch(() => {}) : Promise.resolve()));
+    Promise.all(images).then(() => window.print());
+  };
+
+  // 🧩 modules (appelé par l'app) : choisir des fichiers (.wasm + .toml), lus en base64 pour l'app
+  window.argosPicked = [];
+  // 🛟 Support: a pasted image (Ctrl + V) is set aside for the app (PNG / JPEG, in base64); pasted text follows
+  // its usual path
+  window.argosColle = [];
+  document.addEventListener("paste", (e) => {
+    const f = Array.from((e.clipboardData && e.clipboardData.files) || []).find(x => x.type === "image/png" || x.type === "image/jpeg");
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => { const u = new Uint8Array(r.result); let bin = ""; for (let i = 0; i < u.length; i += 32768) bin += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); window.argosColle.push([f.name || "image-collee", btoa(bin)]); };
+    r.readAsArrayBuffer(f);
+  });
+  window.argosPick = (accept) => {
+    const inp = document.createElement("input"); inp.type = "file"; inp.multiple = true; if (accept) inp.accept = accept;
+    inp.onchange = () => Array.from(inp.files || []).forEach(f => { const r = new FileReader();
+      r.onload = () => { const u = new Uint8Array(r.result); let bin = ""; for (let i = 0; i < u.length; i += 32768) bin += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); window.argosPicked.push([f.name, btoa(bin)]); };
+      r.readAsArrayBuffer(f); });
+    inp.click();
+  };
+  // 🧩 bac à sable du navigateur : chaque appel tourne dans un Web Worker à part, sans réseau ni fichiers (les
+  // fonctions argos_host répondent « refusé », -1) ; arrêté (terminate) s'il dépasse son temps : la page ne gèle jamais
+  window.argosModOut = [];
+  const MODS = new Map();
+  const WORKER = "/app/module-worker.js";
+  const b64 = (u) => { let bin = ""; for (let i = 0; i < u.length; i += 32768) bin += String.fromCharCode.apply(null, u.subarray(i, i + 32768)); return btoa(bin); };
+  const unb64 = (s) => { const bin = atob(s), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u; };
+  window.argosModRun = async (req, key, wasm, input, ms) => {
+    const done = (ok, v) => window.argosModOut.push([req, ok ? "1" : "0", v]);
+    try {
+      if (wasm) MODS.set(key, await WebAssembly.compile(unb64(wasm)));
+      const mod = MODS.get(key); if (!mod) return done(false, "module à recharger");
+      const w = new Worker(WORKER);
+      const t = setTimeout(() => { w.terminate(); done(false, "module trop lent : arrêté"); }, Math.max(50, +ms || 200) + 300);
+      w.onmessage = (e) => { clearTimeout(t); w.terminate(); e.data.ok ? done(true, b64(e.data.out)) : done(false, e.data.err); };
+      w.onerror = (e) => { clearTimeout(t); w.terminate(); done(false, "module arrêté : " + (e.message || "erreur")); };
+      w.postMessage({ mod, input: unb64(input) });
+    } catch (err) { done(false, String(err && err.message || err)); }
+  };
+
+  // 📐 l'écran pour l'app (lu à chaque image) : taille, échelle, doigt ou souris, segments (pliables, doubles écrans),
+  // posture, zoom choisi. Seulement des API standard ; sans elles, l'app choisit d'après la taille.
+  const ZKEY = "argos:ui_zoom";
+  const zoom = () => { try { const z = parseFloat(localStorage.getItem(ZKEY)); return z > 0 ? z : 1; } catch (_) { return 1; } };
+  const segments = () => {
+    try {
+      const s = (window.viewport && window.viewport.segments) || (typeof window.getWindowSegments === "function" ? window.getWindowSegments() : null);
+      return s && s.length > 1 ? Array.from(s).map(r => [r.x ?? r.left, r.y ?? r.top, r.width, r.height]) : [];
+    } catch (_) { return []; }
+  };
+  // 🧪 essais seulement (navigateur sans émulation d'appareil) : ?pointer=coarse simule le doigt, ?hinge=v:540:28 une
+  // charnière verticale à 540 px de 28 px (h: horizontale) ; sans ces paramètres, rien ne change
+  const Q = new URLSearchParams(location.search);
+  const fakeSegs = () => { const m = /^([vh]):(\d+):(\d+)$/.exec(Q.get("hinge") || ""); if (!m) return null; const at = +m[2], gap = +m[3];
+    return m[1] === "v" ? [[0, 0, at, innerHeight], [at + gap, 0, innerWidth - at - gap, innerHeight]] : [[0, 0, innerWidth, at], [0, at + gap, innerWidth, innerHeight - at - gap]]; };
+  window.argosScreen = () => {
+    const p = navigator.devicePosture;
+    return JSON.stringify({ w: innerWidth, h: innerHeight, dpr: devicePixelRatio || 1, coarse: Q.get("pointer") === "coarse" || matchMedia("(pointer: coarse)").matches,
+      segments: fakeSegs() || segments(), folded: p && p.type ? p.type === "folded" : null, zoom: zoom() });
+  };
+  // posture ou segments qui changent sans changer la taille : on redessine quand même
+  try { if (navigator.devicePosture) navigator.devicePosture.addEventListener("change", () => dispatchEvent(new Event("resize"))); } catch (_) {}
+
+  // 📱 couleurs du haut et du bas de l'app (zones sûres de l'iPhone, barre d'état)
+  window.argosChrome = (top, bottom) => { const r = document.documentElement.style; r.setProperty("--ag-top", top); r.setProperty("--ag-bottom", bottom);
+    const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = top; };
+  // 🫧 temps moyen d'une image (ms), donné par l'app toutes les 30 images : pour comparer avec et sans style verre
+  window.argosFrameMs = (ms, glass, off) => { window.argosLastFrameMs = parseFloat(ms); window.argosGlassMs = parseFloat(glass); window.argosGlassOff = !!off; };
+
+  // 🔍 échelle de rendu et temps moyen d'une image, donnés par l'app (pour vérifier la netteté et la fluidité)
+  window.argosPace = (scale, ms) => { window.argosRender = { scale: parseFloat(scale), ms: parseFloat(ms) }; };
+  // 🛡 ce qui couvre la chart, dit par l'app à chaque changement (« » : la chart seule) ; la porte de qualité ne
+  // mesure la chart que si rien ne la couvre (B-041)
+  window.argosEcran = (e) => { window.argosParDessus = e; };
+
+  // ---------- ☰ Appli ----------
+  const $el = (html) => { const d = document.createElement("div"); d.innerHTML = html.trim(); return d.firstElementChild; };
+  const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  // double écran côte à côte : bandeaux et messages au milieu du segment de droite (jamais sur la charnière)
+  const place = (el) => { const s = fakeSegs() || segments(); if (s.length === 2 && s[1][0] > s[0][0]) { el.style.left = (s[1][0] + s[1][2] / 2) + "px"; el.style.maxWidth = (s[1][2] - 24) + "px"; } return el; };
+  let toastT;
+  const toast = (msg) => { document.querySelectorAll(".ag-toast").forEach(n => n.remove()); const t = place($el(`<div class="ag-toast" role="status">${esc(msg)}</div>`)); document.body.appendChild(t); clearTimeout(toastT); toastT = setTimeout(() => t.remove(), 3500); };
+  const dialog = (html) => { const v = $el(`<div class="ag-veil"><div class="ag-dlg" role="dialog" aria-modal="true">${html}<div class="ag-row"><button class="ag-x" type="button" data-close>Fermer</button></div></div></div>`);
+    v.addEventListener("click", e => { if (e.target === v || e.target.closest("[data-close]")) v.remove(); });
+    const s = fakeSegs() || segments(); if (s.length === 2 && s[1][0] > s[0][0]) v.style.paddingLeft = (s[1][0] + 16) + "px"; // fenêtre dans le segment de droite
+    document.body.appendChild(v); return v; };
+  const built = () => { const b = window.ARGOS_BUILT; return b && !b.startsWith("__") ? new Date(b).toLocaleString("fr-CA", { dateStyle: "long", timeStyle: "short" }) : "—"; };
+  const ver = (v) => (v && !String(v).startsWith("__") ? v : "dev");
+
+  // une version plus récente ? (dates AAAAMMJJHHMM : plus grand = plus récent ; une version datée l'emporte sur « dev »)
+  const date12 = (s) => (/^\d{12}/.test(s || "") ? s.slice(0, 12) : null);
+  window.argosIsNewer = (cur, other) => { const a = date12(cur), b = date12(other); return b ? (a ? b > a : true) : false; };
+
+  let waitingSW = null;
+  const banner = () => {
+    if (document.querySelector(".ag-bar")) return;
+    const b = $el(`<div class="ag-bar" role="alert"><span>✨ Nouvelle version disponible</span><button type="button" data-up>Mettre à jour</button><button class="ag-x" type="button" data-later aria-label="Plus tard">✕</button></div>`);
+    b.querySelector("[data-up]").onclick = () => applyUpdate(); b.querySelector("[data-later]").onclick = () => b.remove();
+    document.body.appendChild(place(b));
+  };
+  const applyUpdate = () => {
+    if (waitingSW) { navigator.serviceWorker.addEventListener("controllerchange", () => location.reload(), { once: true }); waitingSW.postMessage("argos-update"); setTimeout(() => location.reload(), 3000); }
+    else location.reload();
+  };
+  // regarde la version publiée (jamais en cache) ; `manual` : dire aussi « à jour »
+  const checkUpdate = async (manual) => {
+    try {
+      const r = await fetch("/app/version.json", { cache: "no-store" }); const v = await r.json();
+      const newer = window.argosIsNewer(window.ARGOS_VERSION, v.version);
+      // 🔄 nouvelle version publiée : prise toute seule (une fois par version : jamais de boucle), sinon le bandeau
+      let auto = false; try { auto = newer && sessionStorage.getItem("argos-auto-up") !== v.version; if (auto) sessionStorage.setItem("argos-auto-up", v.version); } catch (_) {}
+      if (auto) { if (waitingSW) applyUpdate(); else location.reload(); }
+      else if (newer || waitingSW) banner();
+      else if (manual) toast(`✅ Argos est à jour · version ${ver(window.ARGOS_VERSION)} · build du ${built()}`);
+    } catch (_) {
+      // 📡 le PC ne répond pas : l'appli tourne sur sa copie gardée (souvent : Tailscale coupé ou Relais privé iCloud)
+      toast(`📡 Le PC ne répond pas : tu vois la copie gardée (version ${ver(window.ARGOS_VERSION)}). Vérifie Tailscale et le Relais privé iCloud.`);
+      // la page n'a pas encore démarré : elle se relancera toute seule quand le PC répondra
+      if (document.getElementById("argos-wait") && window.argosReprise) window.argosReprise.demarrer();
+    }
+  };
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/app/sw.js", { scope: "/app/" }).then(reg => {
+      const watch = (w) => { if (!w) return; w.addEventListener("statechange", () => { if (w.state === "installed" && navigator.serviceWorker.controller) { waitingSW = w; banner(); } }); };
+      if (reg.waiting && navigator.serviceWorker.controller) { waitingSW = reg.waiting; banner(); }
+      watch(reg.installing); reg.addEventListener("updatefound", () => watch(reg.installing));
+      setInterval(() => reg.update().catch(() => {}), 30 * 60 * 1000);
+    }).catch(() => {});
+  }
+  addEventListener("load", () => setTimeout(() => checkUpdate(false), 4000));
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") checkUpdate(false); });
+
+  // installation : invite du navigateur (Android, ordi) si elle existe, sinon l'aide pas à pas (iPhone, iPad, Android)
+  let installEvt = null;
+  addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; });
+  const standalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  const isApple = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const install = async () => {
+    if (standalone()) return toast("✅ Argos est déjà installé sur cet appareil");
+    if (installEvt) { installEvt.prompt(); const c = await installEvt.userChoice.catch(() => null); installEvt = null; if (c && c.outcome === "accepted") toast("📲 Argos s'installe"); return; }
+    dialog(`<h2>📲 Installer Argos</h2>
+      <h3>iPhone et iPad (Safari)</h3><ol><li>Ouvre cette page dans <b>Safari</b>.</li><li>Touche <b>Partager</b> (le carré avec la flèche vers le haut : en bas sur iPhone, en haut à droite sur iPad).</li><li>Choisis <b>« Sur l'écran d'accueil »</b>, puis <b>Ajouter</b>.</li></ol>
+      <h3>Android, téléphone ou tablette (Chrome)</h3><ol><li>Touche <b>⋮</b> en haut à droite.</li><li>Choisis <b>« Installer l'appli »</b> (ou « Ajouter à l'écran d'accueil »).</li></ol>
+      <h3>Ordi (Chrome, Edge)</h3><ol><li>Clique l'icône d'installation au bout de la barre d'adresse.</li></ol>
+      <p class="ag-dim">${isApple() ? "Tu es sur un appareil Apple : suis la partie iPhone et iPad." : "L'appli s'ouvre en plein écran et marche en portrait comme en paysage."}</p>`);
+  };
+
+  const setZoom = (z) => { z = Math.round(Math.min(1.8, Math.max(0.6, z)) * 10) / 10; try { localStorage.setItem(ZKEY, String(z)); } catch (_) {} dispatchEvent(new Event("resize")); toast(`🔍 Zoom ${Math.round(z * 100)} %`); };
+  // ⌨️ Ctrl / Cmd + 0, + (or =), − : the app's zoom, by the same path as « Zoom 100 % » (zoom.js says which key);
+  // taken before the app (capture phase) and from the browser (no page zoom) — these keys only
+  addEventListener("keydown", (e) => {
+    const a = window.toucheZoom && toucheZoom(e);
+    if (!a || !pourApp(e.target)) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    setZoom(a === "reset" ? 1 : zoom() + (a === "in" ? 0.1 : -0.1));
+  }, true);
+  const clearCache = async () => {
+    try { navigator.serviceWorker.controller && navigator.serviceWorker.controller.postMessage("argos-clear"); } catch (_) {}
+    try { for (const k of await caches.keys()) if (k.startsWith("argos-app-")) await caches.delete(k); } catch (_) {}
+    // service worker désinscrit aussi : le rechargement vient forcément du PC (Safari gardait parfois l'ancien)
+    try { for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister(); } catch (_) {}
+    toast("🧹 Cache vidé (tes réglages et dessins sont gardés) : rechargement depuis le PC…");
+    const q = new URLSearchParams(location.search); q.set("maj", String(Date.now()));
+    setTimeout(() => location.replace("/app/?" + q.toString()), 800);
+  };
+  // 📱 diagnostic de l'écran (iPhone : bandes vides ?) : tailles, zones sûres, échelle, mode appli
+  const screenDiag = () => {
+    const probe = document.createElement("div");
+    probe.style.cssText = "position:fixed;visibility:hidden;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)";
+    document.body.appendChild(probe); const cs = getComputedStyle(probe);
+    const sa = ["Top", "Right", "Bottom", "Left"].map(k => parseFloat(cs["padding" + k]) || 0); probe.remove();
+    const vv = window.visualViewport, c = document.querySelector("canvas"), r = c ? c.getBoundingClientRect() : null;
+    return [`mode appli : ${matchMedia("(display-mode: standalone)").matches || navigator.standalone === true ? "oui" : "non"}`,
+      `fenêtre : ${innerWidth} × ${innerHeight} · visuel : ${vv ? Math.round(vv.width) + " × " + Math.round(vv.height) : "—"}`,
+      `écran : ${screen.width} × ${screen.height} · DPR ${devicePixelRatio}`,
+      `zones sûres : haut ${sa[0]} · bas ${sa[2]} · gauche ${sa[3]} · droite ${sa[1]}`,
+      `page : ${document.documentElement.clientHeight} · corps : ${Math.round(document.body.getBoundingClientRect().height)} · hauteur iOS : ${localStorage.getItem("argos:ios-variant") ? "variante " + localStorage.getItem("argos:ios-variant") : document.documentElement.classList.contains("ios-app") ? "auto, vue courte → écran " + getComputedStyle(document.documentElement).getPropertyValue("--ios-h").trim() : "auto, vue juste"}`,
+      r ? `chart : ${Math.round(r.left)},${Math.round(r.top)} ${Math.round(r.width)} × ${Math.round(r.height)} · pixels ${c.width} × ${c.height}` : "chart : —"].join("\n");
+  };
+  window.argosScreenDiag = screenDiag;
+  const about = () => dialog(`<h2>ℹ️ Argos HSS Trading</h2>
+    <p>Version <code>${esc(ver(window.ARGOS_VERSION))}</code><br>Commit <code>${esc(ver(window.ARGOS_COMMIT))}</code><br>Build du ${esc(built())}</p>
+    <h3>Écran</h3><pre class="ag-dim" style="white-space:pre-wrap;font:12px ui-monospace,monospace;margin:0">${esc(screenDiag())}</pre>
+    <p class="ag-dim">Rendu : ${window.argosRender ? `×${esc(window.argosRender.scale)} (écran ×${esc(devicePixelRatio)}) · ${esc(window.argosRender.ms)} ms par image` : "mesure en cours"}</p>
+    <h3>Licences</h3><p class="ag-dim">Icônes <b>Phosphor</b> (licence MIT) · police <b>Inter</b> (SIL OFL 1.1) · polices <b>DejaVu</b> et <b>Liberation</b> (licences libres). Détails : <code>LICENCES-TIERS.md</code>.</p>`);
+
+  // appelé par l'app (☰ Appli) : action, puis « ?ex=…&s=…&tf=… » de la chart ouverte
+  window.argosApp = (action, query) => {
+    switch (action) {
+      case "update": return checkUpdate(true);
+      case "install": return install();
+      // 💻 « Version ordi » (before: a button of the welcome page only): the desktop app's download page
+      case "desktop": return void window.open("/telecharger.html", "_blank", "noopener");
+      case "copyurl": { const url = location.origin + "/app/" + (query || ""); return (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => toast("🔗 Lien copié : " + url), () => toast("🔗 " + url)); }
+      case "fullscreen": {
+        const d = document;
+        if (d.fullscreenElement) return d.exitFullscreen().catch(() => {});
+        if (d.documentElement.requestFullscreen) return d.documentElement.requestFullscreen().catch(() => toast("⛶ Plein écran refusé par le navigateur"));
+        return toast(isApple() ? "⛶ Sur iPhone / iPad : installe l'appli (☰ Appli → Installer) pour l'avoir en plein écran" : "⛶ Plein écran non disponible ici");
+      }
+      case "zoom-out": return setZoom(zoom() - 0.1);
+      case "zoom-in": return setZoom(zoom() + 0.1);
+      case "zoom-reset": return setZoom(1);
+      case "clearcache": return clearCache();
+      case "screentest": location.href = "/app/test-hauteur.html"; return;
+      case "home": try { localStorage.removeItem("argos-landing-off"); } catch (_) {} return window.__landing && window.__landing();
+      default: return about();
+    }
+  };
+</script>
+<!-- 🏠 page d'accueil (la même que le site) : ☰ Appli → Page d'accueil seulement ; l'appli s'ouvre sur la chart -->
+<script src="/app/accueil.js"></script>
+<!-- 🔄 session partagée avec l'app de bureau (serveur local seulement) : chargée avant la chart -->
+<script src="/app/zoom.js"></script>
+<script src="/app/synchro.js"></script>
+<!-- 🔄 reprise toute seule : la page réessaie et se recharge quand le PC répond de nouveau -->
+<script src="/app/reprise.js"></script>
+<script type="module">
+  import init from "/app/pkg/argos.js";
+  // 🧪 ?essai=1 : pas de session partagée (essais au doigt sans toucher les vrais réglages)
+  if (window.argosSynchro && !/[?&]essai=1/.test(location.search)) { await window.argosSynchro.charger(); window.argosSynchroDirect(); }
+  // ⏳ chargement avec progression (cell : le moteur fait plusieurs Mo) : Mo reçus, puis « Démarrage… »
+  const attente = document.getElementById("argos-wait");
+  const moteur = async () => {
+    const r = await fetch("/app/pkg/argos_bg.wasm");
+    if (!r.ok || !r.body) return r;
+    const lecteur = r.body.getReader(), parts = [];
+    let recu = 0;
+    for (;;) {
+      const { done, value } = await lecteur.read();
+      if (done) break;
+      parts.push(value); recu += value.length;
+      if (attente) attente.textContent = `⏳ Chargement d'Argos… ${(recu / 1e6).toFixed(1).replace(".", ",")} Mo`;
+    }
+    if (attente) attente.textContent = "⏳ Démarrage d'Argos…";
+    return new Response(new Blob(parts, { type: "application/wasm" }), { headers: { "Content-Type": "application/wasm" } });
+  };
+  // 🔄 pas démarré (PC injoignable, pages en reconstruction) : la page réessaie toute seule et se recharge
+  const reprendre = () => { if (window.argosReprise) window.argosReprise.demarrer(); };
+  const garde = setTimeout(() => { if (document.getElementById("argos-wait")) reprendre(); }, 45000);
+  init({ module_or_path: moteur() }).catch(e => { document.getElementById("argos-wait").textContent = "⚠️ Argos n'a pas pu démarrer (le PC ne répond pas ?) : je réessaie toutes les 4 s… " + e; reprendre(); })
+    .then(() => clearTimeout(garde))
+    .finally(() => { const w = document.getElementById("argos-wait"); if (w && !w.textContent.startsWith("⚠️")) w.remove(); });
+</script>
+</body>
+</html>

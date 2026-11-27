@@ -1,0 +1,11 @@
+{
+  "path": "trading/moyenne",
+  "version": 1,
+  "capabilities": [],
+  "author": "ARG-TEST-0001",
+  "abi": 2,
+  "settings": [
+    { "id": "length", "name": "Longueur", "type": "number", "default": 20, "min": 1, "max": 500 },
+    { "id": "source", "name": "Source", "type": "choice", "choices": ["close", "open", "high", "low"], "default": "close" }
+  ]
+}

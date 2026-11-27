@@ -1,0 +1,25 @@
+[
+  {
+    "format": 2,
+    "indicateurs": {
+      "essai-2": {
+        "essai-3": 4.5,
+        "essai-5": 6.5
+      },
+      "essai-7": {
+        "essai-10": 11.5,
+        "essai-8": 9.5
+      }
+    },
+    "textes": {
+      "essai-12": {
+        "essai-13": "essai-14",
+        "essai-15": "essai-16"
+      },
+      "essai-17": {
+        "essai-18": "essai-19",
+        "essai-20": "essai-21"
+      }
+    }
+  }
+]

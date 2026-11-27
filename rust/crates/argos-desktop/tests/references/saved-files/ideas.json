@@ -1,0 +1,32 @@
+[
+  [
+    {
+      "coin": "essai-3",
+      "entry": 6.5,
+      "id": "essai-1",
+      "image": "essai-10",
+      "interval": 6,
+      "label": "essai-4",
+      "long": true,
+      "sl": 7.5,
+      "snap": true,
+      "t": 3,
+      "text": "essai-9",
+      "tp": 8.5
+    },
+    {
+      "coin": "essai-13",
+      "entry": 16.5,
+      "id": "essai-11",
+      "image": "essai-20",
+      "interval": 16,
+      "label": "essai-14",
+      "long": true,
+      "sl": 17.5,
+      "snap": true,
+      "t": 13,
+      "text": "essai-19",
+      "tp": 18.5
+    }
+  ]
+]

@@ -1,0 +1,297 @@
+[
+  {
+    "barre_v2": true,
+    "barre_v3": true,
+    "carnet": {
+      "echange_min": 19,
+      "fenetre": "S10",
+      "niveaux": 17,
+      "onglet": "Carnet",
+      "palette": 18,
+      "pas": 15.5,
+      "son_murs": true,
+      "usd": true
+    },
+    "collapsed": [
+      "essai-5",
+      "essai-6"
+    ],
+    "flag_filter": 9,
+    "flags": [
+      [
+        "essai-1",
+        3
+      ],
+      [
+        "essai-3",
+        5
+      ]
+    ],
+    "folded": true,
+    "hidden_tools": [
+      "Indicators",
+      "Trading"
+    ],
+    "list": 8,
+    "news_langue": 15,
+    "news_sources_off": [
+      "essai-12",
+      "essai-13"
+    ],
+    "open": true,
+    "order": [
+      "Indicators",
+      "Trading",
+      "Journal",
+      "Exchanges",
+      "Marketplace",
+      "Market",
+      "Ai",
+      "Agenda",
+      "News",
+      "Whales",
+      "Modules",
+      "Alertes",
+      "Support",
+      "Dessin",
+      "Gardien",
+      "Script",
+      "Academie",
+      "Communaute",
+      "Portfolio",
+      "Liquidations",
+      "Reglages",
+      "Demo",
+      "Carnet",
+      "Explorer",
+      "Stats",
+      "Strategie",
+      "Watchlist"
+    ],
+    "panel": "Watchlist",
+    "sort": [
+      "Symbol",
+      true
+    ],
+    "tous": true,
+    "tous_bourse": "essai-10",
+    "tous_tri": "essai-11",
+    "width": 10
+  },
+  {
+    "barre_v2": true,
+    "barre_v3": true,
+    "carnet": {
+      "echange_min": 37,
+      "fenetre": "M1",
+      "niveaux": 35,
+      "onglet": "Delta",
+      "palette": 36,
+      "pas": 33.5,
+      "son_murs": true,
+      "usd": true
+    },
+    "collapsed": [
+      "essai-23",
+      "essai-24"
+    ],
+    "flag_filter": 27,
+    "flags": [
+      [
+        "essai-19",
+        21
+      ],
+      [
+        "essai-21",
+        23
+      ]
+    ],
+    "folded": true,
+    "hidden_tools": [
+      "Market",
+      "Ai"
+    ],
+    "list": 26,
+    "news_langue": 33,
+    "news_sources_off": [
+      "essai-30",
+      "essai-31"
+    ],
+    "open": true,
+    "order": [
+      "Exchanges",
+      "Marketplace"
+    ],
+    "panel": "Journal",
+    "sort": [
+      "Last",
+      true
+    ],
+    "tous": true,
+    "tous_bourse": "essai-28",
+    "tous_tri": "essai-29",
+    "width": 28
+  },
+  {
+    "barre_v2": true,
+    "barre_v3": true,
+    "carnet": {
+      "echange_min": 55,
+      "fenetre": "M5",
+      "niveaux": 53,
+      "onglet": "Dom",
+      "palette": 54,
+      "pas": 51.5,
+      "son_murs": true,
+      "usd": true
+    },
+    "collapsed": [
+      "essai-41",
+      "essai-42"
+    ],
+    "flag_filter": 45,
+    "flags": [
+      [
+        "essai-37",
+        39
+      ],
+      [
+        "essai-39",
+        41
+      ]
+    ],
+    "folded": true,
+    "hidden_tools": [
+      "Modules",
+      "Alertes"
+    ],
+    "list": 44,
+    "news_langue": 51,
+    "news_sources_off": [
+      "essai-48",
+      "essai-49"
+    ],
+    "open": true,
+    "order": [
+      "News",
+      "Whales"
+    ],
+    "panel": "Agenda",
+    "sort": [
+      "Chg",
+      true
+    ],
+    "tous": true,
+    "tous_bourse": "essai-46",
+    "tous_tri": "essai-47",
+    "width": 46
+  },
+  {
+    "barre_v2": true,
+    "barre_v3": true,
+    "carnet": {
+      "echange_min": 73,
+      "fenetre": "S10",
+      "niveaux": 71,
+      "onglet": "Carnet",
+      "palette": 72,
+      "pas": 69.5,
+      "son_murs": true,
+      "usd": true
+    },
+    "collapsed": [
+      "essai-59",
+      "essai-60"
+    ],
+    "flag_filter": 63,
+    "flags": [
+      [
+        "essai-55",
+        57
+      ],
+      [
+        "essai-57",
+        59
+      ]
+    ],
+    "folded": true,
+    "hidden_tools": [
+      "Script",
+      "Academie"
+    ],
+    "list": 62,
+    "news_langue": 69,
+    "news_sources_off": [
+      "essai-66",
+      "essai-67"
+    ],
+    "open": true,
+    "order": [
+      "Dessin",
+      "Gardien"
+    ],
+    "panel": "Watchlist",
+    "sort": [
+      "Pct",
+      true
+    ],
+    "tous": true,
+    "tous_bourse": "essai-64",
+    "tous_tri": "essai-65",
+    "width": 64
+  },
+  {
+    "barre_v2": true,
+    "barre_v3": true,
+    "carnet": {
+      "echange_min": 91,
+      "fenetre": "M1",
+      "niveaux": 89,
+      "onglet": "Delta",
+      "palette": 90,
+      "pas": 87.5,
+      "son_murs": true,
+      "usd": true
+    },
+    "collapsed": [
+      "essai-77",
+      "essai-78"
+    ],
+    "flag_filter": 81,
+    "flags": [
+      [
+        "essai-73",
+        75
+      ],
+      [
+        "essai-75",
+        77
+      ]
+    ],
+    "folded": true,
+    "hidden_tools": [
+      "Reglages",
+      "Demo"
+    ],
+    "list": 80,
+    "news_langue": 87,
+    "news_sources_off": [
+      "essai-84",
+      "essai-85"
+    ],
+    "open": true,
+    "order": [
+      "Portfolio",
+      "Liquidations"
+    ],
+    "panel": "Communaute",
+    "sort": [
+      "Symbol",
+      true
+    ],
+    "tous": true,
+    "tous_bourse": "essai-82",
+    "tous_tri": "essai-83",
+    "width": 82
+  }
+]

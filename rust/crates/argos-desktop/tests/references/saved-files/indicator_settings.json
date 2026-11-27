@@ -1,0 +1,45 @@
+[
+  {
+    "format": 2,
+    "indicateurs": {
+      "essai-2": {
+        "essai-3": 4.5,
+        "essai-5": 6.5
+      },
+      "essai-7": {
+        "essai-10": 11.5,
+        "essai-8": 9.5
+      }
+    },
+    "scripts": {
+      "essai-12": {
+        "essai-13": 14.5,
+        "essai-15": 16.5
+      },
+      "essai-17": {
+        "essai-18": 19.5,
+        "essai-20": 21.5
+      }
+    },
+    "tableaux": {
+      "essai-22": {
+        "corner": 24,
+        "dx": 24.5,
+        "dy": 25.5,
+        "hy": 28.5,
+        "moved": true,
+        "scale": 26.5,
+        "wx": 27.5
+      },
+      "essai-29": {
+        "corner": 31,
+        "dx": 31.5,
+        "dy": 32.5,
+        "hy": 35.5,
+        "moved": true,
+        "scale": 33.5,
+        "wx": 34.5
+      }
+    }
+  }
+]

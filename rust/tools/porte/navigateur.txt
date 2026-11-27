@@ -1,0 +1,4 @@
+# Written by tools/porte/navigateur.mjs with ARGOS_VITESSE=maj (Jee's phrase), never by hand.
+# gesture, mean time between two images (ms), time to draw one (ms)
+glisser 21.4 12.9
+pincer 39.1 12.6

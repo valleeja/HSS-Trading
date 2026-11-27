@@ -1,0 +1,723 @@
+//@version=6
+indicator("Argos AI Trend Pro", overlay=false, precision=2, max_labels_count=500, max_lines_count=500, max_bars_back=500)
+grpPreset = "0) Preset Global"
+presetMode = input.string("Auto", "Preset", options=["Auto", "Scalping", "Day Trade", "Swing", "Personnalisé"], group=grpPreset, tooltip="Auto : ≤15m = Scalping, ≤4H = Day Trade, >4H = Swing. Personnalisé = utilise les valeurs marquées (Perso) ci-dessous.")
+grpOsc = "1) Oscillator - Settings"
+rsiLengthIn       = input.int(10, "RSI Length (Perso)", minval=1, group=grpOsc)
+stochLengthIn     = input.int(10, "Stoch Length (Perso)", minval=1, group=grpOsc)
+smoothKIn         = input.int(3, "Smooth K (Perso)", minval=1, group=grpOsc)
+smoothD           = input.int(3, "Smooth D", minval=1, group=grpOsc)
+momentumLengthIn  = input.int(12, "Momentum Length (Perso)", minval=1, group=grpOsc)
+overboughtLevel   = input.int(75, "Overbought Level", group=grpOsc)
+oversoldLevel     = input.int(25, "Oversold Level", group=grpOsc)
+veryRedLevel      = input.int(85, "Very Red Level", group=grpOsc)
+veryBlueLevel     = input.int(20, "Very Blue Level", group=grpOsc)
+extremeHighLevel  = input.int(80, "Extreme High Level", group=grpOsc)
+extremeLowLevel   = input.int(20, "Extreme Low Level", group=grpOsc)
+midline           = input.int(50, "Midline", group=grpOsc)
+grpSmooth = "1) Oscillator - Trend Line Smoothing"
+smoothingLengthIn = input.int(3, "Smoothing Length (Perso)", minval=1, maxval=50, group=grpSmooth)
+smoothingType     = input.string("SMA", "Smoothing Type", options=["SMA", "EMA"], group=grpSmooth)
+grpSig = "1) Oscillator - Signals & Trend"
+useEmaFilter      = input.bool(true, "Use EMA Filter (Blocks counter-trend signals)", group=grpSig)
+emaFastLen        = input.int(9, "EMA Fast", group=grpSig)
+emaSlowLen        = input.int(21, "EMA Slow", group=grpSig)
+grpHtf = "1) Oscillator - HTF Signal (Blue/Red Zone, fixed priority)"
+htfEnable         = input.bool(true, "Enable HTF Signal box", group=grpHtf)
+htfMode           = input.string("Auto", "Mode timeframe (Auto = TF de la chart)", options=["Auto", "Fixe"], group=grpHtf)
+htfTimeframe      = input.timeframe("2D", "Timeframe fixe (si mode Fixe)", group=grpHtf)
+htfBoxPosition    = input.string("Bottom Right", "Box position", options=["Bottom Right", "Bottom Left", "Top Right", "Top Left"], group=grpHtf)
+htfTableSizeStr   = input.string("Grand", "Grosseur du tableau", options=["Minuscule", "Petit", "Normal", "Grand", "Très grand"], group=grpHtf)
+htfShowValue      = input.bool(true, "Show numeric value in the box", group=grpHtf)
+htfBuyColor       = input.color(color.rgb(0, 230, 118), "BUY Color (HTF blue zone)", group=grpHtf)
+htfSellColor      = input.color(color.rgb(255, 82, 82), "SELL Color (HTF red zone)", group=grpHtf)
+htfNeutralColor   = input.color(color.rgb(120, 120, 120), "HTF Neutral Color", group=grpHtf)
+grpDiv = "1) Oscillator - Automatic Divergences"
+showDivergenceLines   = input.bool(true, "Show Divergence Lines", group=grpDiv)
+showHiddenDivergences = input.bool(true, "Show Hidden Divergences", group=grpDiv)
+leftBarsIn            = input.int(2, "Confirmation bars Left (Perso)", minval=1, group=grpDiv)
+rightBarsIn           = input.int(2, "Confirmation bars Right (Perso)", minval=1, group=grpDiv)
+minOscMove            = input.float(0, "Minimum oscillator move (noise filter)", minval=0, step=0.5, group=grpDiv)
+maxPivotDistanceIn    = input.int(100, "Max distance between pivots (Perso)", minval=1, group=grpDiv)
+grpDivAlert = "1) Oscillator - Divergence Alerts"
+alertOnRegularDiv = input.bool(true, "Enable alerts on regular divergences (bull/bear)", group=grpDivAlert)
+alertOnHiddenDiv  = input.bool(true, "Enable alerts on hidden divergences (bull/bear)", group=grpDivAlert)
+grpCol = "1) Oscillator - Divergence Colors"
+bullDivColor       = input.color(color.rgb(0, 230, 118), "Bullish Divergence Color", group=grpCol)
+bearDivColor       = input.color(color.rgb(255, 82, 82), "Bearish Divergence Color", group=grpCol)
+hiddenBullDivColor = input.color(color.rgb(0, 229, 255), "Hidden Bullish Divergence Color", group=grpCol)
+hiddenBearDivColor = input.color(color.rgb(255, 152, 0), "Hidden Bearish Divergence Color", group=grpCol)
+divLineWidth       = input.int(2, "Divergence line width", minval=1, maxval=4, group=grpCol)
+grpFace = "1) Oscillator - Money Face (Divergences)"
+showMoneyFace     = input.bool(true, "Show the money face", group=grpFace)
+moneyFaceSizeStr  = input.string("Huge", "Face size", options=["Normal", "Large", "Huge"], group=grpFace)
+moneyFaceOffset   = input.float(4.0, "Vertical offset (distance from line)", minval=0, step=0.5, group=grpFace)
+grpGrad = "1) Oscillator - Trend Line Gradient"
+useGradient       = input.bool(true, "Enable trend line color gradient", group=grpGrad)
+gradientLowColor  = input.color(color.rgb(33, 150, 243), "Oversold Color (low)", group=grpGrad)
+gradientMidColor  = input.color(color.rgb(0, 230, 118), "Midline Color (neutral)", group=grpGrad)
+gradientHighColor = input.color(color.rgb(255, 0, 0), "Overbought Color (high)", group=grpGrad)
+grpSL = "1) Oscillator - Ligne Signal (Achat/Vente)"
+showSignalLine  = input.bool(true, "Afficher la ligne signal", group=grpSL)
+signalLenIn     = input.int(9, "Longueur Signal (Perso)", minval=1, group=grpSL)
+signalType      = input.string("EMA", "Type de moyenne", options=["SMA", "EMA"], group=grpSL)
+signalColor     = input.color(color.new(color.white, 30), "Couleur ligne", group=grpSL, inline="sl")
+signalWidth     = input.int(1, "Épaisseur", minval=1, maxval=4, group=grpSL, inline="sl")
+signalFilter    = input.string("Zones", "Filtre des signaux", options=["Aucun", "Midline", "Zones"], group=grpSL)
+presetTfMin = timeframe.in_seconds() / 60
+presetActive = presetMode == "Auto" ? (presetTfMin <= 15 ? "Scalping" : presetTfMin <= 240 ? "Day Trade" : "Swing") : presetMode
+isScalp = presetActive == "Scalping"
+isDay   = presetActive == "Day Trade"
+isSwing = presetActive == "Swing"
+rsiLength        = isScalp ? 7 : isDay ? 10 : isSwing ? 14 : rsiLengthIn
+stochLength      = isScalp ? 7 : isDay ? 10 : isSwing ? 14 : stochLengthIn
+smoothK          = isScalp ? 2 : isDay ? 3 : isSwing ? 3 : smoothKIn
+momentumLength   = isScalp ? 8 : isDay ? 12 : isSwing ? 14 : momentumLengthIn
+smoothingLength  = isScalp ? 2 : isDay ? 3 : isSwing ? 4 : smoothingLengthIn
+leftBars         = isScalp ? 2 : isDay ? 2 : isSwing ? 3 : leftBarsIn
+rightBars        = isScalp ? 1 : isDay ? 2 : isSwing ? 3 : rightBarsIn
+maxPivotDistance = isScalp ? 60 : isDay ? 100 : isSwing ? 150 : maxPivotDistanceIn
+signalLen        = isScalp ? 5 : isDay ? 9 : isSwing ? 12 : signalLenIn
+grpMtf = "1) Oscillator - MTF Divergences (Slots)"
+mtfOn1 = input.bool(false, "Slot 1", group=grpMtf, inline="t1")
+mtfTf1 = input.timeframe("60", "", group=grpMtf, inline="t1")
+mtfCb1 = input.color(color.new(color.lime, 30), "Bull", group=grpMtf, inline="c1")
+mtfCs1 = input.color(color.new(color.red, 30), "Bear", group=grpMtf, inline="c1")
+mtfSz1 = input.int(2, "Taille", minval=1, maxval=10, group=grpMtf, inline="c1")
+mtfOn2 = input.bool(false, "Slot 2", group=grpMtf, inline="t2")
+mtfTf2 = input.timeframe("240", "", group=grpMtf, inline="t2")
+mtfCb2 = input.color(color.lime, "Bull", group=grpMtf, inline="c2")
+mtfCs2 = input.color(color.red, "Bear", group=grpMtf, inline="c2")
+mtfSz2 = input.int(3, "Taille", minval=1, maxval=10, group=grpMtf, inline="c2")
+mtfOn3 = input.bool(true, "Slot 3", group=grpMtf, inline="t3")
+mtfTf3 = input.timeframe("300", "", group=grpMtf, inline="t3")
+mtfCb3 = input.color(color.green, "Bull", group=grpMtf, inline="c3")
+mtfCs3 = input.color(color.maroon, "Bear", group=grpMtf, inline="c3")
+mtfSz3 = input.int(5, "Taille", minval=1, maxval=10, group=grpMtf, inline="c3")
+mtfOn4 = input.bool(true, "Slot 4", group=grpMtf, inline="t4")
+mtfTf4 = input.timeframe("720", "", group=grpMtf, inline="t4")
+mtfCb4 = input.color(color.aqua, "Bull", group=grpMtf, inline="c4")
+mtfCs4 = input.color(color.fuchsia, "Bear", group=grpMtf, inline="c4")
+mtfSz4 = input.int(7, "Taille", minval=1, maxval=10, group=grpMtf, inline="c4")
+grpMtfSet = "1) Oscillator - MTF Divergences (Réglages)"
+mtfPvL  = input.int(2, "Pivot gauche", minval=1, group=grpMtfSet)
+mtfPvR  = input.int(2, "Pivot droite", minval=1, group=grpMtfSet)
+mtfRMin = input.int(1, "Range min (barres)", minval=1, group=grpMtfSet)
+mtfRMax = input.int(100, "Range max (barres)", minval=1, group=grpMtfSet)
+mtfOff  = input.float(4, "Écart entre slots", minval=0, step=0.5, group=grpMtfSet)
+f_aiTrendCalc() =>
+    _rsiVal = ta.rsi(close, rsiLength)
+    _rawK   = ta.stoch(close, high, low, stochLength)
+    _k      = ta.sma(_rawK, smoothK)
+    _mom     = ta.mom(close, momentumLength)
+    _momHigh = ta.highest(_mom, momentumLength * 2)
+    _momLow  = ta.lowest(_mom, momentumLength * 2)
+    _momNorm = _momHigh != _momLow ? (_mom - _momLow) / (_momHigh - _momLow) * 100 : 50.0
+    _raw      = (_rsiVal + _k + _momNorm) / 3
+    _smoothed = smoothingType == "EMA" ? ta.ema(_raw, smoothingLength) : ta.sma(_raw, smoothingLength)
+    _smoothed
+f_getPosition(posStr) =>
+    switch posStr
+        "Bottom Right" => position.bottom_right
+        "Bottom Left"  => position.bottom_left
+        "Top Right"    => position.top_right
+        "Top Left"     => position.top_left
+        => position.bottom_right
+f_getLabelSize(sizeStr) =>
+    switch sizeStr
+        "Normal" => size.normal
+        "Large"  => size.large
+        "Huge"   => size.huge
+        => size.huge
+f_getTableSize(sizeStr) =>
+    switch sizeStr
+        "Minuscule"  => size.tiny
+        "Petit"      => size.small
+        "Normal"     => size.normal
+        "Grand"      => size.large
+        "Très grand" => size.huge
+        => size.large
+f_tfLabel(string tf) =>
+    string out = tf
+    if str.endswith(tf, "D")
+        m = str.replace(tf, "D", "")
+        out := (m == "" ? "1" : m) + "D"
+    else if str.endswith(tf, "W")
+        m = str.replace(tf, "W", "")
+        out := (m == "" or m == "1" ? "" : m) + "W"
+    else if str.endswith(tf, "M")
+        m = str.replace(tf, "M", "")
+        out := (m == "" or m == "1" ? "" : m) + "M"
+    else
+        sec = timeframe.in_seconds(tf)
+        if sec < 60
+            out := str.tostring(sec) + "s"
+        else if sec % 3600 == 0
+            out := str.tostring(math.round(sec / 3600)) + "H"
+        else
+            out := str.tostring(math.round(sec / 60)) + "Min"
+    out
+f_mtfInRange(bool _c) =>
+    _b = ta.barssince(_c)
+    mtfRMin <= _b and _b <= mtfRMax
+f_mtfDivs() =>
+    _o   = f_aiTrendCalc()
+    _plF = not na(ta.pivotlow(_o, mtfPvL, mtfPvR))
+    _phF = not na(ta.pivothigh(_o, mtfPvL, mtfPvR))
+    _oP  = _o[mtfPvR]
+    _pL  = low[mtfPvR]
+    _pH  = high[mtfPvR]
+    _rngL = f_mtfInRange(_plF[1])
+    _rngH = f_mtfInRange(_phF[1])
+    _pOL = ta.valuewhen(_plF, _oP, 1)
+    _pPL = ta.valuewhen(_plF, _pL, 1)
+    _pOH = ta.valuewhen(_phF, _oP, 1)
+    _pPH = ta.valuewhen(_phF, _pH, 1)
+    _bull = _plF and _rngL and _oP > _pOL and _pL < _pPL
+    _bear = _phF and _rngH and _oP < _pOH and _pH > _pPH
+    [_bull, _bear]
+f_mtfHas(array<bool> _a) => not na(_a) and array.includes(_a, true)
+rsiVal = ta.rsi(close, rsiLength)
+rawK = ta.stoch(close, high, low, stochLength)
+k = ta.sma(rawK, smoothK)
+d = ta.sma(k, smoothD)
+mom = ta.mom(close, momentumLength)
+momHigh = ta.highest(mom, momentumLength * 2)
+momLow  = ta.lowest(mom, momentumLength * 2)
+momNorm = momHigh != momLow ? (mom - momLow) / (momHigh - momLow) * 100 : 50.0
+aiTrendRaw = (rsiVal + k + momNorm) / 3
+aiTrendIndex = smoothingType == "EMA" ? ta.ema(aiTrendRaw, smoothingLength) : ta.sma(aiTrendRaw, smoothingLength)
+emaFast = ta.ema(close, emaFastLen)
+emaSlow = ta.ema(close, emaSlowLen)
+bullTrend = emaFast > emaSlow
+bearTrend = emaFast < emaSlow
+htfTfUsed = htfMode == "Auto" ? timeframe.period : htfTimeframe
+htfAiTrend = request.security(syminfo.tickerid, htfTfUsed, f_aiTrendCalc(), lookahead=barmerge.lookahead_off)
+htfBlueZone = htfAiTrend <= oversoldLevel
+htfRedZone  = htfAiTrend >= overboughtLevel
+hLineOverbought  = hline(overboughtLevel, "Overbought", color=color.new(color.red, 60), linestyle=hline.style_dashed)
+hLineExtremeHigh = hline(extremeHighLevel, "Extreme High", color=color.new(color.rgb(139, 0, 0), 40), linestyle=hline.style_solid)
+hLineMidline     = hline(midline, "Midline", color=color.new(color.gray, 60), linestyle=hline.style_dotted)
+hLineOversold    = hline(oversoldLevel, "Oversold", color=color.new(color.blue, 60), linestyle=hline.style_dashed)
+hLineExtremeLow  = hline(extremeLowLevel, "Extreme Low", color=color.new(color.rgb(0, 0, 139), 40), linestyle=hline.style_solid)
+fill(hLineOverbought, hLineOversold, color=color.new(color.gray, 92), title="Background Color")
+veryRedZone = aiTrendIndex >= veryRedLevel
+veryBlueZone = aiTrendIndex <= veryBlueLevel
+bgcolor(veryRedZone ? color.new(color.red, 80) : veryBlueZone ? color.new(color.blue, 80) : na, title="Zone Extrême BG")
+trendLineColor = color.white
+if useGradient
+    trendLineColor := aiTrendIndex >= midline ? color.from_gradient(aiTrendIndex, midline, overboughtLevel, gradientMidColor, gradientHighColor) : color.from_gradient(aiTrendIndex, oversoldLevel, midline, gradientLowColor, gradientMidColor)
+plot(aiTrendIndex, "AI Trend Index", color=trendLineColor, linewidth=2)
+signalLine = signalType == "EMA" ? ta.ema(aiTrendIndex, signalLen) : ta.sma(aiTrendIndex, signalLen)
+plot(showSignalLine ? signalLine : na, "Ligne Signal", color=signalColor, linewidth=signalWidth)
+sigCrossUp = ta.crossover(aiTrendIndex, signalLine)
+sigCrossDn = ta.crossunder(aiTrendIndex, signalLine)
+sigBuyOk  = signalFilter == "Aucun" ? true : signalFilter == "Midline" ? signalLine < midline : signalLine <= oversoldLevel
+sigSellOk = signalFilter == "Aucun" ? true : signalFilter == "Midline" ? signalLine > midline : signalLine >= overboughtLevel
+sigBuy  = sigCrossUp and sigBuyOk
+sigSell = sigCrossDn and sigSellOk
+osc = aiTrendIndex
+pivLow  = ta.pivotlow(osc, leftBars, rightBars)
+pivHigh = ta.pivothigh(osc, leftBars, rightBars)
+var float lastPivLowOsc   = na
+var int   lastPivLowBar   = na
+var float lastPivLowPrice = na
+var float lastPivHighOsc   = na
+var int   lastPivHighBar   = na
+var float lastPivHighPrice = na
+bullishRegularAlert = false
+bullishHiddenAlert  = false
+bearishRegularAlert = false
+bearishHiddenAlert  = false
+if not na(pivLow)
+    pivotBar = bar_index[rightBars]
+    priceAtPivot = low[rightBars]
+    if not na(lastPivLowOsc)
+        closeEnough = (pivotBar - lastPivLowBar) <= maxPivotDistance
+        oscMoveOk = math.abs(pivLow - lastPivLowOsc) >= minOscMove
+        bullishRegular = closeEnough and oscMoveOk and priceAtPivot < lastPivLowPrice and pivLow > lastPivLowOsc
+        bullishHidden  = closeEnough and oscMoveOk and priceAtPivot > lastPivLowPrice and pivLow < lastPivLowOsc
+        if showDivergenceLines and bullishRegular
+            line.new(lastPivLowBar, lastPivLowOsc, pivotBar, pivLow, color=bullDivColor, width=divLineWidth)
+        if showHiddenDivergences and bullishHidden
+            line.new(lastPivLowBar, lastPivLowOsc, pivotBar, pivLow, color=hiddenBullDivColor, width=divLineWidth, style=line.style_dashed)
+        if showMoneyFace and bullishRegular
+            label.new(x=pivotBar, y=pivLow - moneyFaceOffset, xloc=xloc.bar_index, yloc=yloc.price, text="🤑", style=label.style_none, textcolor=color.white, size=f_getLabelSize(moneyFaceSizeStr))
+        bullishRegularAlert := bullishRegular
+        bullishHiddenAlert  := bullishHidden
+    lastPivLowOsc := pivLow
+    lastPivLowBar := pivotBar
+    lastPivLowPrice := priceAtPivot
+if not na(pivHigh)
+    pivotBarH = bar_index[rightBars]
+    priceAtPivotH = high[rightBars]
+    if not na(lastPivHighOsc)
+        closeEnoughH = (pivotBarH - lastPivHighBar) <= maxPivotDistance
+        oscMoveOkH = math.abs(pivHigh - lastPivHighOsc) >= minOscMove
+        bearishRegular = closeEnoughH and oscMoveOkH and priceAtPivotH > lastPivHighPrice and pivHigh < lastPivHighOsc
+        bearishHidden  = closeEnoughH and oscMoveOkH and priceAtPivotH < lastPivHighPrice and pivHigh > lastPivHighOsc
+        if showDivergenceLines and bearishRegular
+            line.new(lastPivHighBar, lastPivHighOsc, pivotBarH, pivHigh, color=bearDivColor, width=divLineWidth)
+        if showHiddenDivergences and bearishHidden
+            line.new(lastPivHighBar, lastPivHighOsc, pivotBarH, pivHigh, color=hiddenBearDivColor, width=divLineWidth, style=line.style_dashed)
+        if showMoneyFace and bearishRegular
+            label.new(x=pivotBarH, y=pivHigh + moneyFaceOffset, xloc=xloc.bar_index, yloc=yloc.price, text="🤑", style=label.style_none, textcolor=color.white, size=f_getLabelSize(moneyFaceSizeStr))
+        bearishRegularAlert := bearishRegular
+        bearishHiddenAlert  := bearishHidden
+    lastPivHighOsc := pivHigh
+    lastPivHighBar := pivotBarH
+    lastPivHighPrice := priceAtPivotH
+[mtfB1, mtfS1] = request.security_lower_tf(syminfo.tickerid, mtfTf1, f_mtfDivs(), ignore_invalid_timeframe=true)
+[mtfB2, mtfS2] = request.security_lower_tf(syminfo.tickerid, mtfTf2, f_mtfDivs(), ignore_invalid_timeframe=true)
+[mtfB3, mtfS3] = request.security_lower_tf(syminfo.tickerid, mtfTf3, f_mtfDivs(), ignore_invalid_timeframe=true)
+[mtfB4, mtfS4] = request.security_lower_tf(syminfo.tickerid, mtfTf4, f_mtfDivs(), ignore_invalid_timeframe=true)
+mtfBull1 = mtfOn1 and f_mtfHas(mtfB1)
+mtfBear1 = mtfOn1 and f_mtfHas(mtfS1)
+mtfBull2 = mtfOn2 and f_mtfHas(mtfB2)
+mtfBear2 = mtfOn2 and f_mtfHas(mtfS2)
+mtfBull3 = mtfOn3 and f_mtfHas(mtfB3)
+mtfBear3 = mtfOn3 and f_mtfHas(mtfS3)
+mtfBull4 = mtfOn4 and f_mtfHas(mtfB4)
+mtfBear4 = mtfOn4 and f_mtfHas(mtfS4)
+plot(mtfBull1 ? aiTrendIndex - mtfOff * 1 : na, "MTF Bull 1", color=mtfCb1, linewidth=mtfSz1, style=plot.style_circles)
+plot(mtfBear1 ? aiTrendIndex + mtfOff * 1 : na, "MTF Bear 1", color=mtfCs1, linewidth=mtfSz1, style=plot.style_circles)
+plot(mtfBull2 ? aiTrendIndex - mtfOff * 2 : na, "MTF Bull 2", color=mtfCb2, linewidth=mtfSz2, style=plot.style_circles)
+plot(mtfBear2 ? aiTrendIndex + mtfOff * 2 : na, "MTF Bear 2", color=mtfCs2, linewidth=mtfSz2, style=plot.style_circles)
+plot(mtfBull3 ? aiTrendIndex - mtfOff * 3 : na, "MTF Bull 3", color=mtfCb3, linewidth=mtfSz3, style=plot.style_circles)
+plot(mtfBear3 ? aiTrendIndex + mtfOff * 3 : na, "MTF Bear 3", color=mtfCs3, linewidth=mtfSz3, style=plot.style_circles)
+plot(mtfBull4 ? aiTrendIndex - mtfOff * 4 : na, "MTF Bull 4", color=mtfCb4, linewidth=mtfSz4, style=plot.style_circles)
+plot(mtfBear4 ? aiTrendIndex + mtfOff * 4 : na, "MTF Bear 4", color=mtfCs4, linewidth=mtfSz4, style=plot.style_circles)
+mtfBullAny = mtfBull1 or mtfBull2 or mtfBull3 or mtfBull4
+mtfBearAny = mtfBear1 or mtfBear2 or mtfBear3 or mtfBear4
+crossUpOversold     = ta.crossover(aiTrendIndex, oversoldLevel)
+crossDownOverbought = ta.crossunder(aiTrendIndex, overboughtLevel)
+buyCondition  = crossUpOversold and (not useEmaFilter or bullTrend)
+sellCondition = crossDownOverbought and (not useEmaFilter or bearTrend)
+var table htfSignalTable = table.new(f_getPosition(htfBoxPosition), 1, 4, border_width=2, border_color=color.new(color.black, 0), frame_width=1, frame_color=color.new(color.black, 0))
+if htfEnable and barstate.islast
+    htfSignalTxt = htfBlueZone ? "BUY" : htfRedZone ? "SELL" : "NEUTRAL"
+    htfSignalBg  = htfBlueZone ? htfBuyColor : htfRedZone ? htfSellColor : htfNeutralColor
+    htfTableSize = f_getTableSize(htfTableSizeStr)
+    table.cell(htfSignalTable, 0, 0, "Signal " + f_tfLabel(htfTfUsed), text_color=color.white, bgcolor=color.new(color.rgb(30, 30, 30), 0), text_size=htfTableSize)
+    table.cell(htfSignalTable, 0, 1, htfSignalTxt, text_color=color.white, bgcolor=htfSignalBg, text_size=htfTableSize)
+    table.cell(htfSignalTable, 0, 2, htfShowValue ? str.tostring(htfAiTrend, "#.##") : "", text_color=color.white, bgcolor=color.new(color.rgb(30, 30, 30), 0), text_size=htfTableSize)
+    table.cell(htfSignalTable, 0, 3, "Preset : " + presetActive, text_color=color.white, bgcolor=color.new(color.rgb(30, 30, 30), 0), text_size=htfTableSize)
+g_vec = "2) Volume - Volume Vector"
+presetInput   = input.string("Auto", "Preset", options=["Auto","Scalping","Intraday","Swing","Position","Daily/Weekly","Custom"], group=g_vec)
+customMid     = input.float(150, "MID % (Custom)", group=g_vec)
+customHigh    = input.float(200, "HIGH % (Custom)", group=g_vec)
+customGold    = input.float(300, "GOLD % (Custom)", group=g_vec)
+customAvgLen  = input.int(20, "Average volume length (Custom)", group=g_vec)
+showVectorColor = input.bool(true, "Enable Vector coloring on candles", group=g_vec)
+colGoldBull = input.color(color.new(#FFD700, 0), "Bull GOLD", group=g_vec)
+colHighBull = input.color(color.new(#00C853, 0), "Bull HIGH", group=g_vec)
+colMidBull  = input.color(color.new(#2196F3, 0), "Bull MID", group=g_vec)
+colLowBull  = input.color(color.new(#B2DFDB, 100), "Bull LOW", group=g_vec)
+colGoldBear = input.color(color.new(#E0B0FF, 0), "Bear GOLD", group=g_vec)
+colHighBear = input.color(color.new(#673AB7, 0), "Bear HIGH", group=g_vec)
+colMidBear  = input.color(color.new(#F06292, 0), "Bear MID", group=g_vec)
+colLowBear  = input.color(color.new(#FFCDD2, 100), "Bear LOW", group=g_vec)
+f_presetVals(name) =>
+    float mid = 150.0
+    float highPct = 200.0
+    float gold = 300.0
+    int avgLen = 20
+    if name == "Scalping"
+        mid := 130.0
+        highPct := 180.0
+        gold := 250.0
+        avgLen := 20
+    else if name == "Intraday"
+        mid := 140.0
+        highPct := 190.0
+        gold := 270.0
+        avgLen := 20
+    else if name == "Swing"
+        mid := 150.0
+        highPct := 200.0
+        gold := 300.0
+        avgLen := 20
+    else if name == "Position"
+        mid := 160.0
+        highPct := 220.0
+        gold := 320.0
+        avgLen := 14
+    else if name == "Daily/Weekly"
+        mid := 170.0
+        highPct := 240.0
+        gold := 350.0
+        avgLen := 10
+    [mid, highPct, gold, avgLen]
+f_autoPresetName() =>
+    tfMin = timeframe.in_seconds() / 60
+    string name = "Swing"
+    if tfMin <= 5
+        name := "Scalping"
+    else if tfMin <= 30
+        name := "Intraday"
+    else if tfMin <= 240
+        name := "Swing"
+    else if tfMin <= 720
+        name := "Position"
+    else
+        name := "Daily/Weekly"
+    name
+float pMid = na
+float pHigh = na
+float pGold = na
+int pAvgLen = na
+if presetInput == "Custom"
+    pMid := customMid
+    pHigh := customHigh
+    pGold := customGold
+    pAvgLen := customAvgLen
+else
+    activePreset = presetInput == "Auto" ? f_autoPresetName() : presetInput
+    [m, h, g, a] = f_presetVals(activePreset)
+    pMid := m
+    pHigh := h
+    pGold := g
+    pAvgLen := a
+avgVol = ta.sma(volume, pAvgLen)
+volPct = avgVol > 0 ? (volume / avgVol) * 100 : 0.0
+isBull = close >= open
+isBear = close < open
+tierGold = volPct >= pGold
+tierHigh = not tierGold and volPct >= pHigh
+tierMid  = not tierGold and not tierHigh and volPct >= pMid
+vecColor = isBull ? (tierGold ? colGoldBull : tierHigh ? colHighBull : tierMid ? colMidBull : colLowBull) : (tierGold ? colGoldBear : tierHigh ? colHighBear : tierMid ? colMidBear : colLowBear)
+g_ema = "2) Volume - EMAs"
+showEMA   = input.bool(true, "Show EMAs", group=g_ema)
+e13on     = input.bool(true, "EMA 13", group=g_ema)
+e50on     = input.bool(true, "EMA 50", group=g_ema)
+e200on    = input.bool(true, "EMA 200", group=g_ema)
+ema50Glow = input.bool(true, "Glow EMA 50", group=g_ema)
+ema200Glow = input.bool(true, "Glow EMA 200 (2x)", group=g_ema)
+ema13  = ta.ema(close, 13)
+ema50  = ta.ema(close, 50)
+ema200 = ta.ema(close, 200)
+f_colE(src) => close >= src ? color.new(color.lime, 0) : color.new(color.red, 0)
+f_colE200(src) => close >= src ? color.new(#2196F3, 0) : color.new(#BA68C8, 0)
+plot(showEMA and e13on  ? ema13  : na, "EMA13",  color=f_colE(ema13),  linewidth=1, force_overlay=true)
+ema50Show = showEMA and e50on ? ema50 : na
+ema50Col  = f_colE(ema50)
+plot(ema50Glow ? ema50Show : na, "EMA50 Glow 1", color=color.new(ema50Col, 84), linewidth=10, force_overlay=true)
+plot(ema50Glow ? ema50Show : na, "EMA50 Glow 2", color=color.new(ema50Col, 68), linewidth=5,  force_overlay=true)
+plot(ema50Show, "EMA50", color=ema50Col, linewidth=2, force_overlay=true)
+ema200Show = showEMA and e200on ? ema200 : na
+ema200Col  = f_colE200(ema200)
+plot(ema200Glow ? ema200Show : na, "EMA200 Glow 1", color=color.new(ema200Col, 88), linewidth=20, force_overlay=true)
+plot(ema200Glow ? ema200Show : na, "EMA200 Glow 2", color=color.new(ema200Col, 72), linewidth=9,  force_overlay=true)
+plot(ema200Show, "EMA200", color=ema200Col, linewidth=3, force_overlay=true)
+g_pat = "2) Volume - Reversal Patterns"
+showBullP     = input.bool(true, "Show bullish patterns (Orange)", group=g_pat)
+showBearP     = input.bool(true, "Show bearish patterns (Pink)", group=g_pat)
+showLabels    = input.bool(true, "Show pattern name", group=g_pat)
+requireTrend  = input.bool(true, "Require trend context", group=g_pat)
+trendLen      = input.int(10, "Trend length (context)", group=g_pat)
+overridePatternColor = input.bool(true, "Pattern color overrides Vector color", group=g_pat)
+colBullPattern = input.color(color.new(#FF8C00, 0), "Bullish Color (Orange)", group=g_pat)
+colBearPattern = input.color(color.new(#FF1493, 0), "Bearish Color (Pink)", group=g_pat)
+downCtx = requireTrend ? close[1] < ta.sma(close, trendLen)[1] : true
+upCtx   = requireTrend ? close[1] > ta.sma(close, trendLen)[1] : true
+body0 = math.abs(close - open)
+range0 = high - low
+upWick0 = high - math.max(close, open)
+loWick0 = math.min(close, open) - low
+bull0 = close > open
+bear0 = close < open
+smallBody0 = range0 > 0 and body0 <= range0 * 0.3
+body1 = math.abs(close[1] - open[1])
+range1 = high[1] - low[1]
+bull1 = close[1] > open[1]
+bear1 = close[1] < open[1]
+midpoint1 = (open[1] + close[1]) / 2
+smallBody1 = range1 > 0 and body1 <= range1 * 0.3
+bull2 = close[2] > open[2]
+bear2 = close[2] < open[2]
+hammer       = downCtx and smallBody0 and loWick0 >= body0 * 2 and upWick0 <= body0 * 0.5
+invHammer    = downCtx and smallBody0 and upWick0 >= body0 * 2 and loWick0 <= body0 * 0.5
+bullEngulf   = downCtx and bear1 and bull0 and close >= open[1] and open <= close[1] and body0 > body1
+piercing     = downCtx and bear1 and bull0 and open < close[1] and close > midpoint1 and close < open[1]
+bullHarami   = downCtx and bear1 and bull0 and open > close[1] and close < open[1] and body0 < body1
+morningStar  = downCtx and bear2 and math.abs(close[1]-open[1]) <= range1 * 0.4 and bull0 and close > (open[2]+close[2])/2 and close[1] < close[2]
+tweezerBot   = downCtx and bear1 and bull0 and math.abs(low - low[1]) <= range1 * 0.1
+threeWhite   = bull2 and bull1 and bull0 and close[1] > close[2] and close > close[1] and open[1] < close[2] and open < close[1]
+abandonedBabyBull = downCtx and bear2 and smallBody1 and (high[1] < low[2]) and bull0 and (low > high[1])
+bullishPatternRaw = hammer or invHammer or bullEngulf or piercing or bullHarami or morningStar or tweezerBot or threeWhite or abandonedBabyBull
+shootingStar = upCtx and smallBody0 and upWick0 >= body0 * 2 and loWick0 <= body0 * 0.5
+hangingMan   = upCtx and smallBody0 and loWick0 >= body0 * 2 and upWick0 <= body0 * 0.5
+bearEngulf   = upCtx and bull1 and bear0 and close <= open[1] and open >= close[1] and body0 > body1
+darkCloud    = upCtx and bull1 and bear0 and open > close[1] and close < midpoint1 and close > open[1]
+bearHarami   = upCtx and bull1 and bear0 and open < close[1] and close > open[1] and body0 < body1
+eveningStar  = upCtx and bull2 and math.abs(close[1]-open[1]) <= range1 * 0.4 and bear0 and close < (open[2]+close[2])/2 and close[1] > close[2]
+tweezerTop   = upCtx and bull1 and bear0 and math.abs(high - high[1]) <= range1 * 0.1
+threeBlack   = bear2 and bear1 and bear0 and close[1] < close[2] and close < close[1] and open[1] > close[2] and open > close[1]
+abandonedBabyBear = upCtx and bull2 and smallBody1 and (low[1] > high[2]) and bear0 and (high < low[1])
+bearishPatternRaw = shootingStar or hangingMan or bearEngulf or darkCloud or bearHarami or eveningStar or tweezerTop or threeBlack or abandonedBabyBear
+g_conf = "2) Volume - Confirmation (optional)"
+confirmEnabled  = input.bool(true, "Enable confirmation filters", group=g_conf)
+confirmMode     = input.string("At least one", "Confirmation mode", options=["At least one", "All"], group=g_conf)
+useRSIConfirm   = input.bool(true, "RSI (oversold/overbought)", group=g_conf)
+rsiLen          = input.int(10, "RSI Length", group=g_conf)
+rsiOS           = input.float(35, "RSI oversold threshold (bullish patterns)", group=g_conf)
+rsiOB           = input.float(65, "RSI overbought threshold (bearish patterns)", group=g_conf)
+useMACDConfirm  = input.bool(true, "MACD (momentum)", group=g_conf)
+macdFast        = input.int(10, "MACD fast", group=g_conf)
+macdSlow        = input.int(26, "MACD slow", group=g_conf)
+macdSig         = input.int(9, "MACD signal", group=g_conf)
+useSRConfirm    = input.bool(true, "Support/Resistance proximity (pivots)", group=g_conf)
+srLookback      = input.int(20, "S/R pivot lookback", group=g_conf)
+srTolerance     = input.float(0.5, "Tolerance around level (%)", group=g_conf)
+useNextBarConfirm = input.bool(false, "Confirm with next candle close", group=g_conf)
+confRsiVal = ta.rsi(close, rsiLen)
+rsiBullOK = confRsiVal <= rsiOS
+rsiBearOK = confRsiVal >= rsiOB
+[macdLine, macdSignal, macdHist] = ta.macd(close, macdFast, macdSlow, macdSig)
+macdBullOK = macdHist > macdHist[1]
+macdBearOK = macdHist < macdHist[1]
+ph = ta.pivothigh(high, srLookback, srLookback)
+pl = ta.pivotlow(low, srLookback, srLookback)
+var float lastPivotHigh = na
+var float lastPivotLow = na
+if not na(ph)
+    lastPivotHigh := ph
+if not na(pl)
+    lastPivotLow := pl
+nearSupport    = not na(lastPivotLow) and math.abs(close - lastPivotLow) / close * 100 <= srTolerance
+nearResistance = not na(lastPivotHigh) and math.abs(close - lastPivotHigh) / close * 100 <= srTolerance
+srBullOK = nearSupport
+srBearOK = nearResistance
+confCountBull = (useRSIConfirm ? (rsiBullOK ? 1 : 0) : 0) + (useMACDConfirm ? (macdBullOK ? 1 : 0) : 0) + (useSRConfirm ? (srBullOK ? 1 : 0) : 0)
+confCountBear = (useRSIConfirm ? (rsiBearOK ? 1 : 0) : 0) + (useMACDConfirm ? (macdBearOK ? 1 : 0) : 0) + (useSRConfirm ? (srBearOK ? 1 : 0) : 0)
+confTotal     = (useRSIConfirm ? 1 : 0) + (useMACDConfirm ? 1 : 0) + (useSRConfirm ? 1 : 0)
+bullConfirmOK = not confirmEnabled ? true : confTotal == 0 ? true : confirmMode == "All" ? confCountBull == confTotal : confCountBull >= 1
+bearConfirmOK = not confirmEnabled ? true : confTotal == 0 ? true : confirmMode == "All" ? confCountBear == confTotal : confCountBear >= 1
+bullishPatternConfirmed = bullishPatternRaw and bullConfirmOK
+bearishPatternConfirmed = bearishPatternRaw and bearConfirmOK
+bullishSignal = useNextBarConfirm ? (bullishPatternConfirmed[1] and close > high[1]) : bullishPatternConfirmed
+bearishSignal = useNextBarConfirm ? (bearishPatternConfirmed[1] and close < low[1]) : bearishPatternConfirmed
+f_bullName() =>
+    string n = ""
+    if hammer
+        n := "Hammer"
+    else if invHammer
+        n := "Inv. Hammer"
+    else if bullEngulf
+        n := "Bullish Engulfing"
+    else if piercing
+        n := "Piercing Line"
+    else if bullHarami
+        n := "Bullish Harami"
+    else if morningStar
+        n := "Morning Star"
+    else if tweezerBot
+        n := "Tweezer Bottom"
+    else if threeWhite
+        n := "3 White Soldiers"
+    else if abandonedBabyBull
+        n := "Abandoned Baby"
+    n
+f_bearName() =>
+    string n = ""
+    if shootingStar
+        n := "Shooting Star"
+    else if hangingMan
+        n := "Hanging Man"
+    else if bearEngulf
+        n := "Bearish Engulfing"
+    else if darkCloud
+        n := "Dark Cloud Cover"
+    else if bearHarami
+        n := "Bearish Harami"
+    else if eveningStar
+        n := "Evening Star"
+    else if tweezerTop
+        n := "Tweezer Top"
+    else if threeBlack
+        n := "3 Black Crows"
+    else if abandonedBabyBear
+        n := "Abandoned Baby"
+    n
+plotshape(bullishSignal and showBullP, title="Bullish Pattern", style=shape.triangleup, location=location.belowbar, color=colBullPattern, size=size.small, force_overlay=true)
+plotshape(bearishSignal and showBearP, title="Bearish Pattern", style=shape.triangledown, location=location.abovebar, color=colBearPattern, size=size.small, force_overlay=true)
+nameBullCur = f_bullName()
+nameBearCur = f_bearName()
+bullLabelName = useNextBarConfirm ? nameBullCur[1] : nameBullCur
+bearLabelName = useNextBarConfirm ? nameBearCur[1] : nameBearCur
+if showLabels and showBullP and bullishSignal
+    label.new(bar_index, low, bullLabelName, style=label.style_label_up, color=colBullPattern, textcolor=color.white, size=size.tiny, yloc=yloc.belowbar, force_overlay=true)
+if showLabels and showBearP and bearishSignal
+    label.new(bar_index, high, bearLabelName, style=label.style_label_down, color=colBearPattern, textcolor=color.white, size=size.tiny, yloc=yloc.abovebar, force_overlay=true)
+finalBarColor = overridePatternColor and bullishSignal ? colBullPattern : overridePatternColor and bearishSignal ? colBearPattern : vecColor
+barcolor(showVectorColor ? finalBarColor : na)
+alertcondition(bullishSignal, title="Bullish Pattern Detected", message="Bullish reversal pattern detected")
+alertcondition(bearishSignal, title="Bearish Pattern Detected", message="Bearish reversal pattern detected")
+alertcondition(abandonedBabyBull, title="Bullish Abandoned Baby", message="Bullish Abandoned Baby pattern detected")
+alertcondition(abandonedBabyBear, title="Bearish Abandoned Baby", message="Bearish Abandoned Baby pattern detected")
+alertcondition(tierGold and isBull, title="Bull Gold Vector", message="Bullish GOLD volume detected")
+alertcondition(tierGold and isBear, title="Bear Gold Vector", message="Bearish GOLD volume detected")
+grpIgn = "3) Ignition - Confluence Vol/Chaos RSI/Cipher"
+ignPreset = input.string("Auto", "Preset Timeframe (Auto: TF<=60m -> 30m, TF>60m -> 2H)", options=["Auto", "30m", "2H", "Custom"], group=grpIgn)
+chaosRsiLenCustom        = input.int(14, "RSI Length (Custom)", group=grpIgn)
+chaosFdLenCustom         = input.int(30, "Fenêtre Fractale (Custom)", group=grpIgn)
+chaosSmoothMinCustom     = input.int(3, "Lissage Min (Custom)", group=grpIgn)
+chaosSmoothMaxCustom     = input.int(21, "Lissage Max (Custom)", group=grpIgn)
+cvdLenCustom             = input.int(20, "Longueur CVD (Custom)", group=grpIgn)
+chaosDivLeftCustom       = input.int(3, "Pivot Lookback Gauche (Custom)", group=grpIgn)
+chaosDivRightCustom      = input.int(3, "Pivot Lookback Droite (Custom)", group=grpIgn)
+chaosDivRangeLowerCustom = input.int(5, "Range Min barres (Custom)", group=grpIgn)
+chaosDivRangeUpperCustom = input.int(60, "Range Max barres (Custom)", group=grpIgn)
+confluenceLookbackCustom = input.int(20, "Fenêtre Confluence/Loopback (Custom)", group=grpIgn)
+showVolChaosDiv    = input.bool(true, "Afficher Divergence Volume/Chaos RSI (orange + triangle jaune)", group=grpIgn)
+cipherGoldSrc      = input.source(close, "Source Signal Gold Cipher (plot externe > 0 = gold)", group=grpIgn)
+showIgnitionSignal = input.bool(true, "Afficher Signal 🚀 Ignition", group=grpIgn)
+int rChaosRsiLen = na
+int rChaosFdLen = na
+int rChaosSmoothMin = na
+int rChaosSmoothMax = na
+int rCvdLen = na
+int rChaosDivLeft = na
+int rChaosDivRight = na
+int rChaosDivRangeLower = na
+int rChaosDivRangeUpper = na
+int rConfluenceLookback = na
+f_ignPresetVals(name) =>
+    int rsiLenP = 14
+    int fdLenP = 30
+    int smoothMinP = 3
+    int smoothMaxP = 21
+    int cvdLenP = 20
+    int divLeftP = 3
+    int divRightP = 3
+    int rangeLowP = 5
+    int rangeUpP = 60
+    int lookbackP = 20
+    if name == "30m"
+        rsiLenP := 12
+        fdLenP := 20
+        smoothMinP := 2
+        smoothMaxP := 14
+        cvdLenP := 14
+        divLeftP := 2
+        divRightP := 2
+        rangeLowP := 4
+        rangeUpP := 40
+        lookbackP := 15
+    else if name == "2H"
+        rsiLenP := 14
+        fdLenP := 24
+        smoothMinP := 3
+        smoothMaxP := 21
+        cvdLenP := 20
+        divLeftP := 3
+        divRightP := 3
+        rangeLowP := 5
+        rangeUpP := 80
+        lookbackP := 24
+    [rsiLenP, fdLenP, smoothMinP, smoothMaxP, cvdLenP, divLeftP, divRightP, rangeLowP, rangeUpP, lookbackP]
+f_ignAutoName() =>
+    tfMin = timeframe.in_seconds() / 60
+    tfMin <= 60 ? "30m" : "2H"
+f_fractalDim(len) =>
+    hh = ta.highest(high, len)
+    ll = ta.lowest(low, len)
+    rangeHL = hh - ll
+    sumLen = 0.0
+    if rangeHL != 0
+        for i = 0 to len - 2
+            p1 = (close[i] - ll) / rangeHL
+            p2 = (close[i + 1] - ll) / rangeHL
+            sumLen += math.sqrt(math.pow(p1 - p2, 2) + math.pow(1.0 / len, 2))
+    fd = rangeHL != 0 and sumLen > 0 ? 1 + (math.log(sumLen) + math.log(2)) / math.log(2 * len) : 1.0
+    math.max(1.0, math.min(2.0, fd))
+f_regDivOsc(osc) =>
+    plFound = not na(ta.pivotlow(osc, rChaosDivLeft, rChaosDivRight))
+    phFound = not na(ta.pivothigh(osc, rChaosDivLeft, rChaosDivRight))
+    barsSincePl = ta.barssince(plFound[1])
+    barsSincePh = ta.barssince(phFound[1])
+    inRangePl = rChaosDivRangeLower <= barsSincePl and barsSincePl <= rChaosDivRangeUpper
+    inRangePh = rChaosDivRangeLower <= barsSincePh and barsSincePh <= rChaosDivRangeUpper
+    oscHL = osc[rChaosDivRight] > ta.valuewhen(plFound, osc[rChaosDivRight], 1) and inRangePl
+    priceLL = low[rChaosDivRight] < ta.valuewhen(plFound, low[rChaosDivRight], 1)
+    bullDiv = priceLL and oscHL and plFound
+    oscLH = osc[rChaosDivRight] < ta.valuewhen(phFound, osc[rChaosDivRight], 1) and inRangePh
+    priceHH = high[rChaosDivRight] > ta.valuewhen(phFound, high[rChaosDivRight], 1)
+    bearDiv = priceHH and oscLH and phFound
+    [bullDiv, bearDiv]
+f_volChaosDiv(chaosOsc, volOsc) =>
+    plFound = not na(ta.pivotlow(chaosOsc, rChaosDivLeft, rChaosDivRight))
+    phFound = not na(ta.pivothigh(chaosOsc, rChaosDivLeft, rChaosDivRight))
+    barsSincePl = ta.barssince(plFound[1])
+    barsSincePh = ta.barssince(phFound[1])
+    inRangePl = rChaosDivRangeLower <= barsSincePl and barsSincePl <= rChaosDivRangeUpper
+    inRangePh = rChaosDivRangeLower <= barsSincePh and barsSincePh <= rChaosDivRangeUpper
+    chaosLL = chaosOsc[rChaosDivRight] < ta.valuewhen(plFound, chaosOsc[rChaosDivRight], 1)
+    volHL = volOsc[rChaosDivRight] > ta.valuewhen(plFound, volOsc[rChaosDivRight], 1)
+    bullVolDiv = chaosLL and volHL and inRangePl and plFound
+    chaosHH = chaosOsc[rChaosDivRight] > ta.valuewhen(phFound, chaosOsc[rChaosDivRight], 1)
+    volLH = volOsc[rChaosDivRight] < ta.valuewhen(phFound, volOsc[rChaosDivRight], 1)
+    bearVolDiv = chaosHH and volLH and inRangePh and phFound
+    [bullVolDiv, bearVolDiv]
+if ignPreset == "Custom"
+    rChaosRsiLen := chaosRsiLenCustom
+    rChaosFdLen := chaosFdLenCustom
+    rChaosSmoothMin := chaosSmoothMinCustom
+    rChaosSmoothMax := chaosSmoothMaxCustom
+    rCvdLen := cvdLenCustom
+    rChaosDivLeft := chaosDivLeftCustom
+    rChaosDivRight := chaosDivRightCustom
+    rChaosDivRangeLower := chaosDivRangeLowerCustom
+    rChaosDivRangeUpper := chaosDivRangeUpperCustom
+    rConfluenceLookback := confluenceLookbackCustom
+else
+    activeIgnPreset = ignPreset == "Auto" ? f_ignAutoName() : ignPreset
+    [rl, fl, smn, smx, cl, dl, dr, rlo, rup, lb] = f_ignPresetVals(activeIgnPreset)
+    rChaosRsiLen := rl
+    rChaosFdLen := fl
+    rChaosSmoothMin := smn
+    rChaosSmoothMax := smx
+    rCvdLen := cl
+    rChaosDivLeft := dl
+    rChaosDivRight := dr
+    rChaosDivRangeLower := rlo
+    rChaosDivRangeUpper := rup
+    rConfluenceLookback := lb
+bodyRangeIgn = high - low
+buyVolIgn = bodyRangeIgn != 0 ? volume * (close - low) / bodyRangeIgn : volume / 2
+sellVolIgn = volume - buyVolIgn
+deltaIgn = buyVolIgn - sellVolIgn
+chartCVD = math.sum(deltaIgn, rCvdLen)
+fractalDim = f_fractalDim(rChaosFdLen)
+chaosFactor = fractalDim - 1.0
+chaosSmoothLen = rChaosSmoothMin + chaosFactor * (rChaosSmoothMax - rChaosSmoothMin)
+chaosAlpha = 2.0 / (chaosSmoothLen + 1.0)
+rsiRawChaos = ta.rsi(close, rChaosRsiLen)
+var float chaosRsiVal = na
+chaosRsiVal := na(chaosRsiVal[1]) ? rsiRawChaos : chaosAlpha * rsiRawChaos + (1 - chaosAlpha) * chaosRsiVal[1]
+[chaosBullDiv, chaosBearDiv] = f_regDivOsc(chaosRsiVal)
+[volChaosBullDiv, volChaosBearDiv] = f_volChaosDiv(chaosRsiVal, chartCVD)
+barsSinceVolChaosBull = ta.barssince(volChaosBullDiv)
+volDivArmed = not na(barsSinceVolChaosBull) and barsSinceVolChaosBull <= rConfluenceLookback
+barsSinceChaosBull = ta.barssince(chaosBullDiv)
+chaosDivArmed = not na(barsSinceChaosBull) and barsSinceChaosBull <= rConfluenceLookback
+cipherGoldNow = cipherGoldSrc > 0
+barsSinceCipherGold = ta.barssince(cipherGoldNow)
+cipherArmed = not na(barsSinceCipherGold) and barsSinceCipherGold <= rConfluenceLookback
+ignitionCond = volDivArmed and chaosDivArmed and cipherArmed
+ignitionNow = ignitionCond and not ignitionCond[1]
+bgcolor(showVolChaosDiv and volChaosBullDiv ? color.new(color.orange, 80) : na, force_overlay=true)
+plotshape(showVolChaosDiv and volChaosBullDiv, title="Divergence Volume/Chaos RSI", style=shape.triangleup, location=location.belowbar, color=color.yellow, size=size.small, force_overlay=true)
+if showIgnitionSignal and ignitionNow
+    label.new(bar_index, low, "🚀", yloc=yloc.belowbar, style=label.style_label_up, color=color.new(color.orange, 0), textcolor=color.white, size=size.large, force_overlay=true)
+alertcondition(alertOnRegularDiv and bullishRegularAlert, title="Divergence Haussière Régulière", message="Divergence haussière régulière détectée sur l'AI Trend Index")
+alertcondition(alertOnRegularDiv and bearishRegularAlert, title="Divergence Baissière Régulière", message="Divergence baissière régulière détectée sur l'AI Trend Index")
+alertcondition(alertOnHiddenDiv and bullishHiddenAlert, title="Divergence Haussière Cachée", message="Divergence haussière cachée détectée sur l'AI Trend Index")
+alertcondition(alertOnHiddenDiv and bearishHiddenAlert, title="Divergence Baissière Cachée", message="Divergence baissière cachée détectée sur l'AI Trend Index")
+alertcondition(sigBuy, title="Argos Signal BUY (croisement)", message="🟢 Argos BUY - AI Trend croise la ligne signal sur {{ticker}} ({{interval}}) @ {{close}}")
+alertcondition(sigSell, title="Argos Signal SELL (croisement)", message="🔴 Argos SELL - AI Trend croise sous la ligne signal sur {{ticker}} ({{interval}}) @ {{close}}")
+alertcondition(mtfBullAny, title="Argos Div Bull MTF", message="🟢 Argos Div bull LTF (slots MTF) sur l'AI Trend - {{ticker}} ({{interval}}) @ {{close}}")
+alertcondition(mtfBearAny, title="Argos Div Bear MTF", message="🔴 Argos Div bear LTF (slots MTF) sur l'AI Trend - {{ticker}} ({{interval}}) @ {{close}}")
+alertcondition(buyCondition, title="Argos Flèche Verte (Buy)", message="🟢 Argos BUY - Flèche verte AI Trend sur {{ticker}} ({{interval}}) @ {{close}}")
+alertcondition(ignitionNow, title="Argos Fusée (Ignition)", message="🚀 Argos IGNITION - Confluence Vol+ChaosRSI+Cipher Gold sur {{ticker}} ({{interval}}) @ {{close}}")
+alertcondition(buyCondition or ignitionNow, title="Argos Ignition - Flèche Verte + Fusée", message="🟢🚀 Argos IGNITION - Flèche Verte OU Fusée sur {{ticker}} ({{interval}}) @ {{close}}")

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Argos HSS Trading</title>
+  <link rel="stylesheet" href="coque.css">
+</head>
+<body>
+  <header>
+    <h1>📈 Argos HSS Trading <small>coque Tauri · T0</small></h1>
+    <div class="outils">
+      <label>Longueur <input id="longueur" type="number" min="1" max="500" value="20"></label>
+      <label><input id="en-ligne" type="checkbox" checked> Bougies en ligne</label>
+      <button id="calculer">Calculer</button>
+    </div>
+  </header>
+  <canvas id="chart"></canvas>
+  <p id="etat">Calcul…</p>
+  <script src="coque.js"></script>
+</body>
+</html>

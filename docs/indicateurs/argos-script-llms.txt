@@ -1,0 +1,841 @@
+# Argos Script — reference for AI assistants (v1, 2026-11-22)
+
+Argos Script is the indicator and strategy language of Argos HSS Trading. It follows Pine Script v6 syntax, and most Pine v6 scripts run unchanged.
+Scripts run on the user's device, once per bar, from the oldest bar to the newest.
+
+## Rules for writing Argos Script
+
+1. Output ONE complete script that starts with //@version=6 then indicator(...) or strategy(...).
+2. Call every ta.* function on every bar at top level, never only inside if, loops or a ternary branch; store the result in a variable and use the variable under conditions.
+3. Use only names listed in this file. If a Pine name is listed as missing, rebuild it from listed names.
+4. request.security: same symbol (syminfo.tickerid), timeframe equal to or higher than the chart, never gaps_on. request.security_lower_tf returns one array per bar.
+5. All times are UTC. int and float are the same number type; written types are ignored.
+6. strategy(...) scripts trade the Argos demo account only; commission is percent only.
+7. Settings come only from input.*; each becomes a line in the indicator's settings window.
+8. Table cell text is black by default: always set text_color on dark backgrounds (chart background is #131722).
+9. Limits: 2,000,000 operations per bar, recursion depth 64, at most 500 labels, lines and boxes each, 10,000 table cells, 100,000 elements per array or matrix, 50,000 pairs per map, 100,000 characters per string, 256 MB kept by a script, at most 99 nested parentheses, calls or ?: branches (an old-Pine iff counts for two), 49 nested blocks, 249 terms in a row in one expression (248 when the first terms are calculations, calls, fields or [n]) and 1 MB of script text.
+10. The editor reports errors as "❌ Ligne N : <message>" (French). Fix line N and resubmit the whole script.
+
+## Conventions used in this reference
+
+- Format: `name(param1, param2 = default, …) → return type | what it does`.
+- Positional parameters follow Pine's order; every parameter can also be given by name.
+- "na" is Pine's na (the empty value).
+- All times are UTC. int and float are the same 64-bit float at runtime; types written in the script are ignored.
+
+## 1. Built-in variables (bar series)
+
+- `open` → float | open of the bar
+- `high` → float | high of the bar
+- `low` → float | low of the bar
+- `close` → float | close of the bar
+- `volume` → float | volume of the bar
+- `hl2` → float | (high + low) / 2
+- `hlc3` → float | (high + low + close) / 3
+- `ohlc4` → float | (open + high + low + close) / 4
+- `hlcc4` → float | (high + low + 2·close) / 4
+- `bar_index` → int | index of the bar, 0 = oldest loaded bar
+- `last_bar_index` → int | index of the last loaded bar
+- `x[n]` → same type | value n bars ago (variable, bar series or any expression); na before the first bar
+- `na` → na | the empty value (`na(x)` is the test)
+
+## 2. Time variables (UTC)
+
+- `time` → int ms | open time of the bar
+- `time_close` → int ms | open time + chart timeframe
+- `time(timeframe)` / `time_close(timeframe)` → int ms | open / close time of the bar of that timeframe, for example `time("D")` (the session argument is not supported)
+- `year` → int | year of the bar
+- `month` → int | month 1–12
+- `dayofmonth` → int | day 1–31
+- `dayofweek` → int | 1 = Sunday … 7 = Saturday
+- `dayofweek.sunday` … `dayofweek.saturday` → int | constants 1..7
+- `hour` → int | hour 0–23
+- `minute` → int | minute
+- `second` → int | second
+- `weekofyear` → int | ISO week number
+- `timenow` → int ms | time of the LAST bar (not the wall clock)
+- `timestamp([timezone,] year, month, day, hour = 0, minute = 0, second = 0)` → int ms | date to milliseconds (timezone ignored, always UTC)
+
+## 3. Declaration
+
+- `indicator(title, shorttitle, overlay = false, max_labels_count = 500, max_lines_count = 500, max_boxes_count = 500)` → void | names the script; read on bar 0
+- `study(…)` → void | old name of indicator (same behaviour)
+- `strategy(title, shorttitle, overlay, …, pyramiding = 0, default_qty_type, default_qty_value, initial_capital, slippage = 0, commission_type = percent, commission_value = 0, process_orders_on_close = false)` → void | strategy script; creates the demo (paper) broker
+- `library(…)` → error | refused (see Error messages)
+- `max_bars_back(…)` → na | accepted, does nothing
+
+## 4. na and type casts
+
+- `na(x)` → bool | true when x is na (or NaN)
+- `nz(source, replacement = 0)` → same type | replaces na by replacement
+- `fixnan(source)` → float | last non-na value of this call site
+- `int(x)` → int | truncates toward 0 (`int(2.9)` = 2)
+- `float(x)` → float | number as float
+- `bool(x)` → bool | truthiness (0 and na are false)
+- `string(x)` / `str(x)` → string | text of a value
+- `color(x)` → color | cast: a color stays a color, na stays na, a number = 0xRRGGBB
+
+## 5. ta.* (each call site keeps its own memory: call it on every bar)
+
+- `ta.sma(source, length)` → float | simple moving average
+- `ta.ema(source, length)` → float | EMA seeded with the SMA of the first `length` values
+- `ta.rma(source, length)` → float | Wilder moving average (alpha = 1/length)
+- `ta.wma(source, length)` → float | linear weighted moving average
+- `ta.swma(source)` → float | symmetric 4-bar average, weights 1-2-2-1
+- `ta.vwma(source, length)` → float | volume-weighted moving average
+- `ta.hma(source, length)` → float | Hull moving average
+- `ta.rsi(source, length)` → float | RSI 0–100 (RMA of gains / losses)
+- `ta.atr(length)` → float | RMA of the true range
+- `ta.tr(handle_na = false)` → float | true range; na on bar 0 unless handle_na
+- `ta.tr` → float | true range (variable form)
+- `ta.stdev(source, length, biased = true)` → float | standard deviation
+- `ta.variance(source, length, biased = true)` → float | variance
+- `ta.dev(source, length)` → float | mean absolute deviation
+- `ta.highest(length)` / `ta.highest(source, length)` → float | highest value over length (reads `high` by default)
+- `ta.lowest(length)` / `ta.lowest(source, length)` → float | lowest value over length (reads `low` by default)
+- `ta.highestbars(…)` → int | offset (≤ 0) of the highest bar
+- `ta.lowestbars(…)` → int | offset (≤ 0) of the lowest bar
+- `ta.change(source, length = 1)` → float or bool | source − source[length]; for a bool: changed?
+- `ta.mom(source, length)` → float | momentum source − source[length]
+- `ta.roc(source, length)` → float | rate of change in %
+- `ta.cum(source)` → float | cumulative sum since bar 0 (na skipped)
+- `ta.crossover(source1, source2)` → bool | source1 crosses above source2
+- `ta.crossunder(source1, source2)` → bool | source1 crosses below source2
+- `ta.cross(source1, source2)` → bool | crosses either way
+- `ta.rising(source, length)` → bool | above each of the previous length values
+- `ta.falling(source, length)` → bool | below each of the previous length values
+- `ta.barssince(condition)` → int | bars since condition was last true
+- `ta.valuewhen(condition, source, occurrence = 0)` → any | source when condition was true, nth occurrence back
+- `ta.pivothigh([source,] leftbars, rightbars)` → float | pivot high price, confirmed rightbars later
+- `ta.pivotlow([source,] leftbars, rightbars)` → float | pivot low price, confirmed rightbars later
+- `ta.macd(source, fastlen, slowlen, siglen)` → [macd, signal, hist] | MACD tuple
+- `ta.bb(source, length, mult)` → [middle, upper, lower] | Bollinger bands tuple
+- `ta.bbw(source, length, mult)` → float | Bollinger band width in %
+- `ta.kc(source, length, mult, useTrueRange = true)` → [middle, upper, lower] | Keltner channels (EMA)
+- `ta.stoch(source, high, low, length)` → float | stochastic %K, 0–100
+- `ta.cci(source, length)` → float | commodity channel index
+- `ta.mfi(source, length)` → float | money flow index
+- `ta.linreg(source, length, offset = 0)` → float | linear regression value
+- `ta.vwap(source)` → float | session VWAP (UTC day, resets at 00:00 UTC)
+- `ta.vwap` → float | session VWAP of hlc3 (variable form)
+- `ta.median(source, length)` → float | median over length
+- `ta.percentrank(source, length)` → float | percent of previous values ≤ current
+- `ta.range(source, length)` → float | highest − lowest over length
+- `ta.dmi(diLength, adxSmoothing)` → [+DI, −DI, ADX] | directional movement tuple
+- `ta.supertrend(factor, atrPeriod)` → [supertrend, direction] | direction −1 = uptrend, like Pine
+- `ta.sar(start, inc, max)` → float | parabolic SAR
+- `ta.correlation(source1, source2, length)` → float | Pearson correlation
+- `ta.obv` → float | on-balance volume (variable)
+- `ta.accdist` → float | accumulation/distribution (variable)
+
+MISSING (any other ta.xxx gives the error "ta.xxx : pas encore dans Argos Script"): `ta.alma`, `ta.wpr`, `ta.kcw`, `ta.cog`, `ta.tsi`, `ta.max`, `ta.min`, `ta.pivot_point_levels`. Rebuild them from the listed functions (for example `ta.wpr` = `-100 * (ta.highest(high, n) - close) / (ta.highest(high, n) - ta.lowest(low, n))`).
+
+## 6. math.*
+
+- `math.abs(number)` → float | absolute value
+- `math.ceil(number)` → int | round up
+- `math.floor(number)` → int | round down
+- `math.round(number, precision = 0)` → float | round to `precision` decimals
+- `math.round_to_mintick(number)` → float | round to syminfo.mintick
+- `math.sqrt(number)` → float | square root
+- `math.exp(number)` → float | e^x
+- `math.log(number)` → float | natural log
+- `math.log10(number)` → float | base-10 log
+- `math.pow(base, exponent)` → float | power
+- `math.sign(number)` → float | −1, 0, 1 (na stays na)
+- `math.sin` / `math.cos` / `math.tan` / `math.asin` / `math.acos` / `math.atan(number)` → float | trigonometry (radians)
+- `math.todegrees(radians)` → float | radians to degrees
+- `math.toradians(degrees)` → float | degrees to radians
+- `math.max(a, b, …)` → float | largest; na if any argument is na
+- `math.min(a, b, …)` → float | smallest; na if any argument is na
+- `math.avg(a, b, …)` → float | mean; na if any argument is na
+- `math.sum(source, length)` → float | rolling sum over length bars
+- `math.random(min = 0, max = 1, seed = 0)` → float | reproducible pseudo-random (same sequence every run; the seed shifts it)
+- `math.pi` → float | π
+- `math.e` → float | e
+- `math.phi` → float | golden ratio 1.618…
+- `math.rphi` → float | 0.618…
+
+MISSING: any other math.xxx gives "math.xxx : pas encore dans Argos Script".
+
+## 7. array.* (method form also works: `a.push(x)`)
+
+- `array.new<type>(size = 0, initial_value = na)` → array | new array (type in <> ignored)
+- `array.new_float` / `new_int` / `new_bool` / `new_string` / `new_color` / `new_label` / `new_line` / `new_box(size = 0, initial_value = na)` → array | same
+- `array.from(v1, v2, …)` → array | array of the arguments
+- `array.size(id)` → int | number of elements
+- `array.push(id, value)` → void | append at the end
+- `array.unshift(id, value)` → void | insert at the start
+- `array.pop(id)` → any | remove and return the last element (na if empty)
+- `array.shift(id)` → any | remove and return the first element (na if empty)
+- `array.get(id, index)` → any | element; a negative index counts from the end
+- `array.first(id)` → any | element 0
+- `array.last(id)` → any | last element
+- `array.set(id, index, value)` → void | replace an element
+- `array.insert(id, index, value)` → void | insert at index (index clamped)
+- `array.remove(id, index)` → any | remove and return the element (na if out of range)
+- `array.clear(id)` → void | empty the array
+- `array.fill(id, value)` → void | set every element (index_from / index_to ignored)
+- `array.includes(id, value)` → bool | contains value
+- `array.indexof(id, value)` → int | first index or −1
+- `array.lastindexof(id, value)` → int | last index or −1
+- `array.sum(id)` → float | sum (na skipped)
+- `array.avg(id)` → float | mean (na skipped)
+- `array.max(id)` / `array.min(id)` → float | largest / smallest (nth argument ignored)
+- `array.range(id)` → float | max − min
+- `array.median(id)` → float | median
+- `array.stdev(id)` / `array.variance(id)` → float | population stdev / variance (biased)
+- `array.sort(id, order = order.ascending)` → void | sort numbers or strings in place
+- `array.reverse(id)` → void | reverse in place
+- `array.copy(id)` → array | shallow copy
+- `array.slice(id, index_from, index_to)` → array | copy of a range (in Pine it is a shared view; here a copy)
+- `array.concat(id1, id2)` → array | appends id2 to id1, returns id1
+- `array.join(id, separator)` → string | elements joined as text
+- `array.abs(id)` → array | absolute values
+- `order.ascending` / `order.descending` → const | sort order
+
+Argos extras (a lambda as second argument):
+
+- `array.map(id, (x, i) => expr)` → array | new array of results
+- `array.filter(id, (x, i) => cond)` → array | elements where cond is true
+- `array.reduce(id, (acc, x) => expr, initial)` → any | fold starting from initial
+- `array.foreach(id, (x, i) => expr)` → void | run expr on each element
+- `array.some(id, (x) => cond)` → bool | at least one true
+- `array.every(id, (x) => cond)` → bool | all true
+- `array.count(id, (x) => cond)` → int | how many true
+- `array.find(id, (x) => cond)` → any | first element where true, else na
+
+MISSING (error "array.xxx : pas encore dans Argos Script"): `array.binary_search`, `array.percentile_*`, `array.covariance`, `array.mode`, `array.standardize`, and `array.every` without a lambda.
+
+## 8. map.*
+
+- `map.new<k, v>()` → map | new empty map (insertion order kept)
+- `map.put(id, key, value)` → any | set; returns the previous value or na
+- `map.get(id, key)` → any | value or na
+- `map.contains(id, key)` → bool | key present
+- `map.remove(id, key)` → any | remove; returns the value or na
+- `map.size(id)` → int | number of pairs
+- `map.keys(id)` → array | keys in insertion order
+- `map.values(id)` → array | values in insertion order
+- `map.clear(id)` → void | empty the map
+- `map.copy(id)` → map | shallow copy
+
+MISSING: `map.put_all` and any other map.xxx ("map.xxx : pas encore dans Argos Script").
+
+matrix.* (rows and columns count from 0; method form also works: `m.rows()`):
+
+- `matrix.new<type>(rows, columns, initial_value)` → matrix | new matrix (at most 100,000 elements)
+- `matrix.get(id, row, column)` → any | one element
+- `matrix.set(id, row, column, value)` → void | write one element
+- `matrix.rows(id)` / `matrix.columns(id)` / `matrix.elements_count(id)` → int | sizes
+- `matrix.is_square(id)` → bool
+- `matrix.row(id, row)` / `matrix.col(id, column)` → array | a copy of one row or column
+- `matrix.add_row(id, row, array_id)` / `matrix.add_col(id, column, array_id)` → void | insert a row or a column
+- `matrix.remove_row(id, row)` / `matrix.remove_col(id, column)` → array | remove and return it
+- `matrix.swap_rows(id, row1, row2)` / `matrix.swap_columns(id, column1, column2)` → void
+- `matrix.fill(id, value, from_row, to_row, from_column, to_column)` → void | fill all or a range
+- `matrix.copy(id)` / `matrix.transpose(id)` → matrix
+- `matrix.reverse(id)` → void | `matrix.sort(id, column = 0, order = order.ascending)` → void | sort the rows by one column
+- `matrix.max(id)` / `matrix.min(id)` / `matrix.avg(id)` → float
+
+MISSING: matrix arithmetic (`matrix.mult`, `matrix.sum`, `matrix.diff`, `matrix.inv`, `matrix.det`…) and any other matrix.xxx ("matrix.xxx : pas encore dans Argos Script"). Rebuild it with loops over get / set.
+
+## 9. str.*
+
+- `str.tostring(value, format = "")` → string | text; `"#.##"` / `"0.00"` = decimals, `"percent"` = x.xx%
+- `str.tonumber(string)` → float | parse a number, na if not a number
+- `str.length(string)` → int | number of characters
+- `str.upper(string)` / `str.lower(string)` → string | change case
+- `str.contains(source, str)` → bool | substring present
+- `str.startswith(source, str)` / `str.endswith(source, str)` → bool | prefix / suffix
+- `str.pos(source, str)` → int | character index of the first match, na if none
+- `str.replace(source, target, replacement)` → string | replace the FIRST occurrence (occurrence argument ignored)
+- `str.replace_all(source, target, replacement)` → string | replace all occurrences
+- `str.substring(source, begin_pos, end_pos = end)` → string | characters [begin, end)
+- `str.split(string, separator)` → array<string> | split into an array
+- `str.trim(string)` → string | strip spaces at both ends
+- `str.repeat(source, repeat)` → string | repeat text n times (separator ignored)
+- `str.format(formatString, arg0, arg1, …)` → string | replaces {0} {1}; `{0,number,#.##}` = decimals
+- `"a" + x` → string | + with a string concatenates (any value as text)
+
+MISSING: `str.format_time`, `str.match` and any other str.xxx ("str.xxx : pas encore dans Argos Script").
+
+## 10. color.*
+
+- Named colors → color | `color.aqua` #00BCD4, `color.black` #363A45, `color.blue` #2196F3, `color.fuchsia` #E040FB, `color.gray` #787B86, `color.green` #4CAF50, `color.lime` #00E676, `color.maroon` #880E4F, `color.navy` #311B92, `color.olive` #808000, `color.orange` #FF9800, `color.purple` #9C27B0, `color.red` #FF5252, `color.silver` #B2B5BE, `color.teal` #00897B, `color.white` #FFFFFF, `color.yellow` #FFEB3B
+- `#RRGGBB` / `#RRGGBBAA` → color | literal; AA = alpha (FF = opaque)
+- `color.new(color, transp = 0)` → color | same color, transparency 0–100
+- `color.rgb(red, green, blue, transp = 0)` → color | color from components
+- `color.r(color)` / `color.g` / `color.b` → int | component 0–255
+- `color.t(color)` → int | transparency 0–100
+- `color.from_gradient(value, bottom_value, top_value, bottom_color, top_color)` → color | linear blend, clamped
+- `chart.bg_color` → color | fixed #131722
+- `chart.fg_color` → color | fixed #D1D4DC
+
+## 11. input.* (one entry in the settings window per title; strategy properties are added at the end)
+
+- Common positional order: `(defval, title, minval, maxval, step, tooltip, inline, group, confirm, options)`
+- `input(defval, title, …)` → type of defval | generic; a price default (close…) becomes input.source
+- `input.int(defval, title, minval, maxval, step, tooltip, inline, group, confirm, options)` → int | integer (value rounded)
+- `input.float(…same…)` → float | decimal number
+- `input.bool(defval, title, tooltip, inline, group, confirm)` → bool | checkbox
+- `input.string(defval, title, options = [...], tooltip, inline, group, confirm)` → string | text or list
+- `input.enum(…)` → string | handled as input.string (no enum type)
+- `input.source(defval = close, title, …)` → float | price series: close, open, high, low, hl2, hlc3, ohlc4, volume, hlcc4
+- `input.color(defval, title, …)` → color | color picker
+- `input.price(defval, title, …)` → float | price number
+- `input.time(defval, title, …)` → int | timestamp number
+- `input.session(defval, title, …)` → string | text only (no session logic)
+- `input.symbol(defval, title, …)` → string | text only (other symbols are refused by request.*)
+- `input.text_area(defval, title, …)` → string | multi-line text
+- `input.timeframe(defval, title, …)` → string | timeframe text ("60", "D"…)
+- `group` puts lines under a heading; `inline` puts several inputs on one line.
+- Keys: an untitled input is "Input N" (N: its place among the input calls written in the script, the same in every run and at every bar); with `inline`, "<first title on the line> · k"; a repeated title becomes "title@rank" (two inputs with the same title stay separate, nothing to do).
+
+## 12. Plots and coloring
+
+- `plot(series, title = "Plot N", color = #2962FF, linewidth = 1, style = plot.style_line, trackprice, histbase, offset = 0, join, editable, show_last, display)` → plot id | one line per call site
+  - styles: `plot.style_line`, `style_linebr`, `style_stepline` (= `steplinebr`, `stepline_diamond`), `style_histogram`, `style_columns`, `style_circles`, `style_cross`, `style_area` (= `areabr`)
+  - `display = display.none` hides it (any other display value = shown)
+  - `color = na` on a bar → that point is not drawn
+- `hline(price, title, color = #787B86, linestyle)` → hline id | horizontal line, created once
+  - `hline.style_solid` / `style_dashed` / `style_dotted` → const
+- `fill(plot1, plot2, color = #2962FF at 90 % transparency)` → void | fill between two plots or two hlines
+- `bgcolor(color, offset = 0)` → void | background color of the bar (na = none)
+- `barcolor(color, offset = 0)` → void | candle color of the bar
+- `plotshape(series, title, style = shape.xcross, location = location.abovebar, color = #2962FF, offset = 0, text, textcolor = #D1D4DC, editable, size, force_overlay = false)` → void | shape on bars where series is true
+- `plotchar(series, title, char = "★", location, color, offset, text, textcolor, editable, size, force_overlay)` → void | character on true bars
+- `plotarrow(series, title, colorup = #4CAF50, colordown = #FF5252, offset)` → void | arrow up if > 0, down if < 0
+  - `shape.*`: triangleup, triangledown, circle, cross, xcross, diamond, square, flag, arrowup, arrowdown, labelup, labeldown
+  - `location.abovebar` / `belowbar` / `absolute` / `top` / `bottom`
+  - `size.tiny` / `small` / `normal` / `large` / `huge` / `auto`
+- `plotcandle(open, high, low, close, title, color, wickcolor, editable, show_last, bordercolor, display)` → void | candles made of four series
+- `plotbar(open, high, low, close, title, color, editable, show_last, display)` → void | the same as bars
+
+## 13. Drawings: label.* / line.* / box.* / linefill.* / polyline.* / table.*
+
+- `label.new(x, y, text = "", xloc = xloc.bar_index, yloc, color = #2962FF, style, textcolor = #FFFFFF, size = "normal", force_overlay = false)` → label id | text label
+- `line.new(x1, y1, x2, y2, xloc = xloc.bar_index, extend = extend.none, color = #2962FF, style, width = 1, force_overlay = false)` → line id | segment
+- `box.new(left, top, right, bottom, border_color = #2962FF, border_width = 1, border_style, extend, xloc, bgcolor = #2962FF at 80 % transparency, text, text_size, text_color = #FFFFFF, force_overlay = false)` → box id | rectangle
+  - `xloc.bar_index` / `xloc.bar_time` → x as bar index or as ms time
+  - `extend.none` / `left` / `right` / `both`
+  - `label.style_*` / `line.style_*` → style names
+  - `yloc.price` / `abovebar` / `belowbar` → accepted; yloc is not used
+- Shared methods, `<x>` = label, line or box:
+  - `<x>.delete(id)` → void
+  - `<x>.set_x` / `set_x1` / `set_left(id, v)` → void | first x
+  - `<x>.set_y` / `set_y1` / `set_top(id, v)` → void | first y
+  - `<x>.set_x2` / `set_right(id, v)` → void | second x
+  - `<x>.set_y2` / `set_bottom(id, v)` → void | second y
+  - `<x>.set_xy` / `set_xy1` / `set_lefttop(id, x, y)` → void | first point
+  - `<x>.set_xy2` / `set_rightbottom(id, x, y)` → void | second point
+  - `<x>.set_text(id, text)` → void
+  - `<x>.set_color` / `set_border_color(id, color)` → void | line / border color
+  - `<x>.set_bgcolor(id, color)` → void | fill color
+  - `<x>.set_textcolor` / `set_text_color(id, color)` → void
+  - `<x>.set_style` / `set_border_style(id, style)` → void
+  - `<x>.set_width` / `set_border_width(id, width)` → void
+  - `<x>.set_extend(id, extend)` → void
+  - `<x>.set_size(id, size)` → void | label size
+  - `<x>.get_x` / `get_x1` / `get_left(id)` → float
+  - `<x>.get_y` / `get_y1` / `get_top(id)` → float
+  - `<x>.get_x2` / `get_right(id)` → float
+  - `<x>.get_y2` / `get_bottom(id)` → float
+  - `<x>.get_text(id)` → string
+  - `line.get_price(id, x)` → float | line price at bar x (interpolated)
+  - `<x>.copy(id)` → id | duplicate the drawing
+  - Any other label./line./box. function → na, silently ignored (no error).
+- `linefill.new(line1, line2, color = #2962FF at 80 % transparency)` → linefill id | fill between two lines
+- `linefill.delete(id)` → void
+- `linefill.set_color(id, color)` → void
+- `linefill.get_line1(id)` / `linefill.get_line2(id)` → line id
+- `table.new(position, columns = 1, rows = 1, bgcolor, frame_color, frame_width, border_color)` → table id | table in a chart corner
+  - `position.top_left` / `top_center` / `top_right` / `middle_*` / `bottom_*`
+- `table.cell(table_id, column, row, text, width, height, text_color = #000000, text_halign, text_valign, text_size, bgcolor)` → void | fill a cell (text is BLACK by default)
+- `table.cell_set_text(table_id, column, row, text)` → void
+- `table.cell_set_bgcolor(table_id, column, row, bgcolor)` → void
+- `table.cell_set_text_color(table_id, column, row, text_color)` → void
+- `table.cell_set_text_size(table_id, column, row, text_size)` → void
+- `table.clear(table_id, start_column, start_row, end_column, end_row)` → void | empty cells
+- `table.delete(table_id)` → void
+- Any other table.* function → does nothing, silently.
+- `chart.point.from_index(index, price)` / `chart.point.from_time(time, price)` / `chart.point.now(price)` / `chart.point.new(time, index, price)` / `chart.point.copy(id)` → chart.point | a point for polyline.new (fields `.time`, `.index`, `.price`)
+- `polyline.new(points, curved = false, closed = false, xloc = xloc.bar_index, line_color, fill_color, line_style, line_width, force_overlay)` → polyline id | a path through an array of chart.point
+- `polyline.delete(id)` → void
+- A deleted drawing (label.delete, line.delete, box.delete, linefill.delete, polyline.delete) is na for every later call: its get_* give na and its set_* do nothing, like in Pine.
+
+## 14. request.* / timeframe.* / syminfo.* / barstate.*
+
+- `request.security(symbol, timeframe, expression, gaps = barmerge.gaps_off, lookahead = barmerge.lookahead_off)` → any | same symbol, higher or equal timeframe
+- `request.security_lower_tf(symbol, timeframe, expression, ignore_invalid_symbol, currency, ignore_invalid_timeframe = false, calc_bars_count)` → array (or tuple of arrays) | intrabar values of each chart bar
+- Any other request.xxx → error.
+- `timeframe.period` → string | chart timeframe: "1", "60", "D", "W", "M", "15S"
+- `timeframe.multiplier` → int | 60 min → 60, 2D → 2
+- `timeframe.isintraday` / `isdaily` / `isweekly` / `ismonthly` / `isminutes` / `isseconds` → bool | kind of chart timeframe
+- `timeframe.change(timeframe)` → bool | first chart bar of a new bar of that timeframe
+- `timeframe.in_seconds(timeframe = chart)` → int | seconds of a timeframe text
+- `syminfo.ticker` / `syminfo.root` / `syminfo.description` → string | chart symbol ("ARGOS" if unknown)
+- `syminfo.tickerid` → string | "EXCHANGE:symbol"
+- `syminfo.mintick` → float | smallest price step seen in the last 50 closes
+- `syminfo.currency` / `basecurrency` → string | always "USD"
+- `syminfo.type` → string | always "crypto"
+- `syminfo.timezone` → string | always "Etc/UTC"
+- `syminfo.pointvalue` → float | always 1
+- `barstate.isfirst` → bool | bar 0
+- `barstate.islast` / `isrealtime` / `islastconfirmedhistory` → bool | last bar
+- `barstate.ishistory` → bool | every bar but the last
+- `barstate.isconfirmed` → bool | false only on a last bar still forming
+- `barstate.isnew` → bool | always true
+- `barmerge.gaps_off` / `gaps_on` / `lookahead_off` / `lookahead_on` → const | request.security options
+
+## 15. strategy.* (only in a strategy(...) script; Argos demo account, never a real order)
+
+- `strategy.entry(id, direction, qty, limit, stop, oca_name, oca_type, comment, …, when)` → void | open or add to a position
+- `strategy.order(id, direction, qty, limit, stop, oca_name, oca_type, comment, …)` → void | raw order (no reverse logic)
+- `strategy.exit(id, from_entry, qty, qty_percent, profit, limit, loss, stop, trail_price, trail_points, trail_offset, oca_name, comment)` → void | take-profit / stop / trailing exit
+- `strategy.close(id, comment, qty, qty_percent, …, immediately = false)` → void | close an entry
+- `strategy.close_all(comment, …, immediately = false)` → void | close everything
+- `strategy.cancel(id)` → void | cancel a pending order
+- `strategy.cancel_all()` → void | cancel all pending orders
+- `strategy.convert_to_account(value)` / `convert_to_symbol(value)` → float | returns value unchanged (single currency)
+- `strategy.default_entry_qty(fill_price)` → float | default order size at that price
+- `strategy.long` / `strategy.short` → const | direction
+- `strategy.fixed` / `cash` / `percent_of_equity` → const | default_qty_type
+- `strategy.commission.percent` / …, `strategy.oca.cancel` / …, `strategy.direction.*` → const | text constants
+- `strategy.position_size` → float | signed open size (positive = long, negative = short)
+- `strategy.position_avg_price` → float | average entry price
+- `strategy.position_entry_name` → string | last entry name
+- `strategy.openprofit` → float | open P&L
+- `strategy.netprofit` → float | closed net P&L
+- `strategy.equity` → float | capital + net + open
+- `strategy.initial_capital` → float | starting capital
+- `strategy.opentrades` / `closedtrades` → int | trade counts
+- `strategy.wintrades` / `losstrades` / `eventrades` → int | closed trades by result
+- `strategy.grossprofit` / `grossloss` → float | sum of wins / losses
+- `strategy.max_drawdown` → float | max equity drop
+- Settings window group "Propriétés de la stratégie": Capital de départ (initial capital), Taille des ordres (order size), Type de taille (Contrats / Montant / % du compte), Pyramiding, Commission %, Glissement (ticks) (slippage), Ordres à la clôture (process orders on close).
+- `when = false` (Pine v4/v5) → the call does nothing.
+- Only commission_type percent; oca_type only "cancel"; `strategy.risk.*` not supported; orders fill from the next price on.
+
+## 16. Alerts and logs
+
+- `alertcondition(condition, title = "Alerte N", message)` → void | named signal offered in the alerts window (pick the indicator, then the title)
+- `alert(message, freq)` → void | written to the editor terminal (not a push alert)
+- `log.info(message, args…)` / `log.warning` / `log.error` → void | same, with {0} formatting; the terminal shows the last 5 lines
+- Debug tip: `if barstate.islast` then `log.info(...)` shows one value without flooding the terminal.
+
+## 17. Keywords, types and structure
+
+- `//@version=N` → comment | picks the dialect and the and/or rule
+- `var x = …` → declaration | initialised once, kept from bar to bar
+- `varip x = …` → declaration | same as var (no realtime ticks)
+- `[type] x = value` → declaration | type word ignored (int float bool string color label line box table array matrix map polyline)
+- `series` / `simple` / `const` / `input` → qualifier | ignored
+- `[a, b] = f()` → declaration | tuple destructuring
+- `x := v`, `x += v`, `-=`, `*=`, `/=`, `%=` → assignment | reassign an existing variable or object field
+- `if cond` / `else if` / `else` → block or value | indentation 4 spaces or a tab
+- `switch [subject]` / `value => block` / `=> default` → block or value | case match
+- `for i = a to b [by step]` → loop | inclusive; counts down when b < a
+- `for x in coll` / `for [i, x] in coll` → loop | arrays and maps
+- `while cond` → loop
+- `break` / `continue` → flow
+- `f(a, b = 1) => body` → function | user function (one memory per call site); multi-line body indented below
+- `method name(this, …) => body` → method | called as value.name(…)
+- `type Name` / `field = default` → user type | `Name.new(…)` creates an object
+- `true` / `false` → bool
+- `(a, b) => expr` → lambda | ARGOS ONLY, for array.map etc.; sees surrounding variables
+- `array.new<float>(…)` → generic | type in <> ignored
+- MISSING: `import` / `export` → error; `enum` declarations (none; input.enum is handled as input.string); `library`.
+
+## 18. Operators (lowest to highest priority)
+
+- `cond ? a : b` → any | ternary
+- `or` → bool | Pine v5 and older: both sides evaluated; v6: right side only if needed
+- `and` → bool | same rule as or
+- `==` `!=` → bool | equality; `na == x` is false; arrays/objects compared by reference
+- `<` `<=` `>` `>=` → bool | numeric comparison
+- `+` `-` → float or string | + joins strings
+- `*` `/` `%` → float | division or modulo by 0 gives na (never an error)
+- `not`, unary `-`, unary `+` → negation
+- `f()`, `a.b`, `x[n]` → call, member, history
+- Comments: `//` to end of line (not inside quotes).
+- Line continuation: an open ( [ {, a line ending with an operator or with and/or/not, or a next line indented by a number of spaces that is not a multiple of 4.
+
+## 19. Argos-only additions (not in Pine)
+
+- `(params) => expr` → lambda value | anonymous function, sees surrounding variables
+- `array.map` / `filter` / `reduce` / `foreach` / `some` / `every` / `count` / `find` with a lambda (see section 7)
+- `argos.real_delta` → float | buys − sells of the bar from real trades; na without trade data
+- `str(x)` → string | short alias of string(x)
+- Dialects accepted besides Pine: old Argos Script v1 and wrun (ex-kScript)
+- Positional `input(close, …)` in Pine v6 is turned into input.source automatically.
+- Argos behaviour that differs from Pine: timenow = time of the last bar; math.random reproducible; syminfo.* fixed values; barstate.isnew always true; varip = var; and/or rule depends on the version.
+
+## 20. Dialects auto-translated to Pine v6 (errors still point to the original line)
+
+- Pine v6 (`//@version=6`, or no version and nothing else recognised): run as is; only `input(close…)` → `input.source(close…)`.
+- Pine v5 (`//@version=5`): version line → `//@version=6`; `import` lines are commented out with a note; and/or evaluate BOTH sides (v5 rule).
+- Pine v4 (`//@version=4` or lower): as v5, plus:
+  - bare ta functions → ta.*: sma ema rma wma vwma hma alma swma rsi stoch atr cci mfi mom roc change highest lowest highestbars lowestbars stdev variance dev cross crossover crossunder pivothigh pivotlow valuewhen barssince cum falling rising linreg sar supertrend macd bb bbw kc kcw dmi wpr correlation percentrank median (alma, kcw, wpr are translated but not implemented → "ta.xxx : pas encore dans Argos Script")
+  - math: abs max min pow sqrt log log10 exp round floor ceil sign avg → math.*; sum → math.sum
+  - study → indicator; security → request.security; tostring / tonumber → str.*; `iff(c, a, b)` → `(c ? a : b)`
+  - `input(…, type=input.integer/float/bool/source/resolution/session/symbol/string/color)` → input.int/float/bool/source/timeframe/session/symbol/string/color; without type= the kind is guessed from the default
+  - `transp=` removed from plot/plotshape/plotchar/bgcolor/barcolor/fill/hline/plotarrow (with a warning; use `color.new(color, transp)`)
+  - variables tr, obv, vwap, accdist, iii, nvi, pvi, wad, wvad → ta.* (iii, nvi, pvi, wad, wvad are not implemented)
+- Old Argos Script v1 (no `//@version`, uses signal()/shape() or rsi( ema( … without ta.): translated line by line, same line numbers:
+  - rsi/ema/sma/rma/wma/hma/stdev/highest/lowest/change/roc/crossover/crossunder( ) → ta.*; atr(n) → ta.atr(n); stoch(n) → ta.stoch(close, high, low, n); vwap() → ta.vwap(hlc3); obv() → ta.obv
+  - macd(s, f, l) → EMA difference; bb_upper / bb_lower → sma ± k·stdev; prev(x, n) → (x)[n]; abs/max/min/sqrt/log → math.*
+  - `plot(expr, "title", #c, width, hist)` → plot(…, linewidth, style_histogram)
+  - `signal(cond, buy|sell, "text")` → plotshape triangle up/down, green/red
+  - `shape(cond, triup|tridown|circle|diamond|labelup|labeldown…, above|below, #c, "text")` → plotshape
+  - `fill(a, b, #c1, #c2)` → two hidden plots + a fill colored by a ≥ b, at the end of the script
+  - `barcolor(cond, #c)` → `barcolor(cond ? #c : na)`; `&&` `||` `!` `===` `!==` → and or not == !=
+- wrun (ex-kScript: onBar(), output() + param() + bar., bar.close()): JS-like code to Pine:
+  - `param("name", def, {description})` / `param.int…` → input.*; `output("name", line|…, lower, {color, width})` → plot; `out_name(v)` fills it
+  - onStart() / onBar() blocks (the onBar body becomes the script); `new Ema/Sma/Rsi/Wma/Rma/Hma/Vwma/Highest/Lowest(n).update(x)` → ta.*; also Atr, Vwap, Cross, PivotHigh/Low, Macd, Stoch, Bb, History (`.ago(k)` → `[k]`)
+  - bar.open…volume → price series; bar.time → time/1000; bar.isLast → barstate.islast; bar.count → last_bar_index+1; Math.* → math.*; isNaN → na(); NaN → na; theme.up/down/text/accent → colors
+  - `alert(when, …)` → alertcondition; render.shape / render.bgcolor / render.barcolor → plotshape / bgcolor / barcolor; other render.* → note
+  - lines that cannot be translated become comments with a note
+
+## 21. Limits and silently ignored things
+
+- request.security: same symbol only (symbol "", syminfo.ticker or syminfo.tickerid; anything else is an error).
+- request.security: a higher or equal timeframe is built by grouping chart bars (UTC; weeks start Monday; months by calendar); a lower timeframe gives, on each chart bar, the value at the LAST of its intrabars (na where there are none; the app loads them as for request.security_lower_tf).
+- request.security: lookahead_off (default) = last CLOSED higher bar (the current one on the bar that closes it and on the last bar); lookahead_on = bar in progress everywhere.
+- request.security: gaps_on refused; the whole script re-runs once on the higher bars (no request inside that sub-run; strategy orders ignored there). A drawing made in that sub-run (`request.security(..., label.new(...))`) is not on the chart: its handle is na for every function and method of the chart's run and equals no handle of the chart, wherever it is (alone, in tuples, inside an array, a map, a matrix or an object, at any depth), on any timeframe (request.security_lower_tf too). A lambda made in that sub-run cannot be called on the chart: array.map and the other array functions that take one stop with an error.
+- request.security_lower_tf: same symbol; timeframe > chart → error unless ignore_invalid_timeframe = true (then na); timeframe = chart → one-element array.
+- request.security_lower_tf: currency and calc_bars_count ignored.
+- request.security_lower_tf: fast path when the expression uses only bar series / built-ins; otherwise the whole script re-runs on the NEWEST 10,000 intrabars only (older chart bars get empty arrays).
+- request.security_lower_tf: the app loads at most 10,000 lower-timeframe bars per timeframe (enough for the last 500 chart bars), then the newest 200 every 60 s, from the chart's exchange only. On Hyperliquid lower-timeframe history is short (about 86 one-hour bars in 1-minute data): before that the array is empty, so plan a fallback.
+- request.security_lower_tf: a missing timeframe gives empty arrays and is loaded by the app, then the script runs again.
+- max_labels_count / max_lines_count / max_boxes_count: 1..500, default 500; the oldest drawings of that kind are deleted.
+- linefill: at most 500 live, oldest deleted.
+- table.new: columns × rows ≤ 10,000; calling table.new again on the same call site empties it again (like a non-var table).
+- max_polylines_count: 1..100, default 50; the oldest polylines are deleted.
+- Arrays and matrices: at most 100,000 elements (or 5 per chart bar when that is more); maps: 50,000 pairs; strings: 100,000 characters; texts of a strategy order (id, comment…): 1,000 characters.
+- Memory: a script may keep 256 MB plus 1 KB per chart bar (arrays, strings, objects, drawings, histories kept from bar to bar); past that it stops with an error.
+- Nesting: at most 99 parentheses, calls or ?: branches one inside the other (an old-Pine iff counts for two: 49), 49 blocks one inside the other (a block in a block counts for two levels), 249 terms in a row in one expression (line breaks do not count; 248 when the first terms are calculations like 2 * close or close > 0 in a chain of and, calls, fields like syminfo.mintick or [n] like close[1], and a little fewer when they have several levels themselves, 247 for math.abs(-1)), 250 levels in a calculation (blocks and user functions calling one another). A script holds at most 1 MB (1,000,000 bytes).
+- 2,000,000 operations per bar (loops).
+- User function call depth 64 (no recursion).
+- Silently ignored: plot trackprice / histbase / join / editable / show_last; display values other than display.none.
+- Silently ignored: label yloc; text_halign / text_valign; table width / height / frame_width; box text_size; table.set_* / merge_cells / other table.*; unknown label/line/box methods.
+- Silently ignored: hline linewidth / editable; fill title / fillgaps; plotshape editable / show_last / display.
+- Silently ignored: array.fill index range; array.slice gives a copy, not a shared view; str.replace occurrence; str.repeat separator.
+- Silently ignored: timestamp timezone (always UTC); input confirm (stored only); input.session / input.symbol have no logic.
+- Fixed values: syminfo.currency "USD", type "crypto", timezone "Etc/UTC", pointvalue 1; chart.bg_color / chart.fg_color; timenow = last bar.
+- alert() / log.*() only write to the editor terminal (last 5 shown); alertcondition gives a named signal for the alerts window.
+- History `x[n]` of an expression only records bars where that line ran.
+- math.random is reproducible (same sequence every run; the seed shifts it).
+- Not supported at all: runtime.error, ticker.*, session.* functions, time() / time_close() with a session argument, matrix arithmetic, str.format_time, str.match, library / import / export, enum declarations, request.* other than security / security_lower_tf.
+
+## Error messages
+
+The editor prints errors as "❌ Ligne N : <message>" and warnings as "⚠️ Ligne N : <message>". In the messages below, {n}, {f}, {k} and similar are filled in with the real name or number.
+
+Unknown names:
+
+- « {n} » n'existe pas (ou pas encore dans Argos Script) — unknown function (also runtime.error, ticker.*). Fix the spelling or rebuild the feature from listed names.
+- « {n} » n'existe pas — unknown variable or unknown namespace member (color.foo, ta.wad, session.ismarket…). Fix the spelling or use a listed name.
+- « {n} » n'existe pas (déclare-la d'abord avec « {n} = … ») — `:=` used on a variable that was never declared. Declare it first with `x = …`.
+- le champ « {field} » n'existe pas — unknown field of a user-type object. Use a field declared in the `type`.
+- « .{m} » : ce n'est pas un objet — field assignment on something that is not an object. Assign fields only on objects made with `Type.new`.
+- « .{m} » sur un {kind} — field read on a non-object (number, bool…). Read fields only on objects.
+- pas de méthode « {m} » pour un {kind} — method call on a number, bool or other non-collection. Call the function form, or call the method on an array/map/object.
+- on ne peut appeler que des fonctions — something that is not a function name was called. Call a function by its name.
+
+Not yet supported:
+
+- ta.{f} : pas encore dans Argos Script — the ta function does not exist yet (ta.alma, ta.wpr…). Rebuild it from listed ta.* / math.* functions.
+- math.{m} : pas encore dans Argos Script — math function missing. Rebuild it from listed functions.
+- str.{m} : pas encore dans Argos Script — str function missing (str.format_time, str.match). Rebuild it or drop it.
+- array.{f} : pas encore dans Argos Script — array function missing (binary_search, percentile_*, covariance, mode, standardize). Rebuild it with a loop or a lambda.
+- map.{f} : pas encore dans Argos Script — map function missing (map.put_all). Use a loop with map.put.
+- matrix.{f} : pas encore dans Argos Script — matrix function missing (mult, sum, inv…). Rebuild it with loops over matrix.get / matrix.set.
+- strategy.{f} : pas encore dans Argos Script — strategy function missing (for example strategy.risk.*). Remove it or emulate it.
+- {request.xxx} : pas encore dans Argos Script (bientôt : multi-unités de temps) — any request.* other than security / security_lower_tf. Use request.security or request.security_lower_tf.
+- library() : pas encore dans Argos Script — libraries are not supported. Write an indicator(...) or strategy(...) script.
+- import / export : pas encore dans Argos Script — a Pine v6 script with import. Paste the library functions into the script instead.
+- import : les bibliothèques (ex. LuxAlgo/…) ne sont pas encore dans Argos Script, la ligne est mise en commentaire — note (not an error) in Pine v4/v5: the import line was commented out. Paste the needed functions into the script.
+- request.security : gaps = barmerge.gaps_on : pas encore dans Argos Script — gaps_on is refused. Remove it (gaps_off is the default).
+- {fonction} : un autre symbole ({sym}) : pas encore dans Argos Script (seulement celui de la chart) — another symbol was requested. Use syminfo.tickerid.
+- commission « {type} » : pas encore dans Argos Script, comptée à 0 (seule « percent » l'est) — note: a non-percent commission is counted as 0. Use commission_type = strategy.commission.percent.
+
+Wrong use:
+
+- strategy.{v} : seulement dans un script strategy(...) — a strategy.* name used in an indicator(...) script. Replace `indicator(` by `strategy(`.
+- strategy.{f} : le sens (strategy.long ou strategy.short) manque — the direction argument is missing. Pass strategy.long or strategy.short.
+- request.security : il manque l'expression — the third argument is missing. Add the expression to evaluate.
+- request.security : unité de temps inconnue « {t} » — unknown timeframe text. Use "1", "5", "60", "240", "D", "W", "M"…
+- request.security_lower_tf : il manque l'expression — the expression argument is missing. Add it.
+- request.security_lower_tf : unité de temps inconnue « {t} » — unknown timeframe text. Use a valid timeframe.
+- request.security_lower_tf : l'unité demandée ({t}) est plus grande que celle de la chart — the timeframe is higher than the chart. Use a lower timeframe, or request.security.
+- timeframe.change : unité de temps inconnue « {t} » — unknown timeframe text. Use a valid timeframe ("D", "W"…).
+- fill() : deux plot ou hline — fill was given something else. Keep the results: `p1 = plot(...)`, `p2 = plot(...)`, `fill(p1, p2, …)`.
+- table.new : trop de cases (10 000 au plus) — columns × rows > 10,000. Use fewer rows or columns.
+- array.{f} sur un tableau na (pas encore créé) — the array variable is still na. Create it first with array.new_* (usually `var a = array.new_float()`).
+- array.{f} : le 1er argument doit être un tableau — the first argument is not an array. Pass an array.
+- array.{f} : index {k} hors du tableau (taille {n}) — reading past the size. Check array.size before.
+- array.set : index {k} hors du tableau (taille {n}) — writing past the size. Check array.size, or use push.
+- array.{f} : il faut une lambda, ex. (x) => x * 2 — a lambda was expected. Write `(x) => …`.
+- map.{f} : le 1er argument doit être une map — the first argument is not a map. Create it with map.new<k, v>().
+- lambda inconnue — invalid lambda value. Pass a `(x) => …` lambda directly.
+- cette fonction donne plusieurs valeurs : [a, b] = … — a tuple function (ta.macd, ta.bb, ta.dmi, ta.kc, ta.supertrend…) assigned to one name. Write `[m, s, h] = ta.macd(close, 12, 26, 9)`.
+- {n} noms à gauche, mais une seule valeur à droite — tuple on the left but a single value on the right. Use a single name.
+- {n} noms à gauche, {m} valeurs à droite — tuple sizes do not match. Use as many names as values.
+- assignation impossible ici (array.set pour un tableau) — `a[i] := v` on an array. Use `array.set(a, i, v)`.
+- « {op} » entre un {kind} et un {kind} — arithmetic between incompatible kinds (for example a string). Convert with str.tostring / str.tonumber.
+- opérateur inconnu « {op} » — unknown operator. Use a listed operator.
+- l'historique [n] demande un nombre positif — negative history offset. Use `x[n]` with n ≥ 0.
+- le pas du for doit être plus grand que 0 — `by` step ≤ 0. Use a positive step (the loop counts down by itself when b < a).
+- for … in : un tableau ou une map, pas un {kind} — `for x in` over something that is not an array or map. Loop over an array or map.
+- {Type}.new : {n} champs, {m} valeurs — too many values for the type's fields. Pass at most one value per field.
+- « {name} » s'appelle elle-même trop de fois (pas de récursion en Pine) — call depth > 64. Rewrite with a loop.
+- « {name} » prend {n} paramètres, {m} donnés — wrong number of arguments to a user function. Pass the right number.
+- « {name} » : il manque « {p} » — a required parameter without default is missing. Pass it.
+- trop d'opérations sur une bougie (boucle infinie ?) — more than 2,000,000 operations on one bar. Shorten the loop or keep results in a `var`.
+- trop de tours de boucle sur une bougie (boucle infinie ?) — a loop runs too many times on one bar. Check the loop end condition.
+- le script garde trop de mémoire : plus de {n} Mo (tableaux, textes, objets, dessins ou historiques gardés d'une bougie à l'autre) — the script keeps more than its memory budget. Keep fewer or shorter arrays, strings and drawings (array.shift, array.clear, label.delete).
+- trop de niveaux l'un dans l'autre (parenthèses, appels, blocs ou ? :) : moins de 100 (un bloc dans un bloc compte pour deux) — 100 nested parentheses, calls or ?: branches, or 50 nested blocks (an old-Pine iff counts for two). Split the calculation into several statements, one variable each.
+- script trop long : 1 Mo au plus (il dépasse à cette ligne) — the script text is over 1,000,000 bytes (the largest known scripts are about 50 KB). Shorten it.
+- expression trop longue ou trop imbriquée : moins de 250 termes à la suite, moins quand les premiers sont eux-mêmes des calculs, des appels ou des [n] (coupe-la en morceaux, une variable par morceau) — 250 terms or more in one expression, 249 when the first terms are calculations, calls, fields or [n]. Split it into several statements, one variable each (a line break does not help).
+- trop de niveaux l'un dans l'autre dans ce calcul (expressions, blocs, fonctions qui s'appellent) : 250 au plus — blocks and user functions nested too deep at run time. Flatten the logic or use a loop.
+- {f} : 100 000 éléments au plus, comme sur TradingView — an array or a matrix is too large. Keep fewer elements (array.shift).
+- map.put : 50 000 paires au plus, comme sur TradingView — a map is too large. Remove old keys (map.remove).
+- {f} : 100 000 caractères au plus dans un texte — a string is too long. Shorten it.
+- strategy.{f} : 1 000 caractères au plus dans « {nom} » — a text of a strategy order (id, comment…) is too long. Shorten it.
+- matrix.{f} sur une matrice na (pas encore créée) — the matrix variable is still na. Create it first with matrix.new<type>(rows, columns).
+
+Syntax:
+
+- indentation incohérente — mixed indentation in a block. Use exactly 4 spaces per level.
+- la première ligne ne doit pas être indentée — the first line starts with spaces. Remove them.
+- nombre invalide « {txt} » — a malformed number. Write it as 12, 1.5 or 1e3.
+- texte pas fermé (guillemet manquant) — a missing closing quote. Close the string.
+- couleur invalide « #{h} » — `#` not followed by 6 or 8 hex digits. Write #FF5252 or #FF525280.
+- caractère inattendu « {c} » — a character the language does not know. Remove or replace it.
+- « {o} » attendu, trouvé {x} — a missing parenthesis, bracket or comma. Look just before the indicated place.
+- nom attendu, trouvé {x} — a name was expected (after `.`, in a declaration…). Write a valid name.
+- bloc indenté attendu (4 espaces) — nothing under an if, for or function. Indent the next line by 4 spaces.
+- déclaration attendue : nom = valeur — malformed declaration. Write `name = value`.
+- on ne peut pas assigner à cette expression — the left side of `:=` is not a variable or field. Assign to a variable or field.
+- cas du switch attendus (indentés) — switch without indented cases. Indent each `value => …` by 4 spaces.
+- « in » attendu — malformed `for x in`. Write `for x in coll`.
+- « to » attendu dans le for — malformed `for`. Write `for i = a to b`.
+- valeur attendue, trouvé {x} — an expression is missing. Complete the expression.
+
+Warnings (the script still runs, shown as "⚠️ Ligne N : …"):
+
+- La fonction « {nom} » doit être appelée à chaque bougie pour rester juste. Conseil : sortez cet appel de cette condition (mettez-le sur sa propre ligne). — Pine v6: a ta.* / fixnan / math.sum call inside a branch or on the right of and/or. Move the call to its own top-level line and use the variable in the condition.
+- {name}() : « transp » retiré (en v6, la transparence va dans color.new) — Pine v4: transp was removed. Use `color.new(color, transp)`.
+- instruction inconnue en Argos Script v1 : « … » — an old Argos v1 line could not be translated. Rewrite it in Pine v6.
+- forme à 4 fonctions pas traduite — wrun: four-function form not translated. Rewrite the script in Pine v6.
+- boucle for pas reconnue — wrun: for loop not recognised. Rewrite the loop in Pine syntax.
+- bloc pas traduit — wrun: block not translated. Rewrite it in Pine v6.
+- render.{kind} : pas encore traduit — wrun: this render.* call has no translation. Use plotshape, bgcolor, barcolor or a drawing.
+- « … » : pas encore traduit en Pine — wrun: this call has no translation. Rewrite it in Pine v6.
+- instruction pas traduite — wrun: statement not translated. Rewrite it in Pine v6.
+- sortie « … » jamais remplie — wrun: an output() is never filled. Fill it in onBar or remove it.
+
+Editor messages (app side):
+
+- ❌ Ce script ne trace rien : il lui faut au moins un plot(), un plotshape() ou un dessin. — no output call found. Add at least one plot, plotshape, bgcolor, label or table.
+- ⏳ Pas encore de bougies sur la chart : réessaie dans un instant. — the chart has not loaded bars yet. Wait, then press ▶ again.
+- ⚠ Rien à tracer sur ces bougies pour l'instant. — the script runs but every value is na (length longer than the history, condition never true). Shorten lengths or check conditions.
+- ⏳ Bougies {u} en chargement pour request.security_lower_tf… — lower-timeframe bars are loading. Wait; the script runs again by itself.
+
+## Examples
+
+### Getting started: an adjustable moving average
+
+```
+//@version=6
+indicator("Ma moyenne", overlay = true)
+longueur = input.int(20, "Longueur", minval = 1)
+moy = ta.sma(close, longueur)
+plot(moy, "Moyenne", color = color.orange, linewidth = 2)
+```
+
+### The language: var, history, if / else and reassignment
+
+```
+//@version=6
+indicator("Exemple", overlay = false)
+var int compte = 0              // var : gardé d'une bougie à l'autre
+hausse = close > close[1]       // [1] = la bougie d'avant
+if hausse
+    compte += 1
+else if close < close[1]
+    compte := 0                 // := change une variable déjà déclarée
+plot(compte, "Bougies vertes de suite")
+```
+
+### Data: color Mondays and mark each new day
+
+```
+//@version=6
+indicator("Lundis", overlay = true)
+bgcolor(dayofweek == dayofweek.monday ? color.new(color.blue, 90) : na)
+plotshape(timeframe.change("D"), "Nouveau jour", shape.triangleup, location.belowbar, color.gray)
+```
+
+### Calculations: call ta.* on every bar, use the result under a condition
+
+```
+// Bon : calculé à chaque bougie, utilisé sous condition
+r = ta.rsi(close, 14)
+signal = r > 70 ? 1 : 0
+// Mauvais : ta.rsi ne voit pas toutes les bougies
+// if close > open
+//     r := ta.rsi(close, 14)
+```
+
+### Drawing: a label on each confirmed pivot high and a small table
+
+```
+//@version=6
+indicator("Sommets", overlay = true)
+ph = ta.pivothigh(5, 5)
+if not na(ph)
+    label.new(bar_index - 5, ph, str.tostring(ph, "#.##"), style = label.style_label_down, color = color.red, textcolor = color.white)
+var t = table.new(position.top_right, 2, 1, bgcolor = color.new(color.black, 30))
+if barstate.islast
+    table.cell(t, 0, 0, "RSI", text_color = color.white)
+    table.cell(t, 1, 0, str.tostring(ta.rsi(close, 14), "#"), text_color = color.white)
+```
+
+### Settings: inputs with groups, inline and options
+
+```
+//@version=6
+indicator("Canal", overlay = true)
+src   = input.source(close, "Source")
+n     = input.int(20, "Longueur", minval = 2, maxval = 500, group = "Calcul")
+mult  = input.float(2.0, "Écart", step = 0.1, group = "Calcul")
+haut  = input.color(color.red, "Haut", inline = "c", group = "Couleurs")
+bas   = input.color(color.green, "Bas", inline = "c", group = "Couleurs")
+mode  = input.string("Simple", "Moyenne", options = ["Simple", "Exponentielle"])
+m = mode == "Simple" ? ta.sma(src, n) : ta.ema(src, n)
+s = ta.stdev(src, n)
+plot(m + mult * s, "Haut", haut)
+plot(m - mult * s, "Bas", bas)
+```
+
+### Collections: a rolling array and an Argos lambda
+
+```
+//@version=6
+indicator("Derniers volumes", overlay = false)
+var vols = array.new_float()
+vols.push(volume)                       // forme méthode, comme array.push(vols, volume)
+if vols.size() > 20
+    vols.shift()
+total = array.reduce(vols, (acc, v) => acc + v, 0)   // lambda Argos
+plot(total, "Volume des 20 dernières bougies")
+```
+
+### Other timeframes: daily RSI on an intraday chart
+
+```
+//@version=6
+indicator("RSI du jour", overlay = false)
+rsiJour = request.security(syminfo.tickerid, "D", ta.rsi(close, 14))
+plot(rsiJour, "RSI jour")
+hline(70)
+hline(30)
+```
+
+### Other timeframes: net 1-minute volume inside each chart bar
+
+```
+//@version=6
+indicator("Volume 1 min", overlay = false)
+vols = request.security_lower_tf(syminfo.tickerid, "1", close > open ? volume : -volume)
+net = array.sum(vols)
+plot(net, "Net", net >= 0 ? color.green : color.red, style = plot.style_columns)
+```
+
+### Strategies: EMA crossover on the demo account
+
+```
+//@version=6
+strategy("Croisement EMA", overlay = true, initial_capital = 10000,
+     default_qty_type = strategy.percent_of_equity, default_qty_value = 10,
+     commission_type = strategy.commission.percent, commission_value = 0.05)
+rapide = ta.ema(close, 9)
+lente  = ta.ema(close, 21)
+if ta.crossover(rapide, lente)
+    strategy.entry("Achat", strategy.long)
+if ta.crossunder(rapide, lente)
+    strategy.close("Achat")
+strategy.exit("Sortie", "Achat", profit = 400, loss = 200)
+plot(rapide, "Rapide", color.orange)
+plot(lente, "Lente", color.blue)
+```
+
+### Alerts: an alert condition and a debug log on the last bar
+
+```
+//@version=6
+indicator("Alerte RSI", overlay = false)
+r = ta.rsi(close, 14)
+plot(r, "RSI")
+alertcondition(ta.crossover(r, 70), "RSI au-dessus de 70", "Le RSI vient de passer 70")
+if barstate.islast
+    log.info("RSI actuel : " + str.tostring(r, "#.#"))
+```
+
+### Recipe: two-color Supertrend with arrows on direction change
+
+```
+//@version=6
+indicator("Supertrend", overlay = true)
+facteur = input.float(3.0, "Facteur", step = 0.1)
+periode = input.int(10, "Période ATR", minval = 1)
+[st, dir] = ta.supertrend(facteur, periode)
+plot(dir < 0 ? st : na, "Haussier", color.green, style = plot.style_linebr)
+plot(dir > 0 ? st : na, "Baissier", color.red, style = plot.style_linebr)
+plotshape(ta.change(dir) < 0, "Achat", shape.triangleup, location.belowbar, color.green)
+plotshape(ta.change(dir) > 0, "Vente", shape.triangledown, location.abovebar, color.red)
+```
+
+### Recipe: previous day high and low
+
+```
+//@version=6
+indicator("Veille", overlay = true)
+hautVeille = request.security(syminfo.tickerid, "D", high[1])
+basVeille  = request.security(syminfo.tickerid, "D", low[1])
+plot(hautVeille, "Haut veille", color.red, style = plot.style_stepline)
+plot(basVeille, "Bas veille", color.green, style = plot.style_stepline)
+```
+
+### Recipe: RSI on three timeframes in a table (chart at 1 h or lower)
+
+```
+//@version=6
+indicator("RSI multi-UT", overlay = true)
+r1 = request.security(syminfo.tickerid, "60", ta.rsi(close, 14))
+r4 = request.security(syminfo.tickerid, "240", ta.rsi(close, 14))
+rD = request.security(syminfo.tickerid, "D", ta.rsi(close, 14))
+coul(r) => r > 70 ? color.red : r < 30 ? color.green : color.gray
+var t = table.new(position.top_right, 2, 3, bgcolor = color.new(color.black, 30))
+if barstate.islast
+    table.cell(t, 0, 0, "1 h", text_color = color.white)
+    table.cell(t, 1, 0, str.tostring(r1, "#"), text_color = coul(r1))
+    table.cell(t, 0, 1, "4 h", text_color = color.white)
+    table.cell(t, 1, 1, str.tostring(r4, "#"), text_color = coul(r4))
+    table.cell(t, 0, 2, "Jour", text_color = color.white)
+    table.cell(t, 1, 2, str.tostring(rD, "#"), text_color = coul(rD))
+```
+
+### Recipe: high-volume candles
+
+```
+//@version=6
+indicator("Gros volume", overlay = true)
+mult = input.float(2.0, "Fois la moyenne", step = 0.5)
+moy = ta.sma(volume, 20)
+gros = volume > mult * moy
+barcolor(gros ? (close > open ? color.lime : color.fuchsia) : na)
+plotchar(gros, "Gros volume", "●", location.abovebar, color.yellow, size = size.tiny)
+```

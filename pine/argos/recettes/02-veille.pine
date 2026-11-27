@@ -1,0 +1,6 @@
+//@version=6
+indicator("Veille", overlay = true)
+hautVeille = request.security(syminfo.tickerid, "D", high[1])
+basVeille  = request.security(syminfo.tickerid, "D", low[1])
+plot(hautVeille, "Haut veille", color.red, style = plot.style_stepline)
+plot(basVeille, "Bas veille", color.green, style = plot.style_stepline)

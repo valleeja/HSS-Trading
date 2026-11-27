@@ -1,0 +1,12 @@
+[
+  {
+    "dir": 3,
+    "fee_pct": 5.5,
+    "script": "essai-7",
+    "show": true,
+    "slip_pct": 6.5,
+    "stop_pct": 3.5,
+    "strategy": 2,
+    "target_pct": 4.5
+  }
+]

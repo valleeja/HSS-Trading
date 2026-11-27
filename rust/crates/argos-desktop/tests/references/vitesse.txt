@@ -1,0 +1,4 @@
+# Written by the test `vitesse::the_cell_stays_as_fast_as_its_reference` with ARGOS_VITESSE=maj (Jee's phrase), never by hand.
+# screen, time per image in yardsticks, pixels laid per image
+glisser 0.048 66110
+liste 1.019 2632100

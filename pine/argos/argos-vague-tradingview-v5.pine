@@ -1,0 +1,357 @@
+//@version=6
+// Argos Vague — Argos's own oscillator, written from the public description of BigBeluga's « Nautilus PRO+ »
+// (invite-only script, no licence: none of its code, only the ideas shown on its page). Jee, 20 Nov 2026.
+// TradingView edition: the real CVD comes from lower-timeframe bars (request.security_lower_tf).
+// Wave (3 engines, 3 styles) · rolling CVD bands (real trades when the exchange gives them) · trend cloud · regular and
+// hidden divergences · strong confluence triangles · volume exhaustion (volume compared with the same hour) ·
+// confluence gauge. Colours (Jee): everything high is red, everything low is green; the trend is green bullish, red
+// bearish. No signal moves after the fact: pivots are confirmed and signals wait for the bar's close.
+// v5 (22 Nov 2026): gauge as in the Argos edition — the four words start right of the ruler and the word under the pill is hidden.
+indicator("Argos Vague", shorttitle="Vague", overlay=false, max_lines_count=200, max_boxes_count=50, max_labels_count=200, max_bars_back=5000)
+
+// ───────────── settings ─────────────
+G1 = "🌊 Vague"
+mode = input.string("Classique", "Moteur", options=["Classique", "Tendance adaptative", "Impulsion volatilité"], group=G1, tooltip="Classique : momentum habituel. Tendance adaptative : calmé par la plage des prix. Impulsion volatilité : momentum lissé mesuré en ATR.")
+style = input.string("Auto", "Style", options=["Auto", "Scalpeur", "Trader du jour", "Swing", "Personnalisé"], group=G1, tooltip="Valeurs d'AI Trend Pro. Auto : 15 min et moins = Scalpeur, jusqu'à 4H = Trader du jour, au-dessus = Swing. Personnalisé = les valeurs (Perso) ci-dessous.")
+lenIn = input.int(10, "Période (Perso)", minval=2, maxval=200, group=G1)
+smoothIn = input.int(3, "Lissage (Perso)", minval=1, maxval=20, group=G1)
+signalIn = input.int(9, "Ligne signal du nuage (Perso)", minval=2, maxval=100, group=G1)
+
+G2 = "📏 Seuils"
+adaptive = input.bool(true, "Seuils adaptatifs", group=G2, tooltip="Surachat et survente calculés sur les dernières bougies du marché au lieu d'un nombre fixe.")
+fixedLvl = input.float(50.0, "Seuil fixe", minval=10, maxval=95, step=1, group=G2)
+lvlBars = input.int(200, "Bougies pour les seuils", minval=50, maxval=1000, group=G2)
+lvlMult = input.float(1.5, "Écarts-types", minval=0.5, maxval=4, step=0.1, group=G2)
+
+G3 = "📊 CVD"
+cvdLenIn = input.int(20, "Fenêtre CVD (Perso)", minval=2, maxval=200, group=G3)
+useReal = input.bool(true, "Delta par unité inférieure", group=G3, tooltip="Achats et ventes mesurés sur des bougies plus petites (1 min jusqu'en 1H, 5 min jusqu'au jour, 1H au-dessus). Sinon, estimation d'après la forme des bougies.")
+showBands = input.bool(true, "Bandes CVD", group=G3)
+
+G4 = "☁ Tendance"
+showCloud = input.bool(true, "Nuage de tendance", group=G4)
+showCross = input.bool(true, "Croix aux croisements", group=G4)
+
+G5 = "◆ Divergences"
+showReg = input.bool(true, "Divergences normales", group=G5)
+showHid = input.bool(true, "Divergences cachées", group=G5)
+pivLIn = input.int(2, "Pivot gauche (Perso)", minval=1, maxval=20, group=G5, inline="piv")
+pivRIn = input.int(2, "droite", minval=1, maxval=20, group=G5, inline="piv")
+divMaxIn = input.int(100, "Écart maximum (Perso)", minval=5, maxval=300, group=G5)
+divOnPrice = input.bool(true, "Divergences sur le prix", group=G5)
+
+G6 = "▲ Signaux"
+showTri = input.bool(true, "Triangles de confluence forte", group=G6)
+sens = input.int(5, "Sensibilité CVD (bougies)", minval=1, maxval=30, group=G6, tooltip="Le CVD doit changer de sens dans ce nombre de bougies autour du retournement de la vague.")
+triOnPrice = input.bool(true, "Triangles sur le prix", group=G6)
+colTri = input.color(#FFD600, "Couleur des triangles", group=G6)
+showBest = input.bool(true, "Meilleur signal (gros point)", group=G6, tooltip="Triangle + épuisement de volume ou divergence normale dans la même direction + tendance qui tourne. Rare. Son taux de réussite réel sera mesuré par le backtest.")
+bestWinIn = input.int(20, "Fenêtre du meilleur signal (Perso)", minval=2, maxval=60, group=G6)
+emaFilter = input.bool(false, "Filtre EMA", group=G6, inline="ema", tooltip="Bloque les triangles à contre-tendance : vente seulement si l'EMA rapide est sous l'EMA lente, achat seulement au-dessus.")
+emaFastLen = input.string("13", "rapide", options=["13", "21", "50", "100", "200"], group=G6, inline="ema")
+emaSlowLen = input.string("50", "lente", options=["13", "21", "50", "100", "200"], group=G6, inline="ema")
+
+G7 = "◯ Épuisement"
+showExh = input.bool(true, "Zones d'épuisement", group=G7)
+volMult = input.float(2.0, "Volume × la normale", minval=1.1, maxval=10, step=0.1, group=G7)
+volDays = input.int(20, "Jours pour le volume habituel", minval=3, maxval=60, group=G7, tooltip="Le volume est comparé à celui des mêmes heures les jours d'avant (ouverture de New York comprise).")
+showBlock = input.bool(true, "Bande sur le prix", group=G7)
+exhCandles = input.bool(true, "Bougies orange", group=G7, inline="exc")
+colExh = input.color(#FF9800, "", group=G7, inline="exc")
+
+G8 = "🕯 Bougies"
+colorBars = input.bool(false, "Couleur des bougies selon la tendance", group=G8)
+
+G9 = "🎨 Couleurs"
+colHigh = input.color(#F23645, "Haut", group=G9, inline="hb")
+colLow = input.color(#089981, "Bas", group=G9, inline="hb")
+colBull = input.color(#089981, "Haussier", group=G9, inline="tr")
+colBear = input.color(#F23645, "Baissier", group=G9, inline="tr")
+colMid = input.color(#B2B5BE, "Près de zéro", group=G9)
+showGlow = input.bool(true, "Lueur aux extrêmes", group=G9)
+showPivots = input.bool(true, "Points de pivot", group=G9)
+showMeter = input.bool(true, "Jauge de confluence", group=G9)
+
+// ───────────── helpers ─────────────
+tanh(v) =>
+    e = math.exp(2 * math.max(math.min(v, 20), -20))
+    (e - 1) / (e + 1)
+
+// presets: the values of Jee's « Ultimate AI Trend Pro » (Scalping / Day Trade / Swing)
+tfMin = timeframe.in_seconds() / 60
+preset = style == "Auto" ? (tfMin <= 15 ? "Scalpeur" : tfMin <= 240 ? "Trader du jour" : "Swing") : style
+isScalp = preset == "Scalpeur"
+isDay = preset == "Trader du jour"
+isSwing = preset == "Swing"
+len = isScalp ? 7 : isDay ? 10 : isSwing ? 14 : lenIn
+smooth = isScalp ? 2 : isDay ? 3 : isSwing ? 4 : smoothIn
+signalLen = isScalp ? 5 : isDay ? 9 : isSwing ? 12 : signalIn
+cvdLen = isScalp ? 14 : isDay ? 20 : isSwing ? 20 : cvdLenIn
+pivL = isScalp ? 2 : isDay ? 2 : isSwing ? 3 : pivLIn
+pivR = isScalp ? 1 : isDay ? 2 : isSwing ? 3 : pivRIn
+divMax = isScalp ? 60 : isDay ? 100 : isSwing ? 150 : divMaxIn
+bestWin = isScalp ? 15 : isDay ? 20 : isSwing ? 24 : bestWinIn
+
+// efficiency of the move (1 = straight line, 0 = chop)
+pathLen = math.sum(math.abs(close - close[1]), len)
+er = pathLen > 0 ? math.abs(close - close[len]) / pathLen : 0.0
+
+// ───────────── wave ─────────────
+atrv = ta.atr(len)
+hh = ta.highest(high, len)
+ll = ta.lowest(low, len)
+// the three engines are computed on every bar (so their averages stay right), then one is chosen
+xClassic = (close - ta.sma(close, len)) / (atrv * 2.6)
+xAdaptive = hh > ll ? 2 * (close - (hh + ll) / 2) / (hh - ll) * (0.5 + nz(er)) : 0.0
+xImpulse = ta.ema(close - close[1], len) / atrv * math.sqrt(len) / 2
+x = mode == "Classique" ? xClassic : mode == "Tendance adaptative" ? xAdaptive : xImpulse
+wave = ta.ema(100 * tanh(nz(x)), smooth)
+
+// ───────────── thresholds (adaptive: mean ± k standard deviations of the last bars) ─────────────
+m = ta.sma(wave, lvlBars)
+sd = ta.stdev(wave, lvlBars)
+ob = adaptive and not na(sd) ? math.max(30, math.min(95, m + lvlMult * sd)) : fixedLvl
+os = adaptive and not na(sd) ? math.min(-30, math.max(-95, m - lvlMult * sd)) : -fixedLvl
+
+// ───────────── rolling CVD ─────────────
+est = high > low ? volume * (close - open) / (high - low) : 0.0
+ltf = timeframe.in_seconds() <= 3600 ? "1" : timeframe.in_seconds() <= 86400 ? "5" : "60"
+[lo, lc, lv] = request.security_lower_tf(syminfo.tickerid, ltf, [open, close, volume])
+float ltfDelta = na
+if array.size(lc) > 0
+    ltfDelta := 0.0
+    for i = 0 to array.size(lc) - 1
+        o1 = array.get(lo, i)
+        c1 = array.get(lc, i)
+        v1 = array.get(lv, i)
+        ltfDelta += c1 > o1 ? v1 : c1 < o1 ? -v1 : 0.0
+delta = useReal and not na(ltfDelta) ? ltfDelta : est
+cvd = math.sum(delta, cvdLen)
+cvdN = tanh(cvd / (ta.sma(volume, cvdLen) * cvdLen * 0.3))
+
+// ───────────── trend cloud (two horizons, wider in clean trends) ─────────────
+fast = ta.ema(wave, signalLen) * (0.4 + nz(er))
+slow = ta.ema(wave, signalLen * 3) * (0.4 + nz(er))
+
+// ───────────── drawing: zones, bands, cloud, wave ─────────────
+up = cvdN > 0 ? cvdN : 0.0
+dn = cvdN < 0 ? -cvdN : 0.0
+// ribbons on fixed rows at ±100 (lit when active); they also edge the extreme zones and the bumps
+p100 = plot(100, "Ruban du haut", color=showBands ? color.new(colHigh, up > 0 ? 60 - 55 * up : 85) : na, linewidth=5)
+pm100 = plot(-100, "Ruban du bas", color=showBands ? color.new(colLow, dn > 0 ? 60 - 55 * dn : 85) : na, linewidth=5)
+pOb = plot(ob, "Surachat", color=color.new(colHigh, 50), style=plot.style_linebr)
+pOs = plot(os, "Survente", color=color.new(colLow, 50), style=plot.style_linebr)
+fill(p100, pOb, color=color.new(colHigh, 88), title="Zone extrême haute")
+fill(pm100, pOs, color=color.new(colLow, 88), title="Zone extrême basse")
+pZero = plot(0, "Zéro", color=color.new(#787B86, 60), style=plot.style_circles, linewidth=1)
+
+// a bump above the ribbon that grows with the strength
+pBandUp = plot(showBands ? 104 + 26 * up : na, "Bosse du haut", color=color.new(colHigh, 100))
+pBandDn = plot(showBands ? -104 - 26 * dn : na, "Bosse du bas", color=color.new(colLow, 100))
+fill(p100, pBandUp, color=color.new(colHigh, 80 - 50 * up), title="Bosse du haut")
+fill(pm100, pBandDn, color=color.new(colLow, 80 - 50 * dn), title="Bosse du bas")
+
+pFast = plot(showCloud ? fast : na, "Tendance rapide", color=color.new(#B2B5BE, 70))
+pSlow = plot(showCloud ? slow : na, "Tendance lente", color=color.new(#B2B5BE, 50))
+fill(pFast, pSlow, color=color.new(fast >= slow ? colBull : colBear, 70), title="Nuage de tendance")
+crossed = ta.cross(fast, slow)
+plotshape(showCloud and showCross and crossed ? slow : na, "Croisement", style=shape.xcross, location=location.absolute, color=#B2B5BE, size=size.tiny)
+
+waveCol = wave >= 0 ? color.from_gradient(wave, 0, 80, colMid, colHigh) : color.from_gradient(wave, -80, 0, colLow, colMid)
+pWave = plot(wave, "Vague", color=waveCol, linewidth=2)
+fill(pWave, pZero, color=showGlow and wave > 25 ? color.new(colHigh, 88 - 28 * math.min(1, (wave - 25) / 55)) : na, title="Lueur haute")
+fill(pWave, pZero, color=showGlow and wave < -25 ? color.new(colLow, 88 - 28 * math.min(1, (-wave - 25) / 55)) : na, title="Lueur basse")
+
+// ───────────── divergences (confirmed pivots only: drawn pivR bars after the pivot, never moved) ─────────────
+ph = ta.pivothigh(wave, pivL, pivR)
+pl = ta.pivotlow(wave, pivL, pivR)
+var float phW = na
+var float phP = na
+var int phB = na
+var float plW = na
+var float plP = na
+var int plB = na
+divLine(b1, w1, p1, b2, w2, p2, col, dashed) =>
+    st = dashed ? line.style_dashed : line.style_solid
+    line.new(b1, w1, b2, w2, color=col, style=st, width=2)
+    if divOnPrice
+        line.new(b1, p1, b2, p2, color=col, style=st, width=2, force_overlay=true)
+    label.new(b2, w2, "◆", style=label.style_none, textcolor=col, size=size.small)
+
+regBear = false
+hidBear = false
+regBull = false
+hidBull = false
+// small pivot dots (plotshape, drawn back on the pivot bar)
+plotshape(showPivots and not na(ph) ? wave[pivR] : na, "Pivot haut", style=shape.circle, location=location.absolute, color=colHigh, size=size.tiny, offset=-pivR)
+plotshape(showPivots and not na(pl) ? wave[pivR] : na, "Pivot bas", style=shape.circle, location=location.absolute, color=colLow, size=size.tiny, offset=-pivR)
+if not na(ph)
+    b = bar_index - pivR
+    w = wave[pivR]
+    p = high[pivR]
+    if not na(phB) and b - phB <= divMax
+        if p > phP and w < phW and showReg
+            regBear := true
+            divLine(phB, phW, phP, b, w, p, colHigh, false)
+        else if p < phP and w > phW and showHid
+            hidBear := true
+            divLine(phB, phW, phP, b, w, p, color.new(colHigh, 30), true)
+    phW := w
+    phP := p
+    phB := b
+if not na(pl)
+    b = bar_index - pivR
+    w = wave[pivR]
+    p = low[pivR]
+    if not na(plB) and b - plB <= divMax
+        if p < plP and w > plW and showReg
+            regBull := true
+            divLine(plB, plW, plP, b, w, p, colLow, false)
+        else if p > plP and w < plW and showHid
+            hidBull := true
+            divLine(plB, plW, plP, b, w, p, color.new(colLow, 30), true)
+    plW := w
+    plP := p
+    plB := b
+
+// ───────────── strong confluence triangles (on the bar's close only) ─────────────
+turnDn = wave[1] >= ob[1] and wave < wave[1] and wave[1] >= wave[2]
+turnUp = wave[1] <= os[1] and wave > wave[1] and wave[1] <= wave[2]
+cvdFlipDn = nz(ta.barssince(ta.crossunder(cvdN, 0)), 999) <= sens
+cvdFlipUp = nz(ta.barssince(ta.crossover(cvdN, 0)), 999) <= sens
+emaF = ta.ema(close, int(str.tonumber(emaFastLen)))
+emaS = ta.ema(close, int(str.tonumber(emaSlowLen)))
+emaOkDn = not emaFilter or emaF < emaS
+emaOkUp = not emaFilter or emaF > emaS
+sigDn = showTri and barstate.isconfirmed and turnDn and cvdFlipDn and emaOkDn
+sigUp = showTri and barstate.isconfirmed and turnUp and cvdFlipUp and emaOkUp
+plotshape(sigDn ? 128 : na, "Signal baissier", style=shape.triangledown, location=location.absolute, color=colTri, size=size.small)
+plotshape(sigUp ? -128 : na, "Signal haussier", style=shape.triangleup, location=location.absolute, color=colTri, size=size.small)
+plotshape(sigDn and triOnPrice, "Signal baissier (prix)", style=shape.triangledown, location=location.abovebar, color=colTri, size=size.small, force_overlay=true)
+plotshape(sigUp and triOnPrice, "Signal haussier (prix)", style=shape.triangleup, location=location.belowbar, color=colTri, size=size.small, force_overlay=true)
+
+// ───────────── volume exhaustion (volume compared with the same hour on the previous days) ─────────────
+tfs = timeframe.in_seconds()
+perDay = tfs > 0 ? math.round(86400 / tfs) : 0
+volSma = ta.sma(volume, 20)
+float usual = na
+if perDay >= 2
+    s = 0.0
+    n = 0
+    for k = 1 to volDays
+        back = k * perDay
+        v = back < 4900 ? volume[back] : na
+        if not na(v)
+            s += v
+            n += 1
+    usual := n > 0 ? s / n : na
+else
+    usual := volSma[1]
+spike = not na(usual) and volume > volMult * usual
+exhDn = showExh and barstate.isconfirmed and spike and wave[1] > ob[1] and wave <= ob
+exhUp = showExh and barstate.isconfirmed and spike and wave[1] < os[1] and wave >= os
+plotshape(exhDn ? 116 : exhUp ? -116 : na, "Épuisement", style=shape.circle, location=location.absolute, color=colExh, size=size.tiny)
+
+// the band on the price runs right until the price comes back to it, then stops and fades
+var array<box> zones = array.new<box>()
+var array<int> sides = array.new<int>()
+zoneH = ta.atr(14) * 0.25
+if showBlock and (exhDn or exhUp)
+    h = zoneH
+    top = exhDn ? high : low + h
+    bot = exhDn ? high - h : low
+    array.push(zones, box.new(bar_index, top, bar_index + 1, bot, border_color=color.new(exhDn ? colHigh : colLow, 100), bgcolor=color.new(exhDn ? colHigh : colLow, 65), extend=extend.right, force_overlay=true))
+    array.push(sides, exhDn ? -1 : 1)
+    if array.size(zones) > 20
+        array.shift(zones)
+        array.shift(sides)
+if array.size(zones) > 0
+    for k = array.size(zones) - 1 to 0
+        z = array.get(zones, k)
+        sd1 = array.get(sides, k)
+        touched = sd1 < 0 ? high >= box.get_bottom(z) and bar_index > box.get_left(z) : low <= box.get_top(z) and bar_index > box.get_left(z)
+        if touched
+            box.set_right(z, bar_index)
+            box.set_extend(z, extend.none)
+            box.set_bgcolor(z, color.new(sd1 < 0 ? colHigh : colLow, 88))
+            array.remove(zones, k)
+            array.remove(sides, k)
+
+// ───────────── best signal: big red / green dot when everything agrees ─────────────
+recent(c) => nz(ta.barssince(c), 9999) <= bestWin
+rExhDn = recent(exhDn)
+rExhUp = recent(exhUp)
+rRegBear = recent(regBear)
+rRegBull = recent(regBull)
+rCrossDn = recent(ta.crossunder(fast, slow))
+rCrossUp = recent(ta.crossover(fast, slow))
+bestDn = showBest and sigDn and (rExhDn or rRegBear) and (fast < slow or rCrossDn)
+bestUp = showBest and sigUp and (rExhUp or rRegBull) and (fast > slow or rCrossUp)
+plotshape(bestDn ? 142 : na, "Meilleur signal vente", style=shape.circle, location=location.absolute, color=colHigh, size=size.tiny)
+plotshape(bestUp ? -142 : na, "Meilleur signal achat", style=shape.circle, location=location.absolute, color=colLow, size=size.tiny)
+plotshape(bestDn, "Meilleur signal vente (prix)", style=shape.circle, location=location.abovebar, color=colHigh, size=size.tiny, force_overlay=true)
+plotshape(bestUp, "Meilleur signal achat (prix)", style=shape.circle, location=location.belowbar, color=colLow, size=size.tiny, force_overlay=true)
+
+// ───────────── candles (off by default) ─────────────
+strongBull = wave > 0 and cvdN > 0 and fast >= slow
+strongBear = wave < 0 and cvdN < 0 and fast < slow
+barcolor(exhCandles and (exhDn or exhUp) ? colExh : colorBars ? (strongBull ? colBull : strongBear ? colBear : na) : na)
+
+// ───────────── confluence meter ─────────────
+regime = wave >= ob ? "SURACHAT" : wave <= os ? "SURVENTE" : wave >= 0 ? (cvdN > 0 ? "HAUSSE FORTE" : "HAUSSE FAIBLE") : (cvdN < 0 ? "BAISSE FORTE" : "BAISSE FAIBLE")
+regCol = wave >= ob ? colHigh : wave <= os ? colLow : wave >= 0 ? (cvdN > 0 ? colBull : color.new(colBull, 40)) : (cvdN < 0 ? colBear : color.new(colBear, 40))
+var array<line> gauge = array.new<line>()
+var array<label> gaugeText = array.new<label>()
+if barstate.islast and showMeter
+    for l in gauge
+        line.delete(l)
+    for t in gaugeText
+        label.delete(t)
+    array.clear(gauge)
+    array.clear(gaugeText)
+    gx = bar_index + 3
+    // the ruler: red at the top to green at the bottom, in 8 steps
+    for k = 0 to 7
+        y1 = 80 - k * 20
+        array.push(gauge, line.new(gx, y1, gx, y1 - 20, color=color.from_gradient(y1 - 10, -80, 80, colLow, colHigh), width=4))
+    lvl = math.max(-80, math.min(80, wave))
+    // the four words: left-aligned text starting right of the ruler (label_left with a transparent body: the text
+    // starts after the pointer, on TradingView too); a word within 16 of the pill's level is not drawn
+    clear = color.new(#1E222D, 100)
+    if math.abs(70 - lvl) >= 16
+        array.push(gaugeText, label.new(gx, 70, "SURACHAT", style=label.style_label_left, color=clear, textcolor=color.new(colHigh, 15), size=size.tiny))
+    if math.abs(30 - lvl) >= 16
+        array.push(gaugeText, label.new(gx, 30, "TENDANCE HAUSSIÈRE", style=label.style_label_left, color=clear, textcolor=color.new(#B2B5BE, 15), size=size.tiny))
+    if math.abs(-30 - lvl) >= 16
+        array.push(gaugeText, label.new(gx, -30, "TENDANCE BAISSIÈRE", style=label.style_label_left, color=clear, textcolor=color.new(#B2B5BE, 15), size=size.tiny))
+    if math.abs(-70 - lvl) >= 16
+        array.push(gaugeText, label.new(gx, -70, "SURVENTE", style=label.style_label_left, color=clear, textcolor=color.new(colLow, 15), size=size.tiny))
+    // the state: three labels at the same anchor and level, shortest first, each with an opaque body; the app draws
+    // the ones that fit before the price scale and a longer one covers the shorter ones exactly (same left edge,
+    // height and font), so there is always a pointer on the ruler, and the full pill when there is room
+    court = "● " + regime
+    tag = court + " (" + str.tostring(wave, "#") + " · CVD" + (cvdN >= 0 ? "+" : "−") + ")"
+    array.push(gaugeText, label.new(gx, lvl, "●", style=label.style_label_left, color=#1E222D, textcolor=regCol, size=size.small))
+    array.push(gaugeText, label.new(gx, lvl, court, style=label.style_label_left, color=#1E222D, textcolor=regCol, size=size.small))
+    array.push(gaugeText, label.new(gx, lvl, tag, style=label.style_label_left, color=#1E222D, textcolor=regCol, size=size.small))
+
+// ───────────── alerts (alert() calls do not count toward the 64-plot limit; one TradingView alert
+// « Argos Vague · Any alert() function call » receives them all, once per bar close)
+alertMsg(t) => syminfo.ticker + " : " + t + " à " + str.tostring(close)
+if barstate.isconfirmed
+    if ta.crossover(wave, ob)
+        alert(alertMsg("la vague entre en surachat"), alert.freq_once_per_bar_close)
+    if ta.crossunder(wave, os)
+        alert(alertMsg("la vague entre en survente"), alert.freq_once_per_bar_close)
+    if sigUp
+        alert(alertMsg("confluence forte haussière"), alert.freq_once_per_bar_close)
+    if sigDn
+        alert(alertMsg("confluence forte baissière"), alert.freq_once_per_bar_close)
+    if bestUp
+        alert(alertMsg("MEILLEUR SIGNAL D'ACHAT"), alert.freq_once_per_bar_close)
+    if bestDn
+        alert(alertMsg("MEILLEUR SIGNAL DE VENTE"), alert.freq_once_per_bar_close)
+    if regBull or regBear
+        alert(alertMsg("divergence normale"), alert.freq_once_per_bar_close)
+    if exhUp or exhDn
+        alert(alertMsg("épuisement de volume"), alert.freq_once_per_bar_close)

@@ -1,0 +1,20 @@
+# current funding rates · asked 239 to 242 s after the moment below
+# taken 1795498960205
+@ okx funding GET https://www.okx.com/api/v5/public/funding-rate?instId=BTC-USDT-SWAP
+ok 524
+{"code":"0","data":[{"formulaType":"withRate","fundingRate":"0.0000337140320581","fundingTime":"1795507200000","impactValue":"20000.0000000000000000","instId":"BTC-USDT-SWAP","instType":"SWAP","interestRate":"0.0001000000000000","maxFundingRate":"0.00375","method":"current_period","minFundingRate":"-0.00375","nextFundingRate":"","nextFundingTime":"1795536000000","premium":"-0.0004873141908855","prevFundingTime":"1795478400000","settFundingRate":"0.0000538666241708","settState":"settled","ts":"1795499165603"}],"msg":""}
+@ binance funding GET https://fapi.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT
+ok 231
+{"symbol":"BTCUSDT","markPrice":"60707.04834783","indexPrice":"60729.66456522","estimatedSettlePrice":"60680.21123176","lastFundingRate":"0.00007109","interestRate":"0.00010000","nextFundingTime":1795507200000,"time":1795499199001}
+@ bybit funding GET https://api.bybit.com/v5/market/tickers?category=linear&symbol=BTCUSDT
+ok 881
+{"retCode":0,"retMsg":"OK","result":{"category":"linear","list":[{"symbol":"BTCUSDT","lastPrice":"60691.40","indexPrice":"60723.52","markPrice":"60694.43","prevPrice24h":"61765.20","price24hPcnt":"-0.017385","highPrice24h":"64572.50","lowPrice24h":"59405.90","prevPrice1h":"60534.60","openInterest":"68488.011","openInterestValue":"4156840789.48","singleOpenInterest":"34244.006","singleOpenInterestValue":"2078420425.09","turnover24h":"7988847049.2063","volume24h":"129033.7720","fundingRate":"-0.0000238","nextFundingTime":"1795507200000","predictedDeliveryPrice":"","basisRate":"","deliveryFeeRate":"","deliveryTime":"0","ask1Size":"3.673","bid1Price":"60691.10","ask1Price":"60691.20","bid1Size":"0.209","basis":"","preOpenPrice":"","preQty":"","curPreListingPhase":"","fundingIntervalHour":"8","basisRateYear":"","fundingCap":"0.00333"}]},"retExtInfo":{},"time":1795499200423}
+@ bitget funding GET https://api.bitget.com/api/v2/mix/market/current-fund-rate?symbol=BTCUSDT&productType=USDT-FUTURES
+ok 221
+{"code":"00000","msg":"success","requestTime":1795499200945,"data":[{"symbol":"BTCUSDT","fundingRate":"-0.00007","fundingRateInterval":"8","nextUpdate":"1795507200000","minFundingRate":"-0.003","maxFundingRate":"0.003"}]}
+@ gate funding GET https://api.gateio.ws/api/v4/futures/usdt/contracts/BTC_USDT
+ok 1332
+{"funding_rate_indicative":"-0.0000308","mark_price_round":"0.01","funding_offset":0,"in_delisting":false,"risk_limit_base":"500000","interest_rate":"0.0003","index_price":"60734.25","order_price_round":"0.1","order_size_min":1,"enable_decimal":false,"ref_rebate_rate":"0.2","name":"BTC_USDT","ref_discount_rate":"0","order_price_deviate":"0.03","maintenance_rate":"0.003","mark_type":"index","funding_interval":28800,"type":"direct","risk_limit_step":"1499500000","enable_bonus":true,"enable_credit":true,"leverage_min":"1","funding_rate":"-0.0000308","last_price":"60688.7","mark_price":"60704.17","order_size_max":12000000,"funding_next_apply":1795507200,"short_users":10739,"config_change_time":1788234002,"create_time":1574035200,"trade_size":706721455941,"position_size":283646997,"long_users":17329,"quanto_multiplier":"0.0001","funding_impact_value":"30000","leverage_max":"200","cross_leverage_default":"10","risk_limit_max":"1500000000","maker_fee_rate":"-0.0001","taker_fee_rate":"0.00075","orders_limit":100,"trade_id":893905249,"orderbook_id":134343803754,"funding_cap_ratio":"0.75","voucher_leverage":"2","is_pre_market":false,"status":"trading","launch_time":1574035200,"enable_circuit_breaker":false,"funding_rate_limit":"0.003","market_order_slip_ratio":"0.01","market_order_size_max":"10000000","contract_type":""}
+@ aster funding GET https://fapi.asterdex.com/fapi/v1/premiumIndex?symbol=BTCUSDT
+ok 231
+{"symbol":"BTCUSDT","markPrice":"60710.70000000","indexPrice":"60729.66456522","estimatedSettlePrice":"60587.92103955","lastFundingRate":"0.00009409","interestRate":"0.00010000","nextFundingTime":1795507200000,"time":1795499201000}

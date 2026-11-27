@@ -1,0 +1,11 @@
+# Qui doit relire quoi (voir GOVERNANCE.md, section 5).
+# Avec la protection de branche « Require review from Code Owners », GitHub demande leur accord avant de fusionner.
+
+*                                         @valleeja
+
+# Zones sensibles : deux approbations dès qu'il y a deux mainteneurs
+/rust/crates/argos-desktop/src/security/  @valleeja
+/rust/crates/argos-propfirm/              @valleeja
+/.github/workflows/                       @valleeja
+/GOVERNANCE.md                            @valleeja
+/gouvernance/                             @valleeja

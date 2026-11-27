@@ -1,0 +1,49 @@
+# 🌐 Argos HSS Trading web (WASM) : compile l'app Rust pour le navigateur avec le même script que Vercel
+# (rust/tools/argos_web_build.sh) et garde le site construit (dist/) en artefact. Sert à vérifier chaque push
+# de la branche wasm sans dépenser de déploiements Vercel.
+name: Argos Web
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch: # manuel seulement (minutes GitHub Actions payantes) ; en local : make web dans rust/
+
+concurrency:
+  group: web-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  wasm:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
+        with:
+          workspaces: rust
+      - run: |
+          set -o pipefail
+          bash rust/tools/argos_web_build.sh 2>&1 | tee build.log
+      # erreurs de compilation en annotations (lisibles par l'API, sans télécharger le journal)
+      - if: failure()
+        run: |
+          awk '/^error/{n++} n>0 && n<=10 {b[n]=b[n] $0 "%0A"} END {for (i=1;i<=n && i<=10;i++) print "::error::" b[i]}' build.log
+          tail -25 build.log | awk '{s=s $0 "%0A"} END {print "::warning::" s}'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: argos-app
+          path: dist/app
+      # 📸 vrai Chromium : bougies en 1 minute sur 5 exchanges + cell, captures poussées sur la branche wasm-shots
+      - name: Captures
+        run: |
+          (cd dist && python3 -m http.server 8000 >/dev/null 2>&1 &)
+          mkdir -p /tmp/shots && cd /tmp/shots && npm init -y >/dev/null && npm i playwright@1 >/dev/null
+          npx playwright install --with-deps chromium >/dev/null
+          cp $GITHUB_WORKSPACE/rust/tools/argos_web_shots.mjs . && node argos_web_shots.mjs
+          # vercel.json : Vercel ne déploie jamais cette branche (les captures ne brûlent pas de déploiements)
+          cd shots && echo '{"git":{"deploymentEnabled":false}}' > vercel.json && git init -q && git checkout -q -b wasm-shots && git add -A
+          git -c user.name="github-actions[bot]" -c user.email=41898282+github-actions[bot]@users.noreply.github.com commit -qm "captures ${GITHUB_SHA::7}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" wasm-shots

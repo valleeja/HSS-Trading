@@ -1,0 +1,5 @@
+kit-module-argos 1.0.2
+date: 2026-11-06
+source: Argos, version principale 7b7deeb (interface v2 ; bulle et politique sous licence PolyForm Noncommercial 1.0.0 ; SDK MIT ou Apache-2.0)
+rust: 1.99.1 (wasm32-unknown-unknown)
+argos-modules (Linux x86_64, deux compilations identiques, symboles retirés) SHA-384: 6ecb73f2a71f38a5a41a12a8cf7aaa18dece4bc61fa08085de4ec53e458b486b2657e0fe225c6dfbb38b9d75410a07dc
